@@ -65,13 +65,13 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
     // Constructor for setting up the ICHICHAIN contract
     constructor(uint64 subscriptionId)
         ERC721A("ICHICHAIN", "ICHI")
-        VRFConsumerBaseV2(0x6D80646bEAdd07cE68cab36c27c626790bBcf17f)
+        VRFConsumerBaseV2(0x50d47e4142598E3411aA864e08a44284e471AC6f)
     {
         COORDINATOR = VRFCoordinatorV2Interface(
-            0x6D80646bEAdd07cE68cab36c27c626790bBcf17f
+            0x50d47e4142598E3411aA864e08a44284e471AC6f
         );
         s_subscriptionId = subscriptionId;
-        s_keyHash = 0x83d1b6e3388bed3d76426974512bb0d270e9542a765cd667242ea26c0cc0b730;
+        s_keyHash = 0x027f94ff1465b3525f9fc03e9ff7d6d2c0953482246dd6ae07570c45d6631414;
     }
 
     // Function to create a new NFT series
