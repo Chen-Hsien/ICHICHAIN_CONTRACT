@@ -12,12 +12,11 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
     // Chainlink VRF-related variables and constants
     VRFCoordinatorV2Interface COORDINATOR;
     uint64 s_subscriptionId;
-    bytes32 immutable keyHash;
+    bytes32 immutable s_keyHash;
     address public immutable linkToken;
     uint32 callbackGasLimit = 150000;
     uint16 requestConfirmations = 3;
-    uint32 numWords = 1;
-    
+
     // Structure to hold the request status for random number generation
     struct RequestStatus {
         bool fulfilled; // Indicates if the request has been successfully fulfilled
@@ -26,16 +25,16 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
     }
 
     // Mapping to keep track of request statuses
-    mapping(uint256 => RequestStatus) public s_requests; 
+    mapping(uint256 => RequestStatus) public s_requests;
 
     // Event emitted when a random number request is sent
-    event RequestSent(uint256 requestId, uint32 numWords);
+    event RevealToken(uint256 requestId, uint32 numWords);
     // Event emitted when a random number request is fulfilled
     event RequestFulfilled(uint256 requestId, uint256[] randomWords);
 
     // Structure representing each NFT's ticket status
     struct TicketStatus {
-        bool tokenRevealed;
+        uint256 tokenRevealedPrize;
         bool tokenExchange;
     }
 
@@ -61,21 +60,18 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
     mapping(uint256 => Series) public ICHISeries;
     mapping(uint256 => uint256) private tokenSeriesMapping;
     mapping(uint256 => TicketStatus) public ticketStatusDetail;
+    mapping(uint256 => uint256[]) private requestToToken;
 
     // Constructor for setting up the ICHICHAIN contract
-    constructor(uint64 subscriptionId, address _linkToken)
+    constructor(uint64 subscriptionId)
         ERC721A("ICHICHAIN", "ICHI")
         VRFConsumerBaseV2(0x6D80646bEAdd07cE68cab36c27c626790bBcf17f)
     {
-        COORDINATOR = VRFCoordinatorV2Interface(0x6D80646bEAdd07cE68cab36c27c626790bBcf17f);
+        COORDINATOR = VRFCoordinatorV2Interface(
+            0x6D80646bEAdd07cE68cab36c27c626790bBcf17f
+        );
         s_subscriptionId = subscriptionId;
-        keyHash = 0x83d1b6e3388bed3d76426974512bb0d270e9542a765cd667242ea26c0cc0b730;
-        linkToken = _linkToken;
-    }
-
-    // Function to handle the VRF response
-    function fulfillRandomWords(uint256 requestId, uint256[] memory randomWords) internal override {
-        // Logic to handle random words
+        s_keyHash = 0x83d1b6e3388bed3d76426974512bb0d270e9542a765cd667242ea26c0cc0b730;
     }
 
     // Function to create a new NFT series
@@ -97,6 +93,7 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         series.revealTime = revealTime;
         series.unrevealTokenURI = unrevealTokenURI;
         series.revealTokenURI = revealTokenURI;
+        series.seriesPrizes.push();
         for (uint256 i = 0; i < prizes.length; i++) {
             series.seriesPrizes.push(prizes[i]);
         }
@@ -106,10 +103,16 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
     function mint(uint256 seriesID, uint256 quantity) public payable {
         Series storage series = ICHISeries[seriesID];
         require(series.seriesPrizes.length > 0, "Series does not exist");
-        require(msg.value >= series.price * quantity, "Insufficient funds sent");
-        require(quantity <= series.remainingTicketNumbers, "Not enough NFTs remaining in the series");
+        require(
+            msg.value >= series.price * quantity,
+            "Insufficient funds sent"
+        );
+        require(
+            quantity <= series.remainingTicketNumbers,
+            "Not enough NFTs remaining in the series"
+        );
         _safeMint(msg.sender, quantity);
-        for (uint256 i = 0; i < quantity; i++) {
+        for (uint256 i = 0; i < quantity; ++i) {
             uint256 tokenId = _nextTokenId() - quantity + i;
             tokenSeriesMapping[tokenId] = seriesID;
         }
@@ -121,32 +124,87 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
     }
 
     // Admin function to mint NFTs in a specified series
-    function AdminMint(address to, uint256 seriesID, uint256 quantity) public onlyOwner {
+    function AdminMint(
+        address to,
+        uint256 seriesID,
+        uint256 quantity
+    ) public onlyOwner {
         Series storage series = ICHISeries[seriesID];
-        require(quantity <= series.remainingTicketNumbers, "Not enough NFTs remaining in the series");
+        require(
+            quantity <= series.remainingTicketNumbers,
+            "Not enough NFTs remaining in the series"
+        );
         _safeMint(to, quantity);
         series.remainingTicketNumbers -= quantity;
     }
 
     // Function to reveal specified NFTs in a series
-    function reveal(uint256 seriesID, uint256[] memory revealTokenID ) public {
+    function reveal(uint256 seriesID, uint256[] memory tokenIDs) public {
         Series storage series = ICHISeries[seriesID];
         require(block.timestamp > series.revealTime, "Not in reveal time");
-        require(revealTokenID.length <= balanceOf(msg.sender), "Not enough token to reveal");
-        series.remainingTicketNumbers -= revealTokenID.length;
-        for (uint256 i = 0; i < revealTokenID.length; i++) {
-            require(ownerOf(revealTokenID[i]) == msg.sender, "Not the token owner");
-            ticketStatusDetail[revealTokenID[i]].tokenRevealed = true;
+        require(
+            tokenIDs.length <= balanceOf(msg.sender),
+            "Not enough tokens to reveal"
+        );
+
+        // Request randomness for each token
+        for (uint256 i = 0; i < tokenIDs.length; i++) {
+            require(ownerOf(tokenIDs[i]) == msg.sender, "Not the token owner");
         }
+        uint256 requestId = COORDINATOR.requestRandomWords(
+            s_keyHash,
+            s_subscriptionId,
+            requestConfirmations,
+            callbackGasLimit,
+            uint32(tokenIDs.length)
+        );
+        requestToToken[requestId] = tokenIDs;
+        emit RevealToken(requestId, uint32(tokenIDs.length));
+    }
+
+    function fulfillRandomWords(uint256 requestId, uint256[] memory randomWords)
+        internal
+        override
+    {
+        uint256[] memory tokenIDs = requestToToken[requestId];
+        for (uint256 i = 0; i < tokenIDs.length; i++) {
+            uint256 tokenId = tokenIDs[i];
+            Series storage series = ICHISeries[tokenSeriesMapping[tokenId]];
+
+            // Start with the randomly selected prize index
+            uint256 prizeIndex = randomWords[i] % series.seriesPrizes.length;
+
+            // Iterate through the prizes to find an available one
+            while (
+                series.seriesPrizes[prizeIndex].prizeRemainingQuantity == 0
+            ) {
+                prizeIndex = (prizeIndex + 1) % series.seriesPrizes.length;
+            }
+
+            Prize storage prize = series.seriesPrizes[prizeIndex];
+            prize.prizeRemainingQuantity -= 1;
+            ticketStatusDetail[tokenId].tokenRevealedPrize = prizeIndex + 1; // Store as 1-indexed
+        }
+
+        delete requestToToken[requestId];
     }
 
     // Override tokenURI to provide the correct metadata based on reveal status
-    function tokenURI(uint256 tokenId) public view override returns (string memory) {
+    function tokenURI(uint256 tokenId)
+        public
+        view
+        override
+        returns (string memory)
+    {
         require(_exists(tokenId), "Token does not exist");
         uint256 seriesID = tokenSeriesMapping[tokenId];
         Series storage series = ICHISeries[seriesID];
-        if (ticketStatusDetail[tokenId].tokenRevealed) {
-            return series.revealTokenURI;
+
+        if (ticketStatusDetail[tokenId].tokenRevealedPrize != 0) {
+            return
+                string(
+                    abi.encodePacked(series.revealTokenURI, _toString(tokenId))
+                );
         } else {
             return series.unrevealTokenURI;
         }
