@@ -34,26 +34,26 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
 
     // Structure representing each NFT's ticket status
     struct TicketStatus {
-        uint256 tokenRevealedPrize;
-        bool tokenExchange;
+        uint256 tokenRevealedPrize; //開獎結果 Ex 1~8代表 A~H賞
+        bool tokenExchange; // 有沒有兌換過實體獎品
     }
 
     // Structure representing each prize in a series
     struct Prize {
-        string prizeName;
-        uint256 prizeRemainingQuantity;
+        string prizeName; // 獎項名稱 Ex 1~8代表 A~H賞
+        uint256 prizeRemainingQuantity;  // 該獎項預設有幾個 Ex A賞 2個, B賞4個 etc.
     }
 
     // Structure representing each NFT series
     struct Series {
         Prize[] seriesPrizes;
-        string seriesName;
-        uint256 totalTicketNumbers;
-        uint256 remainingTicketNumbers;
-        uint256 price;
-        uint256 revealTime;
-        string unrevealTokenURI;
-        string revealTokenURI;
+        string seriesName; // 此抽獎系列名稱
+        uint256 totalTicketNumbers; // 總共提供幾抽
+        uint256 remainingTicketNumbers; // 剩餘幾抽
+        uint256 price; // 每抽多少錢
+        uint256 revealTime; // 何時開放買家抽獎
+        string unrevealTokenURI; // 抽獎前票券長相
+        string revealTokenURI; // 抽獎後票券長相
     }
 
     // Mappings for series data and token status
@@ -63,15 +63,20 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
     mapping(uint256 => uint256[]) private requestToToken;
 
     // Constructor for setting up the ICHICHAIN contract
-    constructor(uint64 subscriptionId)
+    constructor(uint64 subscriptionId , address _linkToken)
         ERC721A("ICHICHAIN", "ICHI")
-        VRFConsumerBaseV2(0x50d47e4142598E3411aA864e08a44284e471AC6f)
+        VRFConsumerBaseV2(0x7a1BaC17Ccc5b313516C5E16fb24f7659aA5ebed)
     {
         COORDINATOR = VRFCoordinatorV2Interface(
-            0x50d47e4142598E3411aA864e08a44284e471AC6f
+            0x7a1BaC17Ccc5b313516C5E16fb24f7659aA5ebed
         );
+        //arb sepolia COORDINATOR = VRFCoordinatorV2Interface(
+        //     0x50d47e4142598E3411aA864e08a44284e471AC6f
+        // );
         s_subscriptionId = subscriptionId;
-        s_keyHash = 0x027f94ff1465b3525f9fc03e9ff7d6d2c0953482246dd6ae07570c45d6631414;
+        s_keyHash = 0x4b09e658ed251bcafeebbc69400383d49f344ace09b9576fe248bb02c003fe9f;
+        //arb sepolia s_keyHash = 0x027f94ff1465b3525f9fc03e9ff7d6d2c0953482246dd6ae07570c45d6631414;
+        linkToken = _linkToken;
     }
 
     // Function to create a new NFT series
@@ -203,7 +208,7 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         if (ticketStatusDetail[tokenId].tokenRevealedPrize != 0) {
             return
                 string(
-                    abi.encodePacked(series.revealTokenURI, _toString(tokenId))
+                    abi.encodePacked(series.revealTokenURI, _toString(ticketStatusDetail[tokenId].tokenRevealedPrize))
                 );
         } else {
             return series.unrevealTokenURI;
