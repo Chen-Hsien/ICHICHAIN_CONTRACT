@@ -41,7 +41,7 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
     // Structure representing each prize in a series
     struct Prize {
         string prizeName; // 獎項名稱 Ex 1~8代表 A~H賞
-        uint256 prizeRemainingQuantity;  // 該獎項預設有幾個 Ex A賞 2個, B賞4個 etc.
+        uint256 prizeRemainingQuantity; // 該獎項預設有幾個 Ex A賞 2個, B賞4個 etc.
     }
 
     // Structure representing each NFT series
@@ -52,6 +52,7 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         uint256 remainingTicketNumbers; // 剩餘幾抽
         uint256 price; // 每抽多少錢
         uint256 revealTime; // 何時開放買家抽獎
+        string exchangeTokenURI; // 兌換獎品修改metadata
         string unrevealTokenURI; // 抽獎前票券長相
         string revealTokenURI; // 抽獎後票券長相
     }
@@ -62,8 +63,11 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
     mapping(uint256 => TicketStatus) public ticketStatusDetail;
     mapping(uint256 => uint256[]) private requestToToken;
 
+    // Define seriesCounter variable
+    uint256 private seriesCounter = 0;
+
     // Constructor for setting up the ICHICHAIN contract
-    constructor(uint64 subscriptionId , address _linkToken)
+    constructor(uint64 subscriptionId, address _linkToken)
         ERC721A("ICHICHAIN", "ICHI")
         VRFConsumerBaseV2(0x7a1BaC17Ccc5b313516C5E16fb24f7659aA5ebed)
     {
@@ -85,6 +89,7 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         uint256 totalTicketNumbers,
         uint256 price,
         uint256 revealTime,
+        string memory exchangeTokenURI,
         string memory unrevealTokenURI,
         string memory revealTokenURI,
         Prize[] memory prizes
@@ -96,6 +101,7 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         series.remainingTicketNumbers = totalTicketNumbers;
         series.price = price;
         series.revealTime = revealTime;
+        series.exchangeTokenURI = exchangeTokenURI;
         series.unrevealTokenURI = unrevealTokenURI;
         series.revealTokenURI = revealTokenURI;
         series.seriesPrizes.push();
@@ -128,7 +134,7 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         }
     }
 
-    // Admin function to mint NFTs in a specified series
+    // Admin function to mint NFTs in a specified series without payment
     function AdminMint(
         address to,
         uint256 seriesID,
@@ -139,7 +145,15 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
             quantity <= series.remainingTicketNumbers,
             "Not enough NFTs remaining in the series"
         );
+
         _safeMint(to, quantity);
+
+        // Correctly map the token IDs to the series
+        for (uint256 i = 0; i < quantity; ++i) {
+            uint256 tokenId = _nextTokenId() - quantity + i;
+            tokenSeriesMapping[tokenId] = seriesID;
+        }
+
         series.remainingTicketNumbers -= quantity;
     }
 
@@ -205,18 +219,36 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         uint256 seriesID = tokenSeriesMapping[tokenId];
         Series storage series = ICHISeries[seriesID];
 
-        if (ticketStatusDetail[tokenId].tokenRevealedPrize != 0) {
+        if (ticketStatusDetail[tokenId].tokenExchange) {
             return
                 string(
-                    abi.encodePacked(series.revealTokenURI, _toString(ticketStatusDetail[tokenId].tokenRevealedPrize))
+                    abi.encodePacked(
+                        series.exchangeTokenURI,
+                        _toString(
+                            ticketStatusDetail[tokenId].tokenRevealedPrize
+                        )
+                    )
+                );
+        } else if (ticketStatusDetail[tokenId].tokenRevealedPrize != 0) {
+            return
+                string(
+                    abi.encodePacked(
+                        series.revealTokenURI,
+                        _toString(
+                            ticketStatusDetail[tokenId].tokenRevealedPrize
+                        )
+                    )
                 );
         } else {
             return series.unrevealTokenURI;
         }
     }
 
-    // Additional functions like exchangePrize, setters, getters, etc.
-
-    // Define seriesCounter variable
-    uint256 private seriesCounter = 0;
+    function exchangePrize(uint256[] memory tokenIDs) public {
+        for (uint256 i = 0; i < tokenIDs.length; i++) {
+            require(ownerOf(tokenIDs[i]) == msg.sender, "Not the token owner");
+            ticketStatusDetail[tokenIDs[i]].tokenExchange = true;
+        }
+        // Additional logic for handling the prize exchange
+    }
 }
