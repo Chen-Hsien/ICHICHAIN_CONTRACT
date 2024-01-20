@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: GPL3.0
 pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -14,7 +14,7 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
     uint64 s_subscriptionId;
     bytes32 immutable s_keyHash;
     address public immutable linkToken;
-    uint32 callbackGasLimit = 150000;
+    uint32 callbackGasLimit = 2500000;
     uint16 requestConfirmations = 3;
 
     // Structure to hold the request status for random number generation
@@ -202,7 +202,7 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
 
             Prize storage prize = series.seriesPrizes[prizeIndex];
             prize.prizeRemainingQuantity -= 1;
-            ticketStatusDetail[tokenId].tokenRevealedPrize = prizeIndex + 1; // Store as 1-indexed
+            ticketStatusDetail[tokenId].tokenRevealedPrize = prizeIndex;
         }
 
         delete requestToToken[requestId];
