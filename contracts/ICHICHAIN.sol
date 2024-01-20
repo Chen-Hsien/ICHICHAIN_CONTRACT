@@ -67,7 +67,10 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
     uint256 private seriesCounter = 0;
 
     // Constructor for setting up the ICHICHAIN contract
-    constructor(uint64 subscriptionId, address _linkToken)
+    constructor(
+        uint64 subscriptionId,
+        address _linkToken
+    )
         ERC721A("ICHICHAIN", "ICHI")
         VRFConsumerBaseV2(0x7a1BaC17Ccc5b313516C5E16fb24f7659aA5ebed)
     {
@@ -104,7 +107,6 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         series.exchangeTokenURI = exchangeTokenURI;
         series.unrevealTokenURI = unrevealTokenURI;
         series.revealTokenURI = revealTokenURI;
-        series.seriesPrizes.push();
         for (uint256 i = 0; i < prizes.length; i++) {
             series.seriesPrizes.push(prizes[i]);
         }
@@ -181,10 +183,10 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         emit RevealToken(requestId, uint32(tokenIDs.length));
     }
 
-    function fulfillRandomWords(uint256 requestId, uint256[] memory randomWords)
-        internal
-        override
-    {
+    function fulfillRandomWords(
+        uint256 requestId,
+        uint256[] memory randomWords
+    ) internal override {
         uint256[] memory tokenIDs = requestToToken[requestId];
         for (uint256 i = 0; i < tokenIDs.length; i++) {
             uint256 tokenId = tokenIDs[i];
@@ -209,12 +211,9 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
     }
 
     // Override tokenURI to provide the correct metadata based on reveal status
-    function tokenURI(uint256 tokenId)
-        public
-        view
-        override
-        returns (string memory)
-    {
+    function tokenURI(
+        uint256 tokenId
+    ) public view override returns (string memory) {
         require(_exists(tokenId), "Token does not exist");
         uint256 seriesID = tokenSeriesMapping[tokenId];
         Series storage series = ICHISeries[seriesID];
@@ -250,5 +249,28 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
             ticketStatusDetail[tokenIDs[i]].tokenExchange = true;
         }
         // Additional logic for handling the prize exchange
+    }
+
+    function getSeriesPrizes(
+        uint256 seriesID
+    ) public view returns (Prize[] memory) {
+        require(seriesID < seriesCounter, "Series does not exist");
+        return ICHISeries[seriesID].seriesPrizes;
+    }
+
+    function getUserTicketsInSeries(
+        address user,
+        uint256 seriesID
+    ) public view returns (uint256) {
+        require(seriesID < seriesCounter, "Series does not exist");
+        uint256 ticketCount = 0;
+
+        uint256 totalSupply = _totalMinted(); // total supply of all NFTs
+        for (uint256 i = 0; i < totalSupply; i++) {
+            if (tokenSeriesMapping[i] == seriesID && ownerOf(i) == user) {
+                ticketCount++;
+            }
+        }
+        return ticketCount;
     }
 }
