@@ -52,6 +52,7 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         uint256 remainingTicketNumbers; // 剩餘幾抽
         uint256 price; // 每抽多少錢
         uint256 revealTime; // 何時開放買家抽獎
+        string lastPrizeTokenURI; // Token URI for the last prize
         string exchangeTokenURI; // 兌換獎品修改metadata
         string unrevealTokenURI; // 抽獎前票券長相
         string revealTokenURI; // 抽獎後票券長相
@@ -95,6 +96,7 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         string memory exchangeTokenURI,
         string memory unrevealTokenURI,
         string memory revealTokenURI,
+        string memory lastPrizeTokenURI, // Add this parameter
         Prize[] memory prizes
     ) public onlyOwner {
         uint256 seriesID = seriesCounter++;
@@ -107,6 +109,7 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         series.exchangeTokenURI = exchangeTokenURI;
         series.unrevealTokenURI = unrevealTokenURI;
         series.revealTokenURI = revealTokenURI;
+        series.lastPrizeTokenURI = lastPrizeTokenURI; // Assign the lastPrizeTokenURI
         for (uint256 i = 0; i < prizes.length; i++) {
             series.seriesPrizes.push(prizes[i]);
         }
