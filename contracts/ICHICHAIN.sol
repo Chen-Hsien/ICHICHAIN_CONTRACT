@@ -17,18 +17,18 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
     uint32 callbackGasLimit = 2500000;
     uint16 requestConfirmations = 3;
 
-    // Structure to hold the request status for random number generation
-    struct RequestStatus {
-        bool fulfilled; // Indicates if the request has been successfully fulfilled
-        bool exists; // Indicates if a requestId exists
-        uint256[] randomWords; // Random numbers returned by VRF
+    // enum to seperate reveal and lastprize
+    enum Variable {
+        reveal,
+        lastPrize
     }
 
-    // Mapping to keep track of request statuses
-    mapping(uint256 => RequestStatus) public s_requests;
+    mapping(uint256 => Variable) public requests;
 
     // Event emitted when a random number request is sent
     event RevealToken(uint256 requestId, uint32 numWords);
+    // Event emitted when a last prize random number request is sent
+    event LastPrizeDraw(uint256 requestId, uint32 numWords);
     // Event emitted when a random number request is fulfilled
     event RequestFulfilled(uint256 requestId, uint256[] randomWords);
 
@@ -36,6 +36,7 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
     struct TicketStatus {
         uint256 tokenRevealedPrize; //開獎結果 Ex 1~8代表 A~H賞
         bool tokenExchange; // 有沒有兌換過實體獎品
+        bool tokenRevealed; // Whether the token has been revealed
     }
 
     // Structure representing each prize in a series
@@ -52,6 +53,7 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         uint256 remainingTicketNumbers; // 剩餘幾抽
         uint256 price; // 每抽多少錢
         uint256 revealTime; // 何時開放買家抽獎
+        address lastPrizeOwner; // 最後一賞得主
         string exchangeTokenURI; // 兌換獎品修改metadata
         string unrevealTokenURI; // 抽獎前票券長相
         string revealTokenURI; // 抽獎後票券長相
@@ -60,17 +62,16 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
     // Mappings for series data and token status
     mapping(uint256 => Series) public ICHISeries;
     mapping(uint256 => uint256) private tokenSeriesMapping;
+    mapping(uint256 => uint256[]) private seriesTokens;
     mapping(uint256 => TicketStatus) public ticketStatusDetail;
-    mapping(uint256 => uint256[]) private requestToToken;
+    mapping(uint256 => uint256[]) public requestToRevealToken;
+    mapping(uint256 => uint256) public requestToLastPrizeToken;
 
     // Define seriesCounter variable
     uint256 private seriesCounter = 0;
 
     // Constructor for setting up the ICHICHAIN contract
-    constructor(
-        uint64 subscriptionId,
-        address _linkToken
-    )
+    constructor(uint64 subscriptionId, address _linkToken)
         ERC721A("ICHICHAIN", "ICHI")
         VRFConsumerBaseV2(0x7a1BaC17Ccc5b313516C5E16fb24f7659aA5ebed)
     {
@@ -128,6 +129,7 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         for (uint256 i = 0; i < quantity; ++i) {
             uint256 tokenId = _nextTokenId() - quantity + i;
             tokenSeriesMapping[tokenId] = seriesID;
+            seriesTokens[seriesID].push(tokenId); // Append the token ID to the series
         }
         series.remainingTicketNumbers -= quantity;
         // Optionally, handle overpayment
@@ -154,6 +156,7 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         for (uint256 i = 0; i < quantity; ++i) {
             uint256 tokenId = _nextTokenId() - quantity + i;
             tokenSeriesMapping[tokenId] = seriesID;
+            seriesTokens[seriesID].push(tokenId); // Append the token ID to the series
         }
 
         series.remainingTicketNumbers -= quantity;
@@ -179,15 +182,49 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
             callbackGasLimit,
             uint32(tokenIDs.length)
         );
-        requestToToken[requestId] = tokenIDs;
+        requestToRevealToken[requestId] = tokenIDs;
+        requests[requestId] = Variable.reveal;
         emit RevealToken(requestId, uint32(tokenIDs.length));
     }
 
-    function fulfillRandomWords(
+    // Function to choose the winner of a series last prize with vrf
+    function chooseLastPrizeWinner(uint256 seriesID) public onlyOwner {
+        Series storage series = ICHISeries[seriesID];
+        require(series.remainingTicketNumbers == 0, "Not sold out yet");
+        require(series.lastPrizeOwner == address(0), "Already choose winner");
+
+        // Request randomness for each token
+        uint256 requestId = COORDINATOR.requestRandomWords(
+            s_keyHash,
+            s_subscriptionId,
+            requestConfirmations,
+            callbackGasLimit,
+            1
+        );
+        requestToLastPrizeToken[requestId] = seriesID;
+        requests[requestId] = Variable.lastPrize;
+        emit LastPrizeDraw(requestId, 1);
+    }
+
+    function fulfillRandomWords(uint256 requestId, uint256[] memory randomWords)
+        internal
+        override
+    {
+        emit RequestFulfilled(requestId, randomWords);
+
+        Variable variable = requests[requestId];
+        if (variable == Variable.reveal) {
+            fulfillRevealRandomWords(requestId, randomWords);
+        } else if (variable == Variable.lastPrize) {
+            fulfillLastPrizeRandomWords(requestId, randomWords);
+        }
+    }
+
+    function fulfillRevealRandomWords(
         uint256 requestId,
         uint256[] memory randomWords
-    ) internal override {
-        uint256[] memory tokenIDs = requestToToken[requestId];
+    ) internal {
+        uint256[] memory tokenIDs = requestToRevealToken[requestId];
         for (uint256 i = 0; i < tokenIDs.length; i++) {
             uint256 tokenId = tokenIDs[i];
             Series storage series = ICHISeries[tokenSeriesMapping[tokenId]];
@@ -205,15 +242,45 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
             Prize storage prize = series.seriesPrizes[prizeIndex];
             prize.prizeRemainingQuantity -= 1;
             ticketStatusDetail[tokenId].tokenRevealedPrize = prizeIndex;
+            ticketStatusDetail[tokenId].tokenRevealed = true;
         }
 
-        delete requestToToken[requestId];
+        delete requestToRevealToken[requestId];
+    }
+
+    function fulfillLastPrizeRandomWords(
+        uint256 requestId,
+        uint256[] memory randomWords
+    ) internal {
+
+        uint256 seriesID = requestToLastPrizeToken[requestId];
+        Series storage series = ICHISeries[seriesID];
+
+        uint256[] memory tokensInSeries = seriesTokens[seriesID];
+        uint256 totalTokensInSeries = tokensInSeries.length;
+
+        // Use the random number to select the winner
+        uint256 randomIndex = randomWords[0] % totalTokensInSeries;
+        address winnerAddress = ownerOf(tokensInSeries[randomIndex]);
+        // Mint the last prize token to the winner address
+        _safeMint(winnerAddress, 1);
+        uint256 newTokenId = _nextTokenId() - 1;
+        tokenSeriesMapping[newTokenId] = seriesID;
+        ticketStatusDetail[newTokenId].tokenRevealedPrize = 999;
+        ticketStatusDetail[newTokenId].tokenRevealed = true;
+
+        series.lastPrizeOwner = winnerAddress;
+
+        delete requestToLastPrizeToken[requestId];
     }
 
     // Override tokenURI to provide the correct metadata based on reveal status
-    function tokenURI(
-        uint256 tokenId
-    ) public view override returns (string memory) {
+    function tokenURI(uint256 tokenId)
+        public
+        view
+        override
+        returns (string memory)
+    {
         require(_exists(tokenId), "Token does not exist");
         uint256 seriesID = tokenSeriesMapping[tokenId];
         Series storage series = ICHISeries[seriesID];
@@ -228,7 +295,7 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
                         )
                     )
                 );
-        } else if (ticketStatusDetail[tokenId].tokenRevealedPrize != 0) {
+        } else if (ticketStatusDetail[tokenId].tokenRevealed) {
             return
                 string(
                     abi.encodePacked(
@@ -239,6 +306,7 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
                     )
                 );
         } else {
+            // If the token has not been revealed, return the unrevealTokenURI
             return series.unrevealTokenURI;
         }
     }
@@ -251,17 +319,20 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         // Additional logic for handling the prize exchange
     }
 
-    function getSeriesPrizes(
-        uint256 seriesID
-    ) public view returns (Prize[] memory) {
+    function getSeriesPrizes(uint256 seriesID)
+        public
+        view
+        returns (Prize[] memory)
+    {
         require(seriesID < seriesCounter, "Series does not exist");
         return ICHISeries[seriesID].seriesPrizes;
     }
 
-    function getUserTicketsInSeries(
-        address user,
-        uint256 seriesID
-    ) public view returns (uint256) {
+    function getUserTicketsInSeries(address user, uint256 seriesID)
+        public
+        view
+        returns (uint256)
+    {
         require(seriesID < seriesCounter, "Series does not exist");
         uint256 ticketCount = 0;
 
