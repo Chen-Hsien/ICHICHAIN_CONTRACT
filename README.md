@@ -14,3 +14,10 @@ https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmZTqjCCkXe3VNAP5vCXVNo13AfZjz
     ["C", "3"],
     ["D", "3"]
 ]
+
+## Hardhat Commands
+```
+npx hardhat compile
+npx hardhat run scripts/deploy.ts --network mumbai
+npx hardhat verify --network mumbai <address> "constructor1" "constructor2"
+```
