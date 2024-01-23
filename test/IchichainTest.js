@@ -17,15 +17,16 @@ describe("ICHICHAIN Contract", function () {
     
         await hardhatVrfCoordinatorV2Mock.createSubscription();
     
-        await hardhatVrfCoordinatorV2Mock.fundSubscription(1, ethers.utils.parseEther("7"))
+        await hardhatVrfCoordinatorV2Mock.fundSubscription(1, ethers.parseEther("10"));
     
         // Deploy the contract
-        ichichain = await Ichichain.deploy(1, hardhatVrfCoordinatorV2Mock.address);
+        ichichain = await Ichichain.deploy(1, hardhatVrfCoordinatorV2Mock.target);
     });
 
     describe("Contract Deployment", function () {
         it("should deploy and initialize the contract", async function () {
             // Test deployment and initial state
+            expect(await ichichain.owner()).to.equal(owner.address);
         });
     });
 
