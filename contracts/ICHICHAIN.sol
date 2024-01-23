@@ -132,10 +132,6 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
             seriesTokens[seriesID].push(tokenId); // Append the token ID to the series
         }
         series.remainingTicketNumbers -= quantity;
-        // Optionally, handle overpayment
-        if (msg.value > series.price * quantity) {
-            payable(msg.sender).transfer(msg.value - series.price * quantity);
-        }
     }
 
     // Admin function to mint NFTs in a specified series without payment
@@ -174,6 +170,7 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         // Request randomness for each token
         for (uint256 i = 0; i < tokenIDs.length; i++) {
             require(ownerOf(tokenIDs[i]) == msg.sender, "Not the token owner");
+            require(!ticketStatusDetail[tokenIDs[i]].tokenRevealed, "Token already revealed");
         }
         uint256 requestId = COORDINATOR.requestRandomWords(
             s_keyHash,
