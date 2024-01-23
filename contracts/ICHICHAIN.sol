@@ -71,7 +71,10 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
     uint256 private seriesCounter = 0;
 
     // Constructor for setting up the ICHICHAIN contract
-    constructor(uint64 subscriptionId, address _linkToken)
+    constructor(
+        uint64 subscriptionId,
+        address _linkToken
+    )
         ERC721A("ICHICHAIN", "ICHI")
         VRFConsumerBaseV2(0x7a1BaC17Ccc5b313516C5E16fb24f7659aA5ebed)
     {
@@ -98,6 +101,18 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         string memory revealTokenURI,
         Prize[] memory prizes
     ) public onlyOwner {
+        // Calculate the total of all prize quantities
+        uint256 totalPrizeQuantity = 0;
+        for (uint256 i = 0; i < prizes.length; i++) {
+            totalPrizeQuantity += prizes[i].prizeRemainingQuantity;
+        }
+
+        // Check if total prize quantity matches total ticket numbers
+        require(
+            totalPrizeQuantity == totalTicketNumbers,
+            "Total prize quantity does not match total tickets"
+        );
+
         uint256 seriesID = seriesCounter++;
         Series storage series = ICHISeries[seriesID];
         series.seriesName = seriesName;
@@ -170,7 +185,10 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         // Request randomness for each token
         for (uint256 i = 0; i < tokenIDs.length; i++) {
             require(ownerOf(tokenIDs[i]) == msg.sender, "Not the token owner");
-            require(!ticketStatusDetail[tokenIDs[i]].tokenRevealed, "Token already revealed");
+            require(
+                !ticketStatusDetail[tokenIDs[i]].tokenRevealed,
+                "Token already revealed"
+            );
         }
         uint256 requestId = COORDINATOR.requestRandomWords(
             s_keyHash,
@@ -203,10 +221,10 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         emit LastPrizeDraw(requestId, 1);
     }
 
-    function fulfillRandomWords(uint256 requestId, uint256[] memory randomWords)
-        internal
-        override
-    {
+    function fulfillRandomWords(
+        uint256 requestId,
+        uint256[] memory randomWords
+    ) internal override {
         emit RequestFulfilled(requestId, randomWords);
 
         Variable variable = requests[requestId];
@@ -249,7 +267,6 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         uint256 requestId,
         uint256[] memory randomWords
     ) internal {
-
         uint256 seriesID = requestToLastPrizeToken[requestId];
         Series storage series = ICHISeries[seriesID];
 
@@ -272,12 +289,9 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
     }
 
     // Override tokenURI to provide the correct metadata based on reveal status
-    function tokenURI(uint256 tokenId)
-        public
-        view
-        override
-        returns (string memory)
-    {
+    function tokenURI(
+        uint256 tokenId
+    ) public view override returns (string memory) {
         require(_exists(tokenId), "Token does not exist");
         uint256 seriesID = tokenSeriesMapping[tokenId];
         Series storage series = ICHISeries[seriesID];
@@ -316,20 +330,17 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         // Additional logic for handling the prize exchange
     }
 
-    function getSeriesPrizes(uint256 seriesID)
-        public
-        view
-        returns (Prize[] memory)
-    {
+    function getSeriesPrizes(
+        uint256 seriesID
+    ) public view returns (Prize[] memory) {
         require(seriesID < seriesCounter, "Series does not exist");
         return ICHISeries[seriesID].seriesPrizes;
     }
 
-    function getUserTicketsInSeries(address user, uint256 seriesID)
-        public
-        view
-        returns (uint256)
-    {
+    function getUserTicketsInSeries(
+        address user,
+        uint256 seriesID
+    ) public view returns (uint256) {
         require(seriesID < seriesCounter, "Series does not exist");
         uint256 ticketCount = 0;
 
