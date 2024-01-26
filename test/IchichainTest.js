@@ -59,7 +59,6 @@ describe("ICHICHAIN Contract", function () {
       // Create a new series
       await ichichain.createSeries(
         seriesName,
-        totalTicketNumbers,
         price,
         revealTime,
         exchangeTokenURI,
@@ -81,29 +80,27 @@ describe("ICHICHAIN Contract", function () {
       expect(createdSeries.unrevealTokenURI).to.equal(unrevealTokenURI);
       expect(createdSeries.revealTokenURI).to.equal(revealTokenURI);
     });
-    
 
     it("should revert if a non-owner tries to create a series", async function () {
-        const seriesName = "New Series";
-        const totalTicketNumbers = 10;
-        const price = ethers.parseEther("0.1");
-        const revealTime = Math.floor(Date.now() / 1000) + 60 * 60; // 1 hour from now
-        const exchangeTokenURI = "ipfs://exchangeTokenURI";
-        const unrevealTokenURI = "ipfs://unrevealTokenURI";
-        const revealTokenURI = "ipfs://revealTokenURI";
-        const prizes = [
-          ["A", "2"],
-          ["B", "2"],
-          ["C", "3"],
-          ["D", "3"],
-        ];
-  
+      const seriesName = "New Series";
+      const price = ethers.parseEther("0.1");
+      const revealTime = Math.floor(Date.now() / 1000) + 60 * 60; // 1 hour from now
+      const exchangeTokenURI = "ipfs://exchangeTokenURI";
+      const unrevealTokenURI = "ipfs://unrevealTokenURI";
+      const revealTokenURI = "ipfs://revealTokenURI";
+      const prizes = [
+        ["A", "2"],
+        ["B", "2"],
+        ["C", "3"],
+        ["D", "3"],
+      ];
 
-        try {
+      try {
         // Create a new series
-        await ichichain.connect(addr1).createSeries(
+        await ichichain
+          .connect(addr1)
+          .createSeries(
             seriesName,
-            totalTicketNumbers,
             price,
             revealTime,
             exchangeTokenURI,
@@ -111,18 +108,184 @@ describe("ICHICHAIN Contract", function () {
             revealTokenURI,
             prizes
           );
-            // If this line is reached, the test should fail
-            expect.fail("Ownable: caller is not the owner");
-        } catch (error) {
-            // Expect the transaction to revert
-            expect(error.message).to.include("revert");
-        }
-
+        // If this line is reached, the test should fail
+        expect.fail("Ownable: caller is not the owner");
+      } catch (error) {
+        // Expect the transaction to revert
+        expect(error.message).to.include("revert");
+      }
     });
   });
 
   describe("Minting Functionality", function () {
-    // Add tests for minting
+    const mintQuantity = 2; // Number of NFTs to mint
+    const mintValue = ethers.parseEther("0.2"); // Value for minting (price * quantity)
+    let seriesID;
+
+    beforeEach(async function () {
+      // Create a new series before each test
+      const seriesName = "New Series";
+      const price = ethers.parseEther("0.1");
+      const revealTime = Math.floor(Date.now() / 1000) + 60 * 60; // 1 hour from now
+      const exchangeTokenURI = "ipfs://exchangeTokenURI";
+      const unrevealTokenURI = "ipfs://unrevealTokenURI";
+      const revealTokenURI = "ipfs://revealTokenURI";
+      const prizes = [
+        ["A", "2"],
+        ["B", "2"],
+        ["C", "3"],
+        ["D", "3"],
+      ];
+      await ichichain.createSeries(
+        seriesName,
+        price,
+        revealTime,
+        exchangeTokenURI,
+        unrevealTokenURI,
+        revealTokenURI,
+        prizes
+      );
+      seriesID = 0; // Assuming this is the first series created
+    });
+
+    it("should mint NFTs correctly", async function () {
+      // Mint NFTs
+      await ichichain.mint(seriesID, mintQuantity, { value: mintValue });
+
+      // Fetch updated series data
+      const updatedSeries = await ichichain.ICHISeries(seriesID);
+
+      // Check that remaining tickets are reduced
+      expect(Number(updatedSeries.remainingTicketNumbers)).to.equal(
+        Number(updatedSeries.totalTicketNumbers) - Number(mintQuantity)
+      );
+
+      // Additional checks can be added here, e.g., checking the owner of minted tokens
+    });
+
+    it("should revert when minting with insufficient funds", async function () {
+      try {
+        await ichichain.mint(seriesID, mintQuantity, {
+          value: ethers.parseEther("0.01"),
+        });
+        expect.fail(
+          "Transaction should have reverted due to insufficient funds"
+        );
+      } catch (error) {
+        expect(error.message).to.include("Insufficient funds sent");
+      }
+    });
+
+    it("should revert when minting more than available tickets", async function () {
+      const updatedSeries = await ichichain.ICHISeries(seriesID);
+      try {
+        await ichichain.mint(
+          seriesID,
+          Number(updatedSeries.totalTicketNumbers) + 1,
+          {
+            value: ethers.parseEther("1.1"),
+          }
+        );
+        expect.fail(
+          "Transaction should have reverted due to exceeding available tickets"
+        );
+      } catch (error) {
+        expect(error.message).to.include(
+          "Not enough NFTs remaining in the series"
+        );
+      }
+    });
+
+    it("should revert when minting from a non-existent series", async function () {
+      try {
+        await ichichain.mint(999, mintQuantity, { value: mintValue }); // Non-existent series ID
+        expect.fail(
+          "Transaction should have reverted due to non-existent series"
+        );
+      } catch (error) {
+        expect(error.message).to.include("Series does not exist");
+      }
+    });
+  });
+
+  describe("Admin mint Functionality", function () {
+
+    beforeEach(async function () {
+      // Create a new series before each test
+      const seriesName = "New Series";
+      const price = ethers.parseEther("0.1");
+      const revealTime = Math.floor(Date.now() / 1000) + 60 * 60; // 1 hour from now
+      const exchangeTokenURI = "ipfs://exchangeTokenURI";
+      const unrevealTokenURI = "ipfs://unrevealTokenURI";
+      const revealTokenURI = "ipfs://revealTokenURI";
+      const prizes = [
+        ["A", "2"],
+        ["B", "2"],
+        ["C", "3"],
+        ["D", "3"],
+      ];
+      await ichichain.createSeries(
+        seriesName,
+        price,
+        revealTime,
+        exchangeTokenURI,
+        unrevealTokenURI,
+        revealTokenURI,
+        prizes
+      );
+      seriesID = 0; // Assuming this is the first series created
+    });
+    describe("Admin Minting Functionality", function () {
+      let owner, addr1, addr2;
+
+      beforeEach(async function () {
+        [owner, addr1, addr2] = await ethers.getSigners();
+        // Assume a series is already created here as in previous tests
+      });
+
+      it("should allow owner to mint NFTs without payment", async function () {
+        const seriesID = 0; // Assuming a series is already created
+        const quantity = 2;
+    
+        // Ensure the quantity is valid
+        if (isNaN(quantity)) {
+            throw new Error("Quantity is NaN");
+        }
+    
+        await ichichain.connect(owner).AdminMint(addr1.address, seriesID, quantity);
+    
+        // Fetch totalSupply and ensure it's valid
+        const totalSupply = await ichichain.totalSupply();
+        if (isNaN(Number(totalSupply))) {
+            throw new Error("Total supply calculation resulted in NaN");
+        }
+    
+        // Verify the state updates
+        const updatedSeries = await ichichain.ICHISeries(seriesID);
+        expect(Number(updatedSeries.remainingTicketNumbers)).to.equal(
+            Number(updatedSeries.totalTicketNumbers) - quantity
+        );
+    
+        // Check if the tokens are correctly mapped to the series
+        for (let i = 1; i <= quantity; i++) {
+            const tokenId = Number(totalSupply) - i; // Assuming these are the last minted tokens
+            expect(await ichichain.tokenSeriesMapping(tokenId)).to.equal(seriesID);
+        }
+    });
+    
+
+      it("should revert when non-owner tries to mint NFTs", async function () {
+        const seriesID = 0;
+        const quantity = 2;
+
+        // Attempt to mint from a non-owner account and expect a revert
+        await expect(
+          ichichain.connect(addr1).AdminMint(addr1.address, seriesID, quantity)
+        ).to.be.revertedWith("Ownable: caller is not the owner");
+      });
+
+      // Additional scenarios and edge cases can be tested similarly
+    });
   });
 
   describe("Reveal Functionality", function () {

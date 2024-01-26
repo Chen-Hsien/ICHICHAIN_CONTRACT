@@ -61,8 +61,8 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
 
     // Mappings for series data and token status
     mapping(uint256 => Series) public ICHISeries;
-    mapping(uint256 => uint256) private tokenSeriesMapping;
-    mapping(uint256 => uint256[]) private seriesTokens;
+    mapping(uint256 => uint256) public tokenSeriesMapping;
+    mapping(uint256 => uint256[]) public seriesTokens;
     mapping(uint256 => TicketStatus) public ticketStatusDetail;
     mapping(uint256 => uint256[]) public requestToRevealToken;
     mapping(uint256 => uint256) public requestToLastPrizeToken;
