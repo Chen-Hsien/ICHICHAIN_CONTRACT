@@ -93,7 +93,6 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
     // Function to create a new NFT series
     function createSeries(
         string memory seriesName,
-        uint256 totalTicketNumbers,
         uint256 price,
         uint256 revealTime,
         string memory exchangeTokenURI,
@@ -101,23 +100,16 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         string memory revealTokenURI,
         Prize[] memory prizes
     ) public onlyOwner {
-        // Calculate the total of all prize quantities
-        uint256 totalPrizeQuantity = 0;
-        for (uint256 i = 0; i < prizes.length; i++) {
-            totalPrizeQuantity += prizes[i].prizeRemainingQuantity;
-        }
-
-        // Check if total prize quantity matches total ticket numbers
-        require(
-            totalPrizeQuantity == totalTicketNumbers,
-            "Total prize quantity does not match total tickets"
-        );
-
+            // Calculate the total of all prize quantities
+    uint256 totalPrizeQuantity = 0;
+    for (uint256 i = 0; i < prizes.length; i++) {
+        totalPrizeQuantity += prizes[i].prizeRemainingQuantity;
+    }
         uint256 seriesID = seriesCounter++;
         Series storage series = ICHISeries[seriesID];
         series.seriesName = seriesName;
-        series.totalTicketNumbers = totalTicketNumbers;
-        series.remainingTicketNumbers = totalTicketNumbers;
+        series.totalTicketNumbers = totalPrizeQuantity;
+        series.remainingTicketNumbers = totalPrizeQuantity;
         series.price = price;
         series.revealTime = revealTime;
         series.exchangeTokenURI = exchangeTokenURI;
