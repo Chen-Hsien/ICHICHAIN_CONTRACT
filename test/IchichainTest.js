@@ -209,7 +209,6 @@ describe("ICHICHAIN Contract", function () {
   });
 
   describe("Admin mint Functionality", function () {
-
     beforeEach(async function () {
       // Create a new series before each test
       const seriesName = "New Series";
@@ -246,35 +245,38 @@ describe("ICHICHAIN Contract", function () {
       it("should allow owner to mint NFTs without payment", async function () {
         const seriesID = 0; // Assuming a series is already created
         const quantity = 2;
-    
+
         // Ensure the quantity is valid
         if (isNaN(quantity)) {
-            throw new Error("Quantity is NaN");
+          throw new Error("Quantity is NaN");
         }
-    
-        await ichichain.connect(owner).AdminMint(addr1.address, seriesID, quantity);
-    
+
+        await ichichain
+          .connect(owner)
+          .AdminMint(addr1.address, seriesID, quantity);
+
         // Fetch totalSupply and ensure it's valid
         const totalSupply = await ichichain.totalSupply();
         if (isNaN(Number(totalSupply))) {
-            throw new Error("Total supply calculation resulted in NaN");
+          throw new Error("Total supply calculation resulted in NaN");
         }
-    
+
         // Verify the state updates
         const updatedSeries = await ichichain.ICHISeries(seriesID);
         expect(Number(updatedSeries.remainingTicketNumbers)).to.equal(
-            Number(updatedSeries.totalTicketNumbers) - quantity
+          Number(updatedSeries.totalTicketNumbers) - quantity
         );
-    
+
         // Check if the tokens are correctly mapped to the series
         for (let i = 1; i <= quantity; i++) {
-            const tokenId = Number(totalSupply) - i; // Assuming these are the last minted tokens
-            expect(await ichichain.tokenSeriesMapping(tokenId)).to.equal(seriesID);
+          const tokenId = Number(totalSupply) - i; // Assuming these are the last minted tokens
+          expect(await ichichain.tokenSeriesMapping(tokenId)).to.equal(
+            seriesID
+          );
         }
-    });
-    
+      });
 
-      it("should revert when non-owner tries to mint NFTs", async function () {
+      it("should revert when non-owner tries to admin mint NFTs", async function () {
         const seriesID = 0;
         const quantity = 2;
 
@@ -289,7 +291,103 @@ describe("ICHICHAIN Contract", function () {
   });
 
   describe("Reveal Functionality", function () {
-    // Add tests for reveal
+    beforeEach(async function () {
+      // Mint tokens and setup for reveal
+      const seriesName = "New Series";
+      const price = ethers.parseEther("0.1");
+      const revealTime =
+        (await ethers.provider.getBlock("latest")).timestamp + 60 * 60; // 1 hour from now
+      const exchangeTokenURI = "ipfs://exchangeTokenURI";
+      const unrevealTokenURI = "ipfs://unrevealTokenURI";
+      const revealTokenURI = "ipfs://revealTokenURI";
+      const prizes = [
+        ["A", "2"],
+        ["B", "2"],
+        ["C", "3"],
+        ["D", "3"],
+      ];
+
+      await ichichain
+        .connect(owner)
+        .createSeries(
+          seriesName,
+          price,
+          revealTime,
+          exchangeTokenURI,
+          unrevealTokenURI,
+          revealTokenURI,
+          prizes
+        );
+
+      // Mint tokens to addr1
+      await ichichain
+        .connect(owner)
+        .mint(0, 5, { value: ethers.parseEther("0.5") });
+    });
+
+    // it("should successfully reveal tokens", async function () {
+    //   const tokenIDs = [0, 1, 2, 3, 4];
+    //   // Increase time to surpass revealTime
+    //   await ethers.provider.send("evm_increaseTime", [3600]); // Increase by 1 hour
+    //   await ethers.provider.send("evm_mine");
+
+    //   await expect(ichichain.connect(addr1).reveal(0, tokenIDs))
+
+    //   await expect(ichichain.connect(owner).reveal(0, tokenIDs))
+    //     .to.emit(ichichain, "RevealToken")
+    //     .withArgs(BigInt(1), tokenIDs.length);
+    // });
+
+    // it("Coordinator should successfully receive the request", async function () {
+    //   // await expect(hardhatOurNFTContract.safeMint("Halley")).to.emit(
+    //   //   hardhatVrfCoordinatorV2Mock,
+    //   //   "RandomWordsRequested"
+    //   // );
+    //   const tokenIDs = [0, 1, 2, 3, 4];
+    //   // Increase time to surpass revealTime
+    //   await ethers.provider.send("evm_increaseTime", [3600]); // Increase by 1 hour
+    //   await ethers.provider.send("evm_mine");
+
+    //   await expect(ichichain.connect(owner).reveal(0, tokenIDs)).to.emit(
+    //     hardhatVrfCoordinatorV2Mock,
+    //     "RandomWordsRequested"
+    //   );
+    // });
+
+    it("should revert if reveal is attempted before reveal time", async function () {
+      const tokenIDs = [0, 1, 2, 3, 4];
+      await expect(
+        ichichain.connect(owner).reveal(0, tokenIDs)
+      ).to.be.revertedWith("Not in reveal time");
+    });
+
+    it("should revert if a non-owner tries to reveal tokens", async function () {
+      const tokenIDs = [0, 1, 2, 3, 4];
+      await ethers.provider.send("evm_increaseTime", [3600]); // Increase by 1 hour
+      await ethers.provider.send("evm_mine");
+
+      // also owned 5 tokens
+      await ichichain
+        .connect(addr2)
+        .mint(0, 5, { value: ethers.parseEther("0.5") });
+
+      await expect(
+        ichichain.connect(addr2).reveal(0, tokenIDs)
+      ).to.be.revertedWith("Not the token owner");
+    });
+
+    // it("should revert if trying to reveal already revealed tokens", async function () {
+    //   const tokenIDs = [0, 1, 2, 3, 4];
+    //   // First, successfully reveal tokens
+    //   await ethers.provider.send("evm_increaseTime", [3600]); // Increase by 1 hour
+    //   await ethers.provider.send("evm_mine");
+    //   await ichichain.connect(owner).reveal(0, tokenIDs);
+
+    //   // Then, attempt to reveal the same tokens again
+    //   await expect(
+    //     ichichain.connect(owner).reveal(0, tokenIDs)
+    //   ).to.be.revertedWith("Token already revealed");
+    // });
   });
 
   describe("Last Prize Winner Selection", function () {
