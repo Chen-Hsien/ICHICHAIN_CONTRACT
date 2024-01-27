@@ -317,9 +317,13 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
     function exchangePrize(uint256[] memory tokenIDs) public {
         for (uint256 i = 0; i < tokenIDs.length; i++) {
             require(ownerOf(tokenIDs[i]) == msg.sender, "Not the token owner");
+            require(
+                ticketStatusDetail[tokenIDs[i]].tokenRevealed,
+                "Token not revealed"
+            );
             ticketStatusDetail[tokenIDs[i]].tokenExchange = true;
         }
-        // Additional logic for handling the prize exchange
+
     }
 
     function getSeriesPrizes(
