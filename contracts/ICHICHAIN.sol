@@ -100,11 +100,11 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         string memory revealTokenURI,
         Prize[] memory prizes
     ) public onlyOwner {
-            // Calculate the total of all prize quantities
-    uint256 totalPrizeQuantity = 0;
-    for (uint256 i = 0; i < prizes.length; i++) {
-        totalPrizeQuantity += prizes[i].prizeRemainingQuantity;
-    }
+        // Calculate the total of all prize quantities
+        uint256 totalPrizeQuantity = 0;
+        for (uint256 i = 0; i < prizes.length; i++) {
+            totalPrizeQuantity += prizes[i].prizeRemainingQuantity;
+        }
         uint256 seriesID = seriesCounter++;
         Series storage series = ICHISeries[seriesID];
         series.seriesName = seriesName;
@@ -323,7 +323,13 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
             );
             ticketStatusDetail[tokenIDs[i]].tokenExchange = true;
         }
+    }
 
+    function withdraw() external onlyOwner {
+        (bool success, ) = payable(msg.sender).call{
+            value: address(this).balance
+        }("");
+        require(success, "Transfer failed.");
     }
 
     function getSeriesPrizes(
