@@ -61,8 +61,8 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
 
     // Mappings for series data and token status
     mapping(uint256 => Series) public ICHISeries;
-    mapping(uint256 => uint256) private tokenSeriesMapping;
-    mapping(uint256 => uint256[]) private seriesTokens;
+    mapping(uint256 => uint256) public tokenSeriesMapping;
+    mapping(uint256 => uint256[]) public seriesTokens;
     mapping(uint256 => TicketStatus) public ticketStatusDetail;
     mapping(uint256 => uint256[]) public requestToRevealToken;
     mapping(uint256 => uint256) public requestToLastPrizeToken;
@@ -93,7 +93,6 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
     // Function to create a new NFT series
     function createSeries(
         string memory seriesName,
-        uint256 totalTicketNumbers,
         uint256 price,
         uint256 revealTime,
         string memory exchangeTokenURI,
@@ -101,23 +100,16 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         string memory revealTokenURI,
         Prize[] memory prizes
     ) public onlyOwner {
-        // Calculate the total of all prize quantities
-        uint256 totalPrizeQuantity = 0;
-        for (uint256 i = 0; i < prizes.length; i++) {
-            totalPrizeQuantity += prizes[i].prizeRemainingQuantity;
-        }
-
-        // Check if total prize quantity matches total ticket numbers
-        require(
-            totalPrizeQuantity == totalTicketNumbers,
-            "Total prize quantity does not match total tickets"
-        );
-
+            // Calculate the total of all prize quantities
+    uint256 totalPrizeQuantity = 0;
+    for (uint256 i = 0; i < prizes.length; i++) {
+        totalPrizeQuantity += prizes[i].prizeRemainingQuantity;
+    }
         uint256 seriesID = seriesCounter++;
         Series storage series = ICHISeries[seriesID];
         series.seriesName = seriesName;
-        series.totalTicketNumbers = totalTicketNumbers;
-        series.remainingTicketNumbers = totalTicketNumbers;
+        series.totalTicketNumbers = totalPrizeQuantity;
+        series.remainingTicketNumbers = totalPrizeQuantity;
         series.price = price;
         series.revealTime = revealTime;
         series.exchangeTokenURI = exchangeTokenURI;
@@ -325,9 +317,13 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
     function exchangePrize(uint256[] memory tokenIDs) public {
         for (uint256 i = 0; i < tokenIDs.length; i++) {
             require(ownerOf(tokenIDs[i]) == msg.sender, "Not the token owner");
+            require(
+                ticketStatusDetail[tokenIDs[i]].tokenRevealed,
+                "Token not revealed"
+            );
             ticketStatusDetail[tokenIDs[i]].tokenExchange = true;
         }
-        // Additional logic for handling the prize exchange
+
     }
 
     function getSeriesPrizes(
