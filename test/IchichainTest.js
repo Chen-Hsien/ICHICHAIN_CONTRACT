@@ -326,16 +326,16 @@ describe("ICHICHAIN Contract", function () {
     });
 
     // it("should successfully reveal tokens", async function () {
-    //   const tokenIDs = [0, 1, 2, 3, 4];
-    //   // Increase time to surpass revealTime
-    //   await ethers.provider.send("evm_increaseTime", [3600]); // Increase by 1 hour
-    //   await ethers.provider.send("evm_mine");
+    //     const tokenIDs = [0, 1, 2, 3, 4];
+    //     // Increase time to surpass revealTime
+    //     await ethers.provider.send("evm_increaseTime", [3600]); // Increase by 1 hour
+    //     await ethers.provider.send("evm_mine");
 
-    //   await expect(ichichain.connect(addr1).reveal(0, tokenIDs))
+    //     await expect(ichichain.connect(addr1).reveal(0, tokenIDs));
 
-    //   await expect(ichichain.connect(owner).reveal(0, tokenIDs))
-    //     .to.emit(ichichain, "RevealToken")
-    //     .withArgs(BigInt(1), tokenIDs.length);
+    //     await expect(ichichain.connect(owner).reveal(0, tokenIDs))
+    //         .to.emit(ichichain, "RevealToken")
+    //         .withArgs(ethers.BigNumber.from(0), tokenIDs.length);
     // });
 
     // it("Coordinator should successfully receive the request", async function () {
@@ -391,20 +391,233 @@ describe("ICHICHAIN Contract", function () {
   });
 
   describe("Last Prize Winner Selection", function () {
-    // Add tests for last prize winner selection
+    beforeEach(async function () {
+      // Mint tokens and setup for reveal
+      const seriesName = "New Series";
+      const price = ethers.parseEther("0.1");
+      const revealTime =
+        (await ethers.provider.getBlock("latest")).timestamp + 60 * 60; // 1 hour from now
+      const exchangeTokenURI = "ipfs://exchangeTokenURI";
+      const unrevealTokenURI = "ipfs://unrevealTokenURI";
+      const revealTokenURI = "ipfs://revealTokenURI";
+      const prizes = [
+        ["A", "2"],
+        ["B", "2"],
+        ["C", "3"],
+        ["D", "3"],
+      ];
+
+      await ichichain
+        .connect(owner)
+        .createSeries(
+          seriesName,
+          price,
+          revealTime,
+          exchangeTokenURI,
+          unrevealTokenURI,
+          revealTokenURI,
+          prizes
+        );
+
+      // Mint tokens to addr1
+      await ichichain
+        .connect(owner)
+        .mint(0, 5, { value: ethers.parseEther("0.5") });
+    });
+
+    it("should revert if non-owner tries to select last prize winner", async function () {
+      // Attempt to choose the last prize winner as a non-owner
+      await expect(
+        ichichain.connect(addr1).chooseLastPrizeWinner(seriesID)
+      ).to.be.revertedWith("Ownable: caller is not the owner");
+    });
+
+    it("should revert if trying to select last prize winner before selling out", async function () {
+      // Attempt to choose last prize winner before series is sold out
+      await expect(
+        ichichain.connect(owner).chooseLastPrizeWinner(seriesID)
+      ).to.be.revertedWith("Not sold out yet");
+    });
   });
 
   describe("Token URI Handling", function () {
-    // Add tests for tokenURI function
+    let seriesID;
+    // ... (other variables as per your contract)
+
+    beforeEach(async function () {
+      // Mint tokens and setup for reveal
+      const seriesName = "New Series";
+      const price = ethers.parseEther("0.1");
+      const revealTime =
+        (await ethers.provider.getBlock("latest")).timestamp + 60 * 60; // 1 hour from now
+      const exchangeTokenURI = "ipfs://exchangeTokenURI";
+      const unrevealTokenURI = "ipfs://unrevealTokenURI";
+      const revealTokenURI = "ipfs://revealTokenURI";
+      const prizes = [
+        ["A", "2"],
+        ["B", "2"],
+        ["C", "3"],
+        ["D", "3"],
+      ];
+
+      await ichichain
+        .connect(owner)
+        .createSeries(
+          seriesName,
+          price,
+          revealTime,
+          exchangeTokenURI,
+          unrevealTokenURI,
+          revealTokenURI,
+          prizes
+        );
+
+      // Mint tokens to addr1
+      await ichichain
+        .connect(owner)
+        .mint(0, 5, { value: ethers.parseEther("0.5") });
+    });
+
+    // wait to test
+    it("should return correct URI for an exchanged token", async function () {
+      // Assuming token 0 has been exchanged
+      //   await ichichain.connect(owner).exchangePrize([0]);
+      //   const tokenURI = await ichichain.tokenURI(0);
+      //   expect(tokenURI).to.equal(
+      //     series.exchangeTokenURI +
+      //       tokenStatusDetail[0].tokenRevealedPrize.toString()
+      //   );
+    });
+
+    // wait to test
+    it("should return correct URI for a revealed but not exchanged token", async function () {
+      //   const tokenURI = await ichichain.tokenURI(1);
+      //   expect(tokenURI).to.equal(series.revealTokenURI + tokenStatusDetail[1].tokenRevealedPrize.toString());
+    });
+
+    it("should return correct URI for an unrevealed token", async function () {
+      const updatedSeries = await ichichain.ICHISeries(0);
+      // Assuming token 2 has not been revealed
+      const tokenURI = await ichichain.tokenURI(2);
+      expect(tokenURI).to.equal(updatedSeries.unrevealTokenURI);
+    });
+
+    // Additional tests for error cases, like querying a non-existent token
+    it("should revert for a non-existent token", async function () {
+      const nonExistentTokenId = 999; // An ID that has not been minted
+      await expect(ichichain.tokenURI(nonExistentTokenId)).to.be.revertedWith(
+        "Token does not exist"
+      );
+    });
   });
 
   describe("Exchange Prize Functionality", function () {
-    // Add tests for exchanging prizes
+    beforeEach(async function () {
+      // Mint tokens and setup for reveal
+      const seriesName = "New Series";
+      const price = ethers.parseEther("0.1");
+      const revealTime =
+        (await ethers.provider.getBlock("latest")).timestamp + 60 * 60; // 1 hour from now
+      const exchangeTokenURI = "ipfs://exchangeTokenURI";
+      const unrevealTokenURI = "ipfs://unrevealTokenURI";
+      const revealTokenURI = "ipfs://revealTokenURI";
+      const prizes = [
+        ["A", "2"],
+        ["B", "2"],
+        ["C", "3"],
+        ["D", "3"],
+      ];
+
+      await ichichain
+        .connect(owner)
+        .createSeries(
+          seriesName,
+          price,
+          revealTime,
+          exchangeTokenURI,
+          unrevealTokenURI,
+          revealTokenURI,
+          prizes
+        );
+
+      // Mint tokens to addr1
+      await ichichain
+        .connect(owner)
+        .mint(0, 5, { value: ethers.parseEther("0.5") });
+    });
+
+    it("should revert if a non-owner tries to exchange a token", async function () {
+      // Attempt to exchange the token from a different address
+      await expect(
+        ichichain.connect(addr1).exchangePrize([0])
+      ).to.be.revertedWith("Not the token owner");
+    });
+
+    it("should revert if the token is not revealed", async function () {
+      // Mint a new token to addr1 and attempt to exchange it without revealing
+      await ichichain
+        .connect(owner)
+        .mint(0, 1, { value: ethers.parseEther("0.1") });
+      const newTokenId = 5;
+      await expect(
+        ichichain.connect(owner).exchangePrize([newTokenId])
+      ).to.be.revertedWith("Token not revealed");
+    });
   });
 
   describe("Utility Functions", function () {
-    // Add tests for utility functions
-  });
+    beforeEach(async function () {
+      // Mint tokens and setup for reveal
+      const seriesName = "New Series";
+      const price = ethers.parseEther("0.1");
+      const revealTime =
+        (await ethers.provider.getBlock("latest")).timestamp + 60 * 60; // 1 hour from now
+      const exchangeTokenURI = "ipfs://exchangeTokenURI";
+      const unrevealTokenURI = "ipfs://unrevealTokenURI";
+      const revealTokenURI = "ipfs://revealTokenURI";
+      const prizes = [
+        ["A", "2"],
+        ["B", "2"],
+        ["C", "3"],
+        ["D", "3"],
+      ];
 
-  // Add any additional describe blocks as needed
+      await ichichain
+        .connect(owner)
+        .createSeries(
+          seriesName,
+          price,
+          revealTime,
+          exchangeTokenURI,
+          unrevealTokenURI,
+          revealTokenURI,
+          prizes
+        );
+
+      // Mint tokens to addr1
+      await ichichain
+        .connect(owner)
+        .mint(0, 5, { value: ethers.parseEther("0.5") });
+    });
+
+    it("should return correct series details", async function () {
+      const prizes = [
+        ["A", "2"],
+        ["B", "2"],
+        ["C", "3"],
+        ["D", "3"],
+      ];
+      // Test a function that returns details about a series
+      const seriesDetails = await ichichain.getSeriesPrizes(0);
+      expect(
+        seriesDetails.map(([name, value]) => [name, value.toString()])
+      ).to.include.deep.members(prizes);
+    });
+
+    it("should correctly calculate user's ticket count in a series", async function () {
+      // Test a function that returns the number of tickets a user owns in a series
+      const ticketCount = await ichichain.getUserTicketsInSeries(owner, 0);
+      expect(ticketCount).to.equal(5);
+    });
+  });
 });
