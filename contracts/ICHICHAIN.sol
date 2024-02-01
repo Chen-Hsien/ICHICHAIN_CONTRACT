@@ -339,6 +339,21 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         return ICHISeries[seriesID].seriesPrizes;
     }
 
+    function getPaginatedSeriesInfo(
+        uint256 startIndex,
+        uint256 endIndex
+    ) public view returns (Series[] memory) {
+        require(startIndex < endIndex, "Invalid index values");
+        require(endIndex <= seriesCounter, "End index out of bounds");
+
+        Series[] memory seriesArray = new Series[](endIndex - startIndex);
+        for (uint256 i = startIndex; i < endIndex; i++) {
+            Series storage series = ICHISeries[i];
+            seriesArray[i - startIndex] = series;
+        }
+        return seriesArray;
+    }
+
     function getUserTicketsInSeries(
         address user,
         uint256 seriesID
