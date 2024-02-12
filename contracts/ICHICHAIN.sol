@@ -57,6 +57,8 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         string exchangeTokenURI; // 兌換獎品修改metadata
         string unrevealTokenURI; // 抽獎前票券長相
         string revealTokenURI; // 抽獎後票券長相
+         // off chain move to on chain
+        string seriesMetaDataURI; // Link to off chain infromation like image source
     }
 
     // Mappings for series data and token status
@@ -98,6 +100,7 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         string memory exchangeTokenURI,
         string memory unrevealTokenURI,
         string memory revealTokenURI,
+        string memory seriesMetaDataURI,
         Prize[] memory prizes
     ) public onlyOwner {
         // Calculate the total of all prize quantities
@@ -115,6 +118,7 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         series.exchangeTokenURI = exchangeTokenURI;
         series.unrevealTokenURI = unrevealTokenURI;
         series.revealTokenURI = revealTokenURI;
+        series.seriesMetaDataURI = seriesMetaDataURI;
         for (uint256 i = 0; i < prizes.length; i++) {
             series.seriesPrizes.push(prizes[i]);
         }
@@ -368,5 +372,9 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
             }
         }
         return ticketCount;
+    }
+
+    function getSeriesTotalLength() public view returns (uint256) {
+        return seriesCounter;
     }
 }

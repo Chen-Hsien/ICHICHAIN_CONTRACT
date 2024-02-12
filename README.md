@@ -19,5 +19,5 @@ https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmZTqjCCkXe3VNAP5vCXVNo13AfZjz
 ```
 npx hardhat compile
 npx hardhat run scripts/deploy.ts --network mumbai
-npx hardhat verify --network mumbai <address> "constructor1" "constructor2"
+npx hardhat verify --network mumbai 0x8fCEE249b499CfD2C8F8b8027bE0010f4e82cf10 "constructor1" "constructor2"
 ```
