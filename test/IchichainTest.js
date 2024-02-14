@@ -1,6 +1,21 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
+// Helper function to create a series
+async function createTestSeries(ichichain, owner, seriesParams) {
+  const { seriesName, price, revealTime, exchangeTokenURI, unrevealTokenURI, revealTokenURI, seriesMetaDataURI, prizes } = seriesParams;
+  await ichichain.connect(owner).createSeries(
+    seriesName,
+    price,
+    revealTime,
+    exchangeTokenURI,
+    unrevealTokenURI,
+    revealTokenURI,
+    seriesMetaDataURI,
+    prizes
+  );
+}
+
 describe("ICHICHAIN Contract", function () {
   let ichichain;
   let owner, addr1, addr2;
@@ -49,6 +64,7 @@ describe("ICHICHAIN Contract", function () {
       const exchangeTokenURI = "ipfs://exchangeTokenURI";
       const unrevealTokenURI = "ipfs://unrevealTokenURI";
       const revealTokenURI = "ipfs://revealTokenURI";
+      const seriesMetaDataURI = "ipfs://seriesMetaDataURI";
       const prizes = [
         ["A", "2"],
         ["B", "2"],
@@ -64,6 +80,7 @@ describe("ICHICHAIN Contract", function () {
         exchangeTokenURI,
         unrevealTokenURI,
         revealTokenURI,
+        seriesMetaDataURI,
         prizes
       );
 
@@ -88,6 +105,7 @@ describe("ICHICHAIN Contract", function () {
       const exchangeTokenURI = "ipfs://exchangeTokenURI";
       const unrevealTokenURI = "ipfs://unrevealTokenURI";
       const revealTokenURI = "ipfs://revealTokenURI";
+      const seriesMetaDataURI = "ipfs://seriesMetaDataURI";
       const prizes = [
         ["A", "2"],
         ["B", "2"],
@@ -106,6 +124,7 @@ describe("ICHICHAIN Contract", function () {
             exchangeTokenURI,
             unrevealTokenURI,
             revealTokenURI,
+            seriesMetaDataURI,
             prizes
           );
         // If this line is reached, the test should fail
@@ -130,6 +149,7 @@ describe("ICHICHAIN Contract", function () {
       const exchangeTokenURI = "ipfs://exchangeTokenURI";
       const unrevealTokenURI = "ipfs://unrevealTokenURI";
       const revealTokenURI = "ipfs://revealTokenURI";
+      const seriesMetaDataURI = "ipfs://seriesMetaDataURI";
       const prizes = [
         ["A", "2"],
         ["B", "2"],
@@ -143,6 +163,7 @@ describe("ICHICHAIN Contract", function () {
         exchangeTokenURI,
         unrevealTokenURI,
         revealTokenURI,
+        seriesMetaDataURI,
         prizes
       );
       seriesID = 0; // Assuming this is the first series created
@@ -217,6 +238,7 @@ describe("ICHICHAIN Contract", function () {
       const exchangeTokenURI = "ipfs://exchangeTokenURI";
       const unrevealTokenURI = "ipfs://unrevealTokenURI";
       const revealTokenURI = "ipfs://revealTokenURI";
+      const seriesMetaDataURI = "ipfs://seriesMetaDataURI";
       const prizes = [
         ["A", "2"],
         ["B", "2"],
@@ -230,10 +252,12 @@ describe("ICHICHAIN Contract", function () {
         exchangeTokenURI,
         unrevealTokenURI,
         revealTokenURI,
+        seriesMetaDataURI,
         prizes
       );
       seriesID = 0; // Assuming this is the first series created
     });
+
     describe("Admin Minting Functionality", function () {
       let owner, addr1, addr2;
 
@@ -268,11 +292,9 @@ describe("ICHICHAIN Contract", function () {
         );
 
         // Check if the tokens are correctly mapped to the series
-        for (let i = 1; i <= quantity; i++) {
-          const tokenId = Number(totalSupply) - i; // Assuming these are the last minted tokens
-          expect(await ichichain.tokenSeriesMapping(tokenId)).to.equal(
-            seriesID
-          );
+        for (let i = 0; i < quantity; i++) {
+          const ticketDetail = await ichichain.ticketStatusDetail(i);
+          expect(ticketDetail.seriesID).to.equal(seriesID);
         }
       });
 
@@ -292,32 +314,31 @@ describe("ICHICHAIN Contract", function () {
 
   describe("Reveal Functionality", function () {
     beforeEach(async function () {
-      // Mint tokens and setup for reveal
+      // Create a new series before each test
       const seriesName = "New Series";
       const price = ethers.parseEther("0.1");
-      const revealTime =
-        (await ethers.provider.getBlock("latest")).timestamp + 60 * 60; // 1 hour from now
+      const revealTime = Math.floor(Date.now() / 1000) + 60 * 60; // 1 hour from now
       const exchangeTokenURI = "ipfs://exchangeTokenURI";
       const unrevealTokenURI = "ipfs://unrevealTokenURI";
       const revealTokenURI = "ipfs://revealTokenURI";
+      const seriesMetaDataURI = "ipfs://seriesMetaDataURI";
       const prizes = [
         ["A", "2"],
         ["B", "2"],
         ["C", "3"],
         ["D", "3"],
       ];
-
-      await ichichain
-        .connect(owner)
-        .createSeries(
-          seriesName,
-          price,
-          revealTime,
-          exchangeTokenURI,
-          unrevealTokenURI,
-          revealTokenURI,
-          prizes
-        );
+      await ichichain.createSeries(
+        seriesName,
+        price,
+        revealTime,
+        exchangeTokenURI,
+        unrevealTokenURI,
+        revealTokenURI,
+        seriesMetaDataURI,
+        prizes
+      );
+      seriesID = 0; // Assuming this is the first series created
 
       // Mint tokens to addr1
       await ichichain
@@ -392,32 +413,31 @@ describe("ICHICHAIN Contract", function () {
 
   describe("Last Prize Winner Selection", function () {
     beforeEach(async function () {
-      // Mint tokens and setup for reveal
+      // Create a new series before each test
       const seriesName = "New Series";
       const price = ethers.parseEther("0.1");
-      const revealTime =
-        (await ethers.provider.getBlock("latest")).timestamp + 60 * 60; // 1 hour from now
+      const revealTime = Math.floor(Date.now() / 1000) + 60 * 60; // 1 hour from now
       const exchangeTokenURI = "ipfs://exchangeTokenURI";
       const unrevealTokenURI = "ipfs://unrevealTokenURI";
       const revealTokenURI = "ipfs://revealTokenURI";
+      const seriesMetaDataURI = "ipfs://seriesMetaDataURI";
       const prizes = [
         ["A", "2"],
         ["B", "2"],
         ["C", "3"],
         ["D", "3"],
       ];
-
-      await ichichain
-        .connect(owner)
-        .createSeries(
-          seriesName,
-          price,
-          revealTime,
-          exchangeTokenURI,
-          unrevealTokenURI,
-          revealTokenURI,
-          prizes
-        );
+      await ichichain.createSeries(
+        seriesName,
+        price,
+        revealTime,
+        exchangeTokenURI,
+        unrevealTokenURI,
+        revealTokenURI,
+        seriesMetaDataURI,
+        prizes
+      );
+      seriesID = 0; // Assuming this is the first series created◊
 
       // Mint tokens to addr1
       await ichichain
@@ -448,29 +468,28 @@ describe("ICHICHAIN Contract", function () {
       // Mint tokens and setup for reveal
       const seriesName = "New Series";
       const price = ethers.parseEther("0.1");
-      const revealTime =
-        (await ethers.provider.getBlock("latest")).timestamp + 60 * 60; // 1 hour from now
+      const revealTime = Math.floor(Date.now() / 1000) + 60 * 60; // 1 hour from now
       const exchangeTokenURI = "ipfs://exchangeTokenURI";
       const unrevealTokenURI = "ipfs://unrevealTokenURI";
       const revealTokenURI = "ipfs://revealTokenURI";
+      const seriesMetaDataURI = "ipfs://seriesMetaDataURI";
       const prizes = [
         ["A", "2"],
         ["B", "2"],
         ["C", "3"],
         ["D", "3"],
       ];
-
-      await ichichain
-        .connect(owner)
-        .createSeries(
-          seriesName,
-          price,
-          revealTime,
-          exchangeTokenURI,
-          unrevealTokenURI,
-          revealTokenURI,
-          prizes
-        );
+      await ichichain.createSeries(
+        seriesName,
+        price,
+        revealTime,
+        exchangeTokenURI,
+        unrevealTokenURI,
+        revealTokenURI,
+        seriesMetaDataURI,
+        prizes
+      );
+      seriesID = 0; // Assuming this is the first series created
 
       // Mint tokens to addr1
       await ichichain
@@ -516,29 +535,28 @@ describe("ICHICHAIN Contract", function () {
       // Mint tokens and setup for reveal
       const seriesName = "New Series";
       const price = ethers.parseEther("0.1");
-      const revealTime =
-        (await ethers.provider.getBlock("latest")).timestamp + 60 * 60; // 1 hour from now
+      const revealTime = Math.floor(Date.now() / 1000) + 60 * 60; // 1 hour from now
       const exchangeTokenURI = "ipfs://exchangeTokenURI";
       const unrevealTokenURI = "ipfs://unrevealTokenURI";
       const revealTokenURI = "ipfs://revealTokenURI";
+      const seriesMetaDataURI = "ipfs://seriesMetaDataURI";
       const prizes = [
         ["A", "2"],
         ["B", "2"],
         ["C", "3"],
         ["D", "3"],
       ];
-
-      await ichichain
-        .connect(owner)
-        .createSeries(
-          seriesName,
-          price,
-          revealTime,
-          exchangeTokenURI,
-          unrevealTokenURI,
-          revealTokenURI,
-          prizes
-        );
+      await ichichain.createSeries(
+        seriesName,
+        price,
+        revealTime,
+        exchangeTokenURI,
+        unrevealTokenURI,
+        revealTokenURI,
+        seriesMetaDataURI,
+        prizes
+      );
+      seriesID = 0; // Assuming this is the first series created
 
       // Mint tokens to addr1
       await ichichain
@@ -570,54 +588,103 @@ describe("ICHICHAIN Contract", function () {
       // Mint tokens and setup for reveal
       const seriesName = "New Series";
       const price = ethers.parseEther("0.1");
-      const revealTime =
-        (await ethers.provider.getBlock("latest")).timestamp + 60 * 60; // 1 hour from now
+      const revealTime = Math.floor(Date.now() / 1000) + 60 * 60; // 1 hour from now
       const exchangeTokenURI = "ipfs://exchangeTokenURI";
       const unrevealTokenURI = "ipfs://unrevealTokenURI";
       const revealTokenURI = "ipfs://revealTokenURI";
+      const seriesMetaDataURI = "ipfs://seriesMetaDataURI";
       const prizes = [
         ["A", "2"],
         ["B", "2"],
         ["C", "3"],
         ["D", "3"],
       ];
-
-      await ichichain
-        .connect(owner)
-        .createSeries(
-          seriesName,
-          price,
-          revealTime,
-          exchangeTokenURI,
-          unrevealTokenURI,
-          revealTokenURI,
-          prizes
-        );
-
+      await ichichain.createSeries(
+        seriesName,
+        price,
+        revealTime,
+        exchangeTokenURI,
+        unrevealTokenURI,
+        revealTokenURI,
+        seriesMetaDataURI,
+        prizes
+      );
+      seriesID = 0; // Assuming this is the first series created
       // Mint tokens to addr1
       await ichichain
         .connect(owner)
         .mint(0, 5, { value: ethers.parseEther("0.5") });
     });
 
-    it("should return correct series details", async function () {
-      const prizes = [
-        ["A", "2"],
-        ["B", "2"],
-        ["C", "3"],
-        ["D", "3"],
-      ];
-      // Test a function that returns details about a series
-      const seriesDetails = await ichichain.getSeriesPrizes(0);
-      expect(
-        seriesDetails.map(([name, value]) => [name, value.toString()])
-      ).to.include.deep.members(prizes);
+    describe("getPaginatedSeriesInfo", function () {
+      it("should return correct series information for a given range", async function () {
+        const seriesInfo = await ichichain.getPaginatedSeriesInfo(0, 1);
+        expect(seriesInfo.length).to.equal(1);
+        expect(seriesInfo[0].seriesName).to.equal("New Series");
+        expect(Number(seriesInfo[0].totalTicketNumbers)).to.equal(10); // Sum of prizes
+        expect(Number(seriesInfo[0].remainingTicketNumbers)).to.equal(10 - 5); // 5 minted
+        // Add more assertions as needed
+      });
     });
 
-    it("should correctly calculate user's ticket count in a series", async function () {
-      // Test a function that returns the number of tickets a user owns in a series
-      const ticketCount = await ichichain.getUserTicketsInSeries(owner, 0);
-      expect(ticketCount).to.equal(5);
+    describe("getSeriesTokenOwnerList", function () {
+      it("should return correct owners for tokens in a series", async function () {
+        const tokenOwners = await ichichain.getSeriesTokenOwnerList(0);
+        expect(tokenOwners.length).to.equal(5);
+        for (const ownerAddress of tokenOwners) {
+          expect(ownerAddress).to.equal(owner.address); // Assuming the owner minted all
+        }
+      });
     });
+
+    
+    describe("getSeriesTokenList", function () {
+      it("should return detailed list of tokens with their status and owners", async function () {
+        const tokenList = await ichichain.getSeriesTokenList(0);
+        expect(tokenList.length).to.equal(5);
+        for (const token of tokenList) {
+          expect(token.tokenOwner).to.equal(owner.address);
+          expect(token.ticketStatus.seriesID).to.equal(0);
+          // Validate more fields as necessary
+        }
+      });
+    });
+
+    describe("getSeriesTotalLength", function () {
+      it("should return the correct total number of series", async function () {
+        const totalLength = await ichichain.getSeriesTotalLength();
+        expect(totalLength).to.equal(1); // Assuming only one series was created
+      });
+    
+      it("should update correctly after a new series is created", async function () {
+        // Create another series (assuming createSeries function and necessary parameters are defined)
+        const seriesName = "New Series";
+        const price = ethers.parseEther("0.1");
+        const revealTime = Math.floor(Date.now() / 1000) + 60 * 60; // 1 hour from now
+        const exchangeTokenURI = "ipfs://exchangeTokenURI";
+        const unrevealTokenURI = "ipfs://unrevealTokenURI";
+        const revealTokenURI = "ipfs://revealTokenURI";
+        const seriesMetaDataURI = "ipfs://seriesMetaDataURI";
+        const prizes = [
+          ["A", "2"],
+          ["B", "2"],
+          ["C", "3"],
+          ["D", "3"],
+        ];
+        await ichichain.createSeries(
+          seriesName,
+          price,
+          revealTime,
+          exchangeTokenURI,
+          unrevealTokenURI,
+          revealTokenURI,
+          seriesMetaDataURI,
+          prizes
+        );
+        const updatedLength = await ichichain.getSeriesTotalLength();
+        expect(updatedLength).to.equal(2);
+      });
+    });
+    
   });
 });
