@@ -347,11 +347,11 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         uint256 startIndex,
         uint256 endIndex
     ) public view returns (Series[] memory) {
-        require(startIndex < endIndex, "Invalid index values");
+        require(startIndex <= endIndex, "Invalid index values");
         require(endIndex <= seriesCounter, "End index out of bounds");
 
-        Series[] memory seriesArray = new Series[](endIndex - startIndex);
-        for (uint256 i = startIndex; i < endIndex; i++) {
+        Series[] memory seriesArray = new Series[](endIndex - startIndex + 1);
+        for (uint256 i = startIndex; i <= endIndex; i++) {
             Series storage series = ICHISeries[i];
             seriesArray[i - startIndex] = series;
         }
@@ -364,7 +364,6 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         require(seriesID < seriesCounter, "Series does not exist");
         uint256[] memory tokensInSeries = seriesTokens[seriesID];
         address[] memory tokenOwners = new address[](tokensInSeries.length);
-
         for (uint256 i = 0; i < tokensInSeries.length; i++) {
             tokenOwners[i] = ownerOf(tokensInSeries[i]);
         }
