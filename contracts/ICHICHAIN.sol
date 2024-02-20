@@ -283,7 +283,7 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         _safeMint(winnerAddress, 1);
         uint256 newTokenId = _nextTokenId() - 1;
         ticketStatusDetail[newTokenId].seriesID = seriesID;
-        ticketStatusDetail[newTokenId].tokenRevealedPrize = 999;
+        ticketStatusDetail[newTokenId].tokenRevealedPrize = 90;
         ticketStatusDetail[newTokenId].tokenRevealed = true;
 
         series.lastPrizeOwner = winnerAddress;
