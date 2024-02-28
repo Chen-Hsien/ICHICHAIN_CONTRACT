@@ -34,9 +34,16 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
 
     // Structure representing each NFT's ticket status
     struct TicketStatus {
+        uint256 seriesID; // NFT所屬的抽獎系列
         uint256 tokenRevealedPrize; //開獎結果 Ex 1~8代表 A~H賞
         bool tokenExchange; // 有沒有兌換過實體獎品
         bool tokenRevealed; // Whether the token has been revealed
+    }
+    // structure representing each NFT's ticket status and tokenID
+    struct TicketStatusWithTokenIDOwnerAddress {
+        uint256 tokenID;
+        address tokenOwner;
+        TicketStatus ticketStatus;
     }
 
     // Structure representing each prize in a series
@@ -57,11 +64,11 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         string exchangeTokenURI; // 兌換獎品修改metadata
         string unrevealTokenURI; // 抽獎前票券長相
         string revealTokenURI; // 抽獎後票券長相
+        string seriesMetaDataURI; // Link to off chain infromation like image source
     }
 
     // Mappings for series data and token status
     mapping(uint256 => Series) public ICHISeries;
-    mapping(uint256 => uint256) public tokenSeriesMapping;
     mapping(uint256 => uint256[]) public seriesTokens;
     mapping(uint256 => TicketStatus) public ticketStatusDetail;
     mapping(uint256 => uint256[]) public requestToRevealToken;
@@ -98,6 +105,7 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         string memory exchangeTokenURI,
         string memory unrevealTokenURI,
         string memory revealTokenURI,
+        string memory seriesMetaDataURI,
         Prize[] memory prizes
     ) public onlyOwner {
         // Calculate the total of all prize quantities
@@ -115,6 +123,7 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         series.exchangeTokenURI = exchangeTokenURI;
         series.unrevealTokenURI = unrevealTokenURI;
         series.revealTokenURI = revealTokenURI;
+        series.seriesMetaDataURI = seriesMetaDataURI;
         for (uint256 i = 0; i < prizes.length; i++) {
             series.seriesPrizes.push(prizes[i]);
         }
@@ -135,7 +144,7 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         _safeMint(msg.sender, quantity);
         for (uint256 i = 0; i < quantity; ++i) {
             uint256 tokenId = _nextTokenId() - quantity + i;
-            tokenSeriesMapping[tokenId] = seriesID;
+            ticketStatusDetail[tokenId].seriesID = seriesID;
             seriesTokens[seriesID].push(tokenId); // Append the token ID to the series
         }
         series.remainingTicketNumbers -= quantity;
@@ -158,7 +167,7 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         // Correctly map the token IDs to the series
         for (uint256 i = 0; i < quantity; ++i) {
             uint256 tokenId = _nextTokenId() - quantity + i;
-            tokenSeriesMapping[tokenId] = seriesID;
+            ticketStatusDetail[tokenId].seriesID = seriesID;
             seriesTokens[seriesID].push(tokenId); // Append the token ID to the series
         }
 
@@ -234,7 +243,9 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         uint256[] memory tokenIDs = requestToRevealToken[requestId];
         for (uint256 i = 0; i < tokenIDs.length; i++) {
             uint256 tokenId = tokenIDs[i];
-            Series storage series = ICHISeries[tokenSeriesMapping[tokenId]];
+            Series storage series = ICHISeries[
+                ticketStatusDetail[tokenId].seriesID
+            ];
 
             // Start with the randomly selected prize index
             uint256 prizeIndex = randomWords[i] % series.seriesPrizes.length;
@@ -271,8 +282,8 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         // Mint the last prize token to the winner address
         _safeMint(winnerAddress, 1);
         uint256 newTokenId = _nextTokenId() - 1;
-        tokenSeriesMapping[newTokenId] = seriesID;
-        ticketStatusDetail[newTokenId].tokenRevealedPrize = 999;
+        ticketStatusDetail[newTokenId].seriesID = seriesID;
+        ticketStatusDetail[newTokenId].tokenRevealedPrize = 90;
         ticketStatusDetail[newTokenId].tokenRevealed = true;
 
         series.lastPrizeOwner = winnerAddress;
@@ -285,7 +296,7 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         uint256 tokenId
     ) public view override returns (string memory) {
         require(_exists(tokenId), "Token does not exist");
-        uint256 seriesID = tokenSeriesMapping[tokenId];
+        uint256 seriesID = ticketStatusDetail[tokenId].seriesID;
         Series storage series = ICHISeries[seriesID];
 
         if (ticketStatusDetail[tokenId].tokenExchange) {
@@ -332,26 +343,57 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         require(success, "Transfer failed.");
     }
 
-    function getSeriesPrizes(
-        uint256 seriesID
-    ) public view returns (Prize[] memory) {
-        require(seriesID < seriesCounter, "Series does not exist");
-        return ICHISeries[seriesID].seriesPrizes;
+    function getPaginatedSeriesInfo(
+        uint256 startIndex,
+        uint256 endIndex
+    ) public view returns (Series[] memory) {
+        require(startIndex <= endIndex, "Invalid index values");
+        require(endIndex <= seriesCounter, "End index out of bounds");
+
+        Series[] memory seriesArray = new Series[](endIndex - startIndex + 1);
+        for (uint256 i = startIndex; i <= endIndex; i++) {
+            Series storage series = ICHISeries[i];
+            seriesArray[i - startIndex] = series;
+        }
+        return seriesArray;
     }
 
-    function getUserTicketsInSeries(
-        address user,
+    function getSeriesTokenOwnerList(
         uint256 seriesID
-    ) public view returns (uint256) {
+    ) public view returns (address[] memory) {
         require(seriesID < seriesCounter, "Series does not exist");
-        uint256 ticketCount = 0;
-
-        uint256 totalSupply = _totalMinted(); // total supply of all NFTs
-        for (uint256 i = 0; i < totalSupply; i++) {
-            if (tokenSeriesMapping[i] == seriesID && ownerOf(i) == user) {
-                ticketCount++;
-            }
+        uint256[] memory tokensInSeries = seriesTokens[seriesID];
+        address[] memory tokenOwners = new address[](tokensInSeries.length);
+        for (uint256 i = 0; i < tokensInSeries.length; i++) {
+            tokenOwners[i] = ownerOf(tokensInSeries[i]);
         }
-        return ticketCount;
+        return tokenOwners;
+    }
+
+    // return ticketStatusDetail and tokenID into return array
+    function getSeriesTokenList(
+        uint256 seriesID
+    ) public view returns (TicketStatusWithTokenIDOwnerAddress[] memory) {
+        require(seriesID < seriesCounter, "Series does not exist");
+        uint256[] memory tokensInSeries = seriesTokens[seriesID];
+        TicketStatusWithTokenIDOwnerAddress[]
+            memory tokenPrizes = new TicketStatusWithTokenIDOwnerAddress[](
+                tokensInSeries.length
+            );
+
+        // add ticketStatusDetail,tokenID,owner into return array
+        for (uint256 i = 0; i < tokensInSeries.length; i++) {
+            uint256 tokenId = tokensInSeries[i];
+            tokenPrizes[i] = TicketStatusWithTokenIDOwnerAddress({
+                tokenID: tokenId,
+                tokenOwner: ownerOf(tokensInSeries[i]),
+                ticketStatus: ticketStatusDetail[tokenId]
+            });
+        }
+        return tokenPrizes;
+    }
+
+    function getSeriesTotalLength() public view returns (uint256) {
+        return seriesCounter;
     }
 }
