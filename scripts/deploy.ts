@@ -2,53 +2,310 @@ import { ethers } from "hardhat";
 
 const seriesData = [
   {
-    seriesName: "test0",
+    seriesName: "HunterxHunter",
     price: ethers.parseEther("0"), // Example price in Ether
     revealTime: Math.floor(Date.now() / 1000), // Current time
-    exchangeTokenURI: "https://example.com/exchangeTokenURI",
-    unrevealTokenURI: "https://example.com/unrevealTokenURI",
-    revealTokenURI: "https://example.com/revealTokenURI",
-    seriesMetaDataURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmbxmdqyBudsZdt8ftVnyKivvwsFkf9xkgB2JHYm4tw346",
+    exchangeTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmSsdZVZrDbTWc8W2C3rEJ2DRH3yWRpJP9UUEr77tw4mFo/",
+    unrevealTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmSWb9qNc46gQWQop5N27jF68Tdmd4VH1F1rCT3czxxUzQ/0",
+    revealTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmRkTPoSoWAzJMfqqNHtpJ1Lr6HLcuMCE2V4JsRuvtaLpj/",
+    seriesMetaDataURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmYxweAJixyVVAeQeGf6y8CVk4GmUBTfNiVJvusgcaUuMU/series0.json",
     prizes: [
       // Assuming Prize is a struct with fields like name and remainingQuantity
       { name: "A", remainingQuantity: 2 },
       { name: "B", remainingQuantity: 2 },
       { name: "C", remainingQuantity: 3 },
       { name: "D", remainingQuantity: 3 },
+      { name: "E", remainingQuantity: 15 },
+      { name: "F", remainingQuantity: 20 },
+      { name: "G", remainingQuantity: 25 },
     ],
   },
   // Repeat for other series...
   {
-    seriesName: "test1",
+    seriesName: "JOJO",
     price: ethers.parseEther("0"), // Example price in Ether
     revealTime: Math.floor(Date.now() / 1000), // Current time
-    exchangeTokenURI: "https://example.com/exchangeTokenURI1",
-    unrevealTokenURI: "https://example.com/unrevealTokenURI1",
-    revealTokenURI: "https://example.com/revealTokenURI1",
-    seriesMetaDataURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmdLx9BGRrDZeXPhTgoW4Fq78ZzfwrZPKwMa9rDvB9esfo",
+    exchangeTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmaoRXEHHeNUW57rTP17MuNf56qrEVRtEFtopKK598KEqt/",
+    unrevealTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmSWb9qNc46gQWQop5N27jF68Tdmd4VH1F1rCT3czxxUzQ/0",
+    revealTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmPuJZzKS5aVc267sSVACeqBChmuPCNV6CgzFrZniENB7Z/",
+    seriesMetaDataURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmYxweAJixyVVAeQeGf6y8CVk4GmUBTfNiVJvusgcaUuMU/series1.json",
     prizes: [
       // Assuming Prize is a struct with fields like name and remainingQuantity
       { name: "A", remainingQuantity: 2 },
       { name: "B", remainingQuantity: 2 },
-      { name: "C", remainingQuantity: 4 },
-      { name: "D", remainingQuantity: 4 },
+      { name: "C", remainingQuantity: 3 },
+      { name: "D", remainingQuantity: 3 },
+      { name: "E", remainingQuantity: 15 },
+      { name: "F", remainingQuantity: 20 },
+      { name: "G", remainingQuantity: 25 },
+    ],
+  },
+  // Help me to repeat this two series for 15 series, one is HunterxHunter and the other is JOJO
+  {
+    seriesName: "HunterxHunter",
+    price: ethers.parseEther("0"), // Example price in Ether
+    revealTime: Math.floor(Date.now() / 1000), // Current time
+    exchangeTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmSsdZVZrDbTWc8W2C3rEJ2DRH3yWRpJP9UUEr77tw4mFo/",
+    unrevealTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmSWb9qNc46gQWQop5N27jF68Tdmd4VH1F1rCT3czxxUzQ/0",
+    revealTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmRkTPoSoWAzJMfqqNHtpJ1Lr6HLcuMCE2V4JsRuvtaLpj/",
+    seriesMetaDataURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmYxweAJixyVVAeQeGf6y8CVk4GmUBTfNiVJvusgcaUuMU/series2.json",
+    prizes: [
+      // Assuming Prize is a struct with fields like name and remainingQuantity
+      { name: "A", remainingQuantity: 2 },
+      { name: "B", remainingQuantity: 2 },
+      { name: "C", remainingQuantity: 3 },
+      { name: "D", remainingQuantity: 3 },
+      { name: "E", remainingQuantity: 15 },
+      { name: "F", remainingQuantity: 20 },
+      { name: "G", remainingQuantity: 25 },
+    ],
+  },
+  {
+    seriesName: "JOJO",
+    price: ethers.parseEther("0"), // Example price in Ether
+    revealTime: Math.floor(Date.now() / 1000), // Current time
+    exchangeTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmaoRXEHHeNUW57rTP17MuNf56qrEVRtEFtopKK598KEqt/",
+    unrevealTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmSWb9qNc46gQWQop5N27jF68Tdmd4VH1F1rCT3czxxUzQ/0",
+    revealTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmPuJZzKS5aVc267sSVACeqBChmuPCNV6CgzFrZniENB7Z/",
+    seriesMetaDataURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmYxweAJixyVVAeQeGf6y8CVk4GmUBTfNiVJvusgcaUuMU/series3.json",
+    prizes: [
+      // Assuming Prize is a struct with fields like name and remainingQuantity
+      { name: "A", remainingQuantity: 2 },
+      { name: "B", remainingQuantity: 2 },
+      { name: "C", remainingQuantity: 3 },
+      { name: "D", remainingQuantity: 3 },
+      { name: "E", remainingQuantity: 15 },
+      { name: "F", remainingQuantity: 20 },
+      { name: "G", remainingQuantity: 25 },
+    ],
+  },
+  {
+    seriesName: "HunterxHunter",
+    price: ethers.parseEther("0"), // Example price in Ether
+    revealTime: Math.floor(Date.now() / 1000), // Current time
+    exchangeTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmSsdZVZrDbTWc8W2C3rEJ2DRH3yWRpJP9UUEr77tw4mFo/",
+    unrevealTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmSWb9qNc46gQWQop5N27jF68Tdmd4VH1F1rCT3czxxUzQ/0",
+    revealTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmRkTPoSoWAzJMfqqNHtpJ1Lr6HLcuMCE2V4JsRuvtaLpj/",
+    seriesMetaDataURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmYxweAJixyVVAeQeGf6y8CVk4GmUBTfNiVJvusgcaUuMU/series4.json",
+    prizes: [
+      // Assuming Prize is a struct with fields like name and remainingQuantity
+      { name: "A", remainingQuantity: 2 },
+      { name: "B", remainingQuantity: 2 },
+      { name: "C", remainingQuantity: 3 },
+      { name: "D", remainingQuantity: 3 },
+      { name: "E", remainingQuantity: 15 },
+      { name: "F", remainingQuantity: 20 },
+      { name: "G", remainingQuantity: 25 },
     ],
   },
   // Repeat for other series...
   {
-    seriesName: "test2",
+    seriesName: "JOJO",
     price: ethers.parseEther("0"), // Example price in Ether
     revealTime: Math.floor(Date.now() / 1000), // Current time
-    exchangeTokenURI: "https://example.com/exchangeTokenURI",
-    unrevealTokenURI: "https://example.com/unrevealTokenURI",
-    revealTokenURI: "https://example.com/revealTokenURI",
-    seriesMetaDataURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmXETUQDRSPLGPgwtqcUGFdtCXCAmNnrFPsZ1ugjJi29ic",
+    exchangeTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmaoRXEHHeNUW57rTP17MuNf56qrEVRtEFtopKK598KEqt/",
+    unrevealTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmSWb9qNc46gQWQop5N27jF68Tdmd4VH1F1rCT3czxxUzQ/0",
+    revealTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmPuJZzKS5aVc267sSVACeqBChmuPCNV6CgzFrZniENB7Z/",
+    seriesMetaDataURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmYxweAJixyVVAeQeGf6y8CVk4GmUBTfNiVJvusgcaUuMU/series5.json",
     prizes: [
       // Assuming Prize is a struct with fields like name and remainingQuantity
       { name: "A", remainingQuantity: 2 },
       { name: "B", remainingQuantity: 2 },
-      { name: "C", remainingQuantity: 5 },
-      { name: "D", remainingQuantity: 5 },
+      { name: "C", remainingQuantity: 3 },
+      { name: "D", remainingQuantity: 3 },
+      { name: "E", remainingQuantity: 15 },
+      { name: "F", remainingQuantity: 20 },
+      { name: "G", remainingQuantity: 25 },
+    ],
+  },  {
+    seriesName: "HunterxHunter",
+    price: ethers.parseEther("0"), // Example price in Ether
+    revealTime: Math.floor(Date.now() / 1000), // Current time
+    exchangeTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmSsdZVZrDbTWc8W2C3rEJ2DRH3yWRpJP9UUEr77tw4mFo/",
+    unrevealTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmSWb9qNc46gQWQop5N27jF68Tdmd4VH1F1rCT3czxxUzQ/0",
+    revealTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmRkTPoSoWAzJMfqqNHtpJ1Lr6HLcuMCE2V4JsRuvtaLpj/",
+    seriesMetaDataURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmYxweAJixyVVAeQeGf6y8CVk4GmUBTfNiVJvusgcaUuMU/series6.json",
+    prizes: [
+      // Assuming Prize is a struct with fields like name and remainingQuantity
+      { name: "A", remainingQuantity: 2 },
+      { name: "B", remainingQuantity: 2 },
+      { name: "C", remainingQuantity: 3 },
+      { name: "D", remainingQuantity: 3 },
+      { name: "E", remainingQuantity: 15 },
+      { name: "F", remainingQuantity: 20 },
+      { name: "G", remainingQuantity: 25 },
+    ],
+  },
+  // Repeat for other series...
+  {
+    seriesName: "JOJO",
+    price: ethers.parseEther("0"), // Example price in Ether
+    revealTime: Math.floor(Date.now() / 1000), // Current time
+    exchangeTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmaoRXEHHeNUW57rTP17MuNf56qrEVRtEFtopKK598KEqt/",
+    unrevealTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmSWb9qNc46gQWQop5N27jF68Tdmd4VH1F1rCT3czxxUzQ/0",
+    revealTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmPuJZzKS5aVc267sSVACeqBChmuPCNV6CgzFrZniENB7Z/",
+    seriesMetaDataURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmYxweAJixyVVAeQeGf6y8CVk4GmUBTfNiVJvusgcaUuMU/series7.json",
+    prizes: [
+      // Assuming Prize is a struct with fields like name and remainingQuantity
+      { name: "A", remainingQuantity: 2 },
+      { name: "B", remainingQuantity: 2 },
+      { name: "C", remainingQuantity: 3 },
+      { name: "D", remainingQuantity: 3 },
+      { name: "E", remainingQuantity: 15 },
+      { name: "F", remainingQuantity: 20 },
+      { name: "G", remainingQuantity: 25 },
+    ],
+  },  {
+    seriesName: "HunterxHunter",
+    price: ethers.parseEther("0"), // Example price in Ether
+    revealTime: Math.floor(Date.now() / 1000), // Current time
+    exchangeTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmSsdZVZrDbTWc8W2C3rEJ2DRH3yWRpJP9UUEr77tw4mFo/",
+    unrevealTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmSWb9qNc46gQWQop5N27jF68Tdmd4VH1F1rCT3czxxUzQ/0",
+    revealTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmRkTPoSoWAzJMfqqNHtpJ1Lr6HLcuMCE2V4JsRuvtaLpj/",
+    seriesMetaDataURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmYxweAJixyVVAeQeGf6y8CVk4GmUBTfNiVJvusgcaUuMU/series8.json",
+    prizes: [
+      // Assuming Prize is a struct with fields like name and remainingQuantity
+      { name: "A", remainingQuantity: 2 },
+      { name: "B", remainingQuantity: 2 },
+      { name: "C", remainingQuantity: 3 },
+      { name: "D", remainingQuantity: 3 },
+      { name: "E", remainingQuantity: 15 },
+      { name: "F", remainingQuantity: 20 },
+      { name: "G", remainingQuantity: 25 },
+    ],
+  },
+  // Repeat for other series...
+  {
+    seriesName: "JOJO",
+    price: ethers.parseEther("0"), // Example price in Ether
+    revealTime: Math.floor(Date.now() / 1000), // Current time
+    exchangeTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmaoRXEHHeNUW57rTP17MuNf56qrEVRtEFtopKK598KEqt/",
+    unrevealTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmSWb9qNc46gQWQop5N27jF68Tdmd4VH1F1rCT3czxxUzQ/0",
+    revealTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmPuJZzKS5aVc267sSVACeqBChmuPCNV6CgzFrZniENB7Z/",
+    seriesMetaDataURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmYxweAJixyVVAeQeGf6y8CVk4GmUBTfNiVJvusgcaUuMU/series9.json",
+    prizes: [
+      // Assuming Prize is a struct with fields like name and remainingQuantity
+      { name: "A", remainingQuantity: 2 },
+      { name: "B", remainingQuantity: 2 },
+      { name: "C", remainingQuantity: 3 },
+      { name: "D", remainingQuantity: 3 },
+      { name: "E", remainingQuantity: 15 },
+      { name: "F", remainingQuantity: 20 },
+      { name: "G", remainingQuantity: 25 },
+    ],
+  },  {
+    seriesName: "HunterxHunter",
+    price: ethers.parseEther("0"), // Example price in Ether
+    revealTime: Math.floor(Date.now() / 1000), // Current time
+    exchangeTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmSsdZVZrDbTWc8W2C3rEJ2DRH3yWRpJP9UUEr77tw4mFo/",
+    unrevealTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmSWb9qNc46gQWQop5N27jF68Tdmd4VH1F1rCT3czxxUzQ/0",
+    revealTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmRkTPoSoWAzJMfqqNHtpJ1Lr6HLcuMCE2V4JsRuvtaLpj/",
+    seriesMetaDataURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmYxweAJixyVVAeQeGf6y8CVk4GmUBTfNiVJvusgcaUuMU/series10.json",
+    prizes: [
+      // Assuming Prize is a struct with fields like name and remainingQuantity
+      { name: "A", remainingQuantity: 2 },
+      { name: "B", remainingQuantity: 2 },
+      { name: "C", remainingQuantity: 3 },
+      { name: "D", remainingQuantity: 3 },
+      { name: "E", remainingQuantity: 15 },
+      { name: "F", remainingQuantity: 20 },
+      { name: "G", remainingQuantity: 25 },
+    ],
+  },
+  // Repeat for other series...
+  {
+    seriesName: "JOJO",
+    price: ethers.parseEther("0"), // Example price in Ether
+    revealTime: Math.floor(Date.now() / 1000), // Current time
+    exchangeTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmaoRXEHHeNUW57rTP17MuNf56qrEVRtEFtopKK598KEqt/",
+    unrevealTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmSWb9qNc46gQWQop5N27jF68Tdmd4VH1F1rCT3czxxUzQ/0",
+    revealTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmPuJZzKS5aVc267sSVACeqBChmuPCNV6CgzFrZniENB7Z/",
+    seriesMetaDataURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmYxweAJixyVVAeQeGf6y8CVk4GmUBTfNiVJvusgcaUuMU/series11.json",
+    prizes: [
+      // Assuming Prize is a struct with fields like name and remainingQuantity
+      { name: "A", remainingQuantity: 2 },
+      { name: "B", remainingQuantity: 2 },
+      { name: "C", remainingQuantity: 3 },
+      { name: "D", remainingQuantity: 3 },
+      { name: "E", remainingQuantity: 15 },
+      { name: "F", remainingQuantity: 20 },
+      { name: "G", remainingQuantity: 25 },
+    ],
+  },  {
+    seriesName: "HunterxHunter",
+    price: ethers.parseEther("0"), // Example price in Ether
+    revealTime: Math.floor(Date.now() / 1000), // Current time
+    exchangeTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmSsdZVZrDbTWc8W2C3rEJ2DRH3yWRpJP9UUEr77tw4mFo/",
+    unrevealTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmSWb9qNc46gQWQop5N27jF68Tdmd4VH1F1rCT3czxxUzQ/0",
+    revealTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmRkTPoSoWAzJMfqqNHtpJ1Lr6HLcuMCE2V4JsRuvtaLpj/",
+    seriesMetaDataURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmYxweAJixyVVAeQeGf6y8CVk4GmUBTfNiVJvusgcaUuMU/series12.json",
+    prizes: [
+      // Assuming Prize is a struct with fields like name and remainingQuantity
+      { name: "A", remainingQuantity: 2 },
+      { name: "B", remainingQuantity: 2 },
+      { name: "C", remainingQuantity: 3 },
+      { name: "D", remainingQuantity: 3 },
+      { name: "E", remainingQuantity: 15 },
+      { name: "F", remainingQuantity: 20 },
+      { name: "G", remainingQuantity: 25 },
+    ],
+  },
+  // Repeat for other series...
+  {
+    seriesName: "JOJO",
+    price: ethers.parseEther("0"), // Example price in Ether
+    revealTime: Math.floor(Date.now() / 1000), // Current time
+    exchangeTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmaoRXEHHeNUW57rTP17MuNf56qrEVRtEFtopKK598KEqt/",
+    unrevealTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmSWb9qNc46gQWQop5N27jF68Tdmd4VH1F1rCT3czxxUzQ/0",
+    revealTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmPuJZzKS5aVc267sSVACeqBChmuPCNV6CgzFrZniENB7Z/",
+    seriesMetaDataURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmYxweAJixyVVAeQeGf6y8CVk4GmUBTfNiVJvusgcaUuMU/series13.json",
+    prizes: [
+      // Assuming Prize is a struct with fields like name and remainingQuantity
+      { name: "A", remainingQuantity: 2 },
+      { name: "B", remainingQuantity: 2 },
+      { name: "C", remainingQuantity: 3 },
+      { name: "D", remainingQuantity: 3 },
+      { name: "E", remainingQuantity: 15 },
+      { name: "F", remainingQuantity: 20 },
+      { name: "G", remainingQuantity: 25 },
+    ],
+  },  {
+    seriesName: "HunterxHunter",
+    price: ethers.parseEther("0"), // Example price in Ether
+    revealTime: Math.floor(Date.now() / 1000), // Current time
+    exchangeTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmSsdZVZrDbTWc8W2C3rEJ2DRH3yWRpJP9UUEr77tw4mFo/",
+    unrevealTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmSWb9qNc46gQWQop5N27jF68Tdmd4VH1F1rCT3czxxUzQ/0",
+    revealTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmRkTPoSoWAzJMfqqNHtpJ1Lr6HLcuMCE2V4JsRuvtaLpj/",
+    seriesMetaDataURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmYxweAJixyVVAeQeGf6y8CVk4GmUBTfNiVJvusgcaUuMU/series14.json",
+    prizes: [
+      // Assuming Prize is a struct with fields like name and remainingQuantity
+      { name: "A", remainingQuantity: 2 },
+      { name: "B", remainingQuantity: 2 },
+      { name: "C", remainingQuantity: 3 },
+      { name: "D", remainingQuantity: 3 },
+      { name: "E", remainingQuantity: 15 },
+      { name: "F", remainingQuantity: 20 },
+      { name: "G", remainingQuantity: 25 },
+    ],
+  },
+  // Repeat for other series...
+  {
+    seriesName: "JOJO",
+    price: ethers.parseEther("0"), // Example price in Ether
+    revealTime: Math.floor(Date.now() / 1000), // Current time
+    exchangeTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmaoRXEHHeNUW57rTP17MuNf56qrEVRtEFtopKK598KEqt/",
+    unrevealTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmSWb9qNc46gQWQop5N27jF68Tdmd4VH1F1rCT3czxxUzQ/0",
+    revealTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmPuJZzKS5aVc267sSVACeqBChmuPCNV6CgzFrZniENB7Z/",
+    seriesMetaDataURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmYxweAJixyVVAeQeGf6y8CVk4GmUBTfNiVJvusgcaUuMU/series15.json",
+    prizes: [
+      // Assuming Prize is a struct with fields like name and remainingQuantity
+      { name: "A", remainingQuantity: 2 },
+      { name: "B", remainingQuantity: 2 },
+      { name: "C", remainingQuantity: 3 },
+      { name: "D", remainingQuantity: 3 },
+      { name: "E", remainingQuantity: 15 },
+      { name: "F", remainingQuantity: 20 },
+      { name: "G", remainingQuantity: 25 },
     ],
   },
 ];
