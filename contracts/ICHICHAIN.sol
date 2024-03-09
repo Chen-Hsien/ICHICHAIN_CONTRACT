@@ -6,6 +6,7 @@ import "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
 import "@chainlink/contracts/src/v0.8/vrf/VRFConsumerBaseV2.sol";
 import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 import "erc721a/contracts/ERC721A.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 // ICHICHAIN contract implementing ERC721A for efficient batch minting,
 // and integrating with Chainlink VRF for randomness in reveals.
@@ -17,8 +18,6 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
     address public immutable linkToken;
     uint32 callbackGasLimit = 2500000;
     uint16 requestConfirmations = 3;
-    // Chainlink Price Feed
-    AggregatorV3Interface internal priceFeed;
 
     // enum to seperate reveal and lastprize
     enum Variable {
@@ -80,6 +79,20 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
     // Define seriesCounter variable
     uint256 private seriesCounter = 0;
 
+    // Define the IERC20 interface for USDT
+    IERC20 public usdt;
+
+    // Erc20 token to let user to choose which currency to pay, include contract address, and price feed address
+    struct Currency {
+        address currencyToken;
+        address priceFeedAddress;
+    }
+
+    Currency[] public currencyList;
+
+
+    // mumbai price feed matic/usdt 0xd0D5e3DB44DE05E9F294BB0a3bEEaF030DE24Ada
+
     // Constructor for setting up the ICHICHAIN contract
     constructor(uint64 subscriptionId, address _linkToken)
         ERC721A("ICHICHAIN", "ICHI")
@@ -95,10 +108,8 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         s_keyHash = 0x4b09e658ed251bcafeebbc69400383d49f344ace09b9576fe248bb02c003fe9f;
         //arb sepolia s_keyHash = 0x027f94ff1465b3525f9fc03e9ff7d6d2c0953482246dd6ae07570c45d6631414;
         linkToken = _linkToken;
-        // mumbai matic/USDT
-        priceFeed = AggregatorV3Interface(
-            0xd0D5e3DB44DE05E9F294BB0a3bEEaF030DE24Ada
-        );
+        //fake usdt
+        usdt = IERC20(0x3Ce7753f160879cc6768338B3Aec56139AbF6EC2);
     }
 
     // Function to create a new NFT series
@@ -136,7 +147,7 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
     // Function to mint NFTs in a specified series
     function mint(uint256 seriesID, uint256 quantity) public payable {
         Series storage series = ICHISeries[seriesID];
-        int256 maticPriceInUSDT = getChainlinkDataFeedLatestAnswer(); // Get latest MATIC/USDT rate
+        int256 maticPriceInUSDT = getChainlinkDataFeedLatestAnswer(0xd0D5e3DB44DE05E9F294BB0a3bEEaF030DE24Ada); // Get latest MATIC/USDT rate
         uint256 maticPerUSDTInWei = uint256(maticPriceInUSDT) * 1e10; // Convert price to wei (assuming 8 decimals from Chainlink)
         uint256 totalCostInMaticWei = (series.priceInUSDTWei *
             quantity *
@@ -156,6 +167,83 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         }
         series.remainingTicketNumbers -= quantity;
     }
+
+    // Function to mint NFTs with USDT
+    function mintByUSDT(uint256 seriesID, uint256 quantity) public {
+        Series storage series = ICHISeries[seriesID];
+        //check allowance first
+        require(
+            usdt.allowance(msg.sender, address(this)) >=
+                series.priceInUSDTWei * quantity,
+            "Insufficient USDT allowance"
+        );
+        require(
+            usdt.balanceOf(msg.sender) >= series.priceInUSDTWei * quantity,
+            "Insufficient USDT balance"
+        );
+        usdt.transferFrom(msg.sender, address(this), series.priceInUSDTWei * quantity);
+
+        require(
+            quantity <= series.remainingTicketNumbers,
+            "Not enough NFTs remaining in the series"
+        );
+        _safeMint(msg.sender, quantity);
+        for (uint256 i = 0; i < quantity; ++i) {
+            uint256 tokenId = _nextTokenId() - quantity + i;
+            ticketStatusDetail[tokenId].seriesID = seriesID;
+            seriesTokens[seriesID].push(tokenId); // Append the token ID to the series
+        }
+        series.remainingTicketNumbers -= quantity;
+    }
+
+    // Function to mint NFTs with a currency token list to let user to choose ex usdc, eth  etc.. and pass chainlink price feed address to get price
+    // use currencyList struct to let user to choose which currency to pay
+    function mintByCurrency(
+        uint256 seriesID,
+        uint256 quantity,
+        uint256 CurrencyIndex // index of currencyList
+        // address currencyToken,
+        // address priceFeedAddress
+    ) public {
+        Series storage series = ICHISeries[seriesID];
+        address currencyToken = currencyList[CurrencyIndex].currencyToken;
+        address priceFeedAddress = currencyList[CurrencyIndex].priceFeedAddress;
+        int256 priceInUSDT = getChainlinkDataFeedLatestAnswer(priceFeedAddress); // Get latest currency/USDT rate
+
+        // the calculate logic like mint function
+        uint256 toeknPerUSDTInWei = uint256(priceInUSDT) * 1e10; // Convert price to wei (assuming 8 decimals from Chainlink)
+        uint256 totalCostInWei = (series.priceInUSDTWei *
+            quantity *
+            1e18) / toeknPerUSDTInWei;
+
+        require(
+            IERC20(currencyToken).allowance(msg.sender, address(this)) >=
+                totalCostInWei,
+            "Insufficient currency allowance"
+        );
+        require(
+            IERC20(currencyToken).balanceOf(msg.sender) >= totalCostInWei,
+            "Insufficient currency balance"
+        );
+        IERC20(currencyToken).transferFrom(
+            msg.sender,
+            address(this),
+            totalCostInWei
+        );
+
+        require(
+            quantity <= series.remainingTicketNumbers,
+            "Not enough NFTs remaining in the series"
+        );
+        _safeMint(msg.sender, quantity);
+        for (uint256 i = 0; i < quantity; ++i) {
+            uint256 tokenId = _nextTokenId() - quantity + i;
+            ticketStatusDetail[tokenId].seriesID = seriesID;
+            seriesTokens[seriesID].push(tokenId); // Append the token ID to the series
+        }
+        series.remainingTicketNumbers -= quantity;
+    }
+
 
     // Admin function to mint NFTs in a specified series without payment
     function AdminMint(
@@ -353,7 +441,24 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         require(success, "Transfer failed.");
     }
 
-    function getChainlinkDataFeedLatestAnswer() public view returns (int256) {
+    function addCurrencyToken(address currencyToken, address priceFeedAddress)
+        external
+        onlyOwner
+    {
+        currencyList.push(Currency(currencyToken, priceFeedAddress));
+    }
+
+    // withdraw currency token
+    function withdrawCurrencyToken(address currencyToken, uint256 amount)
+        external
+        onlyOwner
+    {
+        IERC20(currencyToken).transfer(msg.sender, amount);
+    }
+
+// Function to get the latest price of MATIC/USDT from Chainlink and pass the price feed address to get price
+    function getChainlinkDataFeedLatestAnswer(address priceFeedAddresss) public view returns (int256) {
+        AggregatorV3Interface priceFeed = AggregatorV3Interface(priceFeedAddresss);
         // prettier-ignore
         (
             /* uint80 roundID */,
