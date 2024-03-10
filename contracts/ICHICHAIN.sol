@@ -79,9 +79,6 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
     // Define seriesCounter variable
     uint256 private seriesCounter = 0;
 
-    // Define the IERC20 interface for USDT
-    IERC20 public usdt;
-
     // Erc20 token to let user to choose which currency to pay, include contract address, and price feed address
     struct Currency {
         address currencyToken;
@@ -108,8 +105,6 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         s_keyHash = 0x4b09e658ed251bcafeebbc69400383d49f344ace09b9576fe248bb02c003fe9f;
         //arb sepolia s_keyHash = 0x027f94ff1465b3525f9fc03e9ff7d6d2c0953482246dd6ae07570c45d6631414;
         linkToken = _linkToken;
-        //fake usdt
-        usdt = IERC20(0x3Ce7753f160879cc6768338B3Aec56139AbF6EC2);
     }
 
     // Function to create a new NFT series
@@ -145,8 +140,9 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
     }
 
     // Function to mint NFTs in a specified series
-    function mint(uint256 seriesID, uint256 quantity) public payable {
+    function mintByMatic(uint256 seriesID, uint256 quantity) public payable {
         Series storage series = ICHISeries[seriesID];
+        //TODO: change to real matic/usdt contract address
         int256 maticPriceInUSDT = getChainlinkDataFeedLatestAnswer(0xd0D5e3DB44DE05E9F294BB0a3bEEaF030DE24Ada); // Get latest MATIC/USDT rate
         uint256 maticPerUSDTInWei = uint256(maticPriceInUSDT) * 1e10; // Convert price to wei (assuming 8 decimals from Chainlink)
         uint256 totalCostInMaticWei = (series.priceInUSDTWei *
@@ -168,53 +164,33 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         series.remainingTicketNumbers -= quantity;
     }
 
-    // Function to mint NFTs with USDT
-    function mintByUSDT(uint256 seriesID, uint256 quantity) public {
-        Series storage series = ICHISeries[seriesID];
-        //check allowance first
-        require(
-            usdt.allowance(msg.sender, address(this)) >=
-                series.priceInUSDTWei * quantity,
-            "Insufficient USDT allowance"
-        );
-        require(
-            usdt.balanceOf(msg.sender) >= series.priceInUSDTWei * quantity,
-            "Insufficient USDT balance"
-        );
-        usdt.transferFrom(msg.sender, address(this), series.priceInUSDTWei * quantity);
-
-        require(
-            quantity <= series.remainingTicketNumbers,
-            "Not enough NFTs remaining in the series"
-        );
-        _safeMint(msg.sender, quantity);
-        for (uint256 i = 0; i < quantity; ++i) {
-            uint256 tokenId = _nextTokenId() - quantity + i;
-            ticketStatusDetail[tokenId].seriesID = seriesID;
-            seriesTokens[seriesID].push(tokenId); // Append the token ID to the series
-        }
-        series.remainingTicketNumbers -= quantity;
-    }
-
     // Function to mint NFTs with a currency token list to let user to choose ex usdc, eth  etc.. and pass chainlink price feed address to get price
     // use currencyList struct to let user to choose which currency to pay
+    // combine mintByUSDT into it and remove mintByUSDT
+
     function mintByCurrency(
         uint256 seriesID,
         uint256 quantity,
         uint256 CurrencyIndex // index of currencyList
-        // address currencyToken,
-        // address priceFeedAddress
     ) public {
         Series storage series = ICHISeries[seriesID];
         address currencyToken = currencyList[CurrencyIndex].currencyToken;
         address priceFeedAddress = currencyList[CurrencyIndex].priceFeedAddress;
-        int256 priceInUSDT = getChainlinkDataFeedLatestAnswer(priceFeedAddress); // Get latest currency/USDT rate
-
+        int256 priceInUSDT;
+        uint256 toeknPerUSDTInWei;
+        uint256 totalCostInWei;
+        // if currencyToken is usdt skip get price, 
+        // TODO:// change to real usdt contract address
+        if (currencyToken == 0x3Ce7753f160879cc6768338B3Aec56139AbF6EC2) {
+            totalCostInWei = series.priceInUSDTWei * quantity;
+        } else {
+        priceInUSDT = getChainlinkDataFeedLatestAnswer(priceFeedAddress); // Get latest currency/USDT rate
         // the calculate logic like mint function
-        uint256 toeknPerUSDTInWei = uint256(priceInUSDT) * 1e10; // Convert price to wei (assuming 8 decimals from Chainlink)
-        uint256 totalCostInWei = (series.priceInUSDTWei *
+        toeknPerUSDTInWei = uint256(priceInUSDT) * 1e10; // Convert price to wei (assuming 8 decimals from Chainlink)
+        totalCostInWei = (series.priceInUSDTWei *
             quantity *
             1e18) / toeknPerUSDTInWei;
+        }
 
         require(
             IERC20(currencyToken).allowance(msg.sender, address(this)) >=
