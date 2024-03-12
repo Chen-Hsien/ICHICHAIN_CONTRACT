@@ -4,7 +4,9 @@ pragma solidity ^0.8.9;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
 import "@chainlink/contracts/src/v0.8/vrf/VRFConsumerBaseV2.sol";
+import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 import "erc721a/contracts/ERC721A.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 // ICHICHAIN contract implementing ERC721A for efficient batch minting,
 // and integrating with Chainlink VRF for randomness in reveals.
@@ -58,7 +60,7 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         string seriesName; // 此抽獎系列名稱
         uint256 totalTicketNumbers; // 總共提供幾抽
         uint256 remainingTicketNumbers; // 剩餘幾抽
-        uint256 price; // 每抽多少錢
+        uint256 priceInUSDTWei; // 每抽多少錢
         uint256 revealTime; // 何時開放買家抽獎
         address lastPrizeOwner; // 最後一賞得主
         string exchangeTokenURI; // 兌換獎品修改metadata
@@ -77,11 +79,19 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
     // Define seriesCounter variable
     uint256 private seriesCounter = 0;
 
+    // Erc20 token to let user to choose which currency to pay, include contract address, and price feed address
+    struct Currency {
+        address currencyToken;
+        address priceFeedAddress;
+    }
+
+    Currency[] public currencyList;
+
+
+    // mumbai price feed matic/usdt 0xd0D5e3DB44DE05E9F294BB0a3bEEaF030DE24Ada
+
     // Constructor for setting up the ICHICHAIN contract
-    constructor(
-        uint64 subscriptionId,
-        address _linkToken
-    )
+    constructor(uint64 subscriptionId, address _linkToken)
         ERC721A("ICHICHAIN", "ICHI")
         VRFConsumerBaseV2(0x7a1BaC17Ccc5b313516C5E16fb24f7659aA5ebed)
     {
@@ -100,7 +110,7 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
     // Function to create a new NFT series
     function createSeries(
         string memory seriesName,
-        uint256 price,
+        uint256 priceInUSDTWei,
         uint256 revealTime,
         string memory exchangeTokenURI,
         string memory unrevealTokenURI,
@@ -118,7 +128,7 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         series.seriesName = seriesName;
         series.totalTicketNumbers = totalPrizeQuantity;
         series.remainingTicketNumbers = totalPrizeQuantity;
-        series.price = price;
+        series.priceInUSDTWei = priceInUSDTWei;
         series.revealTime = revealTime;
         series.exchangeTokenURI = exchangeTokenURI;
         series.unrevealTokenURI = unrevealTokenURI;
@@ -130,13 +140,17 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
     }
 
     // Function to mint NFTs in a specified series
-    function mint(uint256 seriesID, uint256 quantity) public payable {
+    function mintByMatic(uint256 seriesID, uint256 quantity) public payable {
         Series storage series = ICHISeries[seriesID];
-        require(series.seriesPrizes.length > 0, "Series does not exist");
-        require(
-            msg.value >= series.price * quantity,
-            "Insufficient funds sent"
-        );
+        //TODO: change to real matic/usdt contract address
+        int256 maticPriceInUSDT = getChainlinkDataFeedLatestAnswer(0xd0D5e3DB44DE05E9F294BB0a3bEEaF030DE24Ada); // Get latest MATIC/USDT rate
+        uint256 maticPerUSDTInWei = uint256(maticPriceInUSDT) * 1e10; // Convert price to wei (assuming 8 decimals from Chainlink)
+        uint256 totalCostInMaticWei = (series.priceInUSDTWei *
+            quantity *
+            1e18) / maticPerUSDTInWei;
+
+        require(msg.value >= totalCostInMaticWei, "Insufficient MATIC sent");
+
         require(
             quantity <= series.remainingTicketNumbers,
             "Not enough NFTs remaining in the series"
@@ -149,6 +163,63 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         }
         series.remainingTicketNumbers -= quantity;
     }
+
+    // Function to mint NFTs with a currency token list to let user to choose ex usdc, eth  etc.. and pass chainlink price feed address to get price
+    // use currencyList struct to let user to choose which currency to pay
+    // combine mintByUSDT into it and remove mintByUSDT
+
+    function mintByCurrency(
+        uint256 seriesID,
+        uint256 quantity,
+        uint256 CurrencyIndex // index of currencyList
+    ) public {
+        Series storage series = ICHISeries[seriesID];
+        address currencyToken = currencyList[CurrencyIndex].currencyToken;
+        address priceFeedAddress = currencyList[CurrencyIndex].priceFeedAddress;
+        int256 priceInUSDT;
+        uint256 toeknPerUSDTInWei;
+        uint256 totalCostInWei;
+        // if currencyToken is usdt skip get price, 
+        // TODO:// change to real usdt contract address
+        if (currencyToken == 0x3Ce7753f160879cc6768338B3Aec56139AbF6EC2) {
+            totalCostInWei = series.priceInUSDTWei * quantity;
+        } else {
+        priceInUSDT = getChainlinkDataFeedLatestAnswer(priceFeedAddress); // Get latest currency/USDT rate
+        // the calculate logic like mint function
+        toeknPerUSDTInWei = uint256(priceInUSDT) * 1e10; // Convert price to wei (assuming 8 decimals from Chainlink)
+        totalCostInWei = (series.priceInUSDTWei *
+            quantity *
+            1e18) / toeknPerUSDTInWei;
+        }
+
+        require(
+            IERC20(currencyToken).allowance(msg.sender, address(this)) >=
+                totalCostInWei,
+            "Insufficient currency allowance"
+        );
+        require(
+            IERC20(currencyToken).balanceOf(msg.sender) >= totalCostInWei,
+            "Insufficient currency balance"
+        );
+        IERC20(currencyToken).transferFrom(
+            msg.sender,
+            address(this),
+            totalCostInWei
+        );
+
+        require(
+            quantity <= series.remainingTicketNumbers,
+            "Not enough NFTs remaining in the series"
+        );
+        _safeMint(msg.sender, quantity);
+        for (uint256 i = 0; i < quantity; ++i) {
+            uint256 tokenId = _nextTokenId() - quantity + i;
+            ticketStatusDetail[tokenId].seriesID = seriesID;
+            seriesTokens[seriesID].push(tokenId); // Append the token ID to the series
+        }
+        series.remainingTicketNumbers -= quantity;
+    }
+
 
     // Admin function to mint NFTs in a specified series without payment
     function AdminMint(
@@ -222,10 +293,10 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         emit LastPrizeDraw(requestId, 1);
     }
 
-    function fulfillRandomWords(
-        uint256 requestId,
-        uint256[] memory randomWords
-    ) internal override {
+    function fulfillRandomWords(uint256 requestId, uint256[] memory randomWords)
+        internal
+        override
+    {
         emit RequestFulfilled(requestId, randomWords);
 
         Variable variable = requests[requestId];
@@ -292,9 +363,12 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
     }
 
     // Override tokenURI to provide the correct metadata based on reveal status
-    function tokenURI(
-        uint256 tokenId
-    ) public view override returns (string memory) {
+    function tokenURI(uint256 tokenId)
+        public
+        view
+        override
+        returns (string memory)
+    {
         require(_exists(tokenId), "Token does not exist");
         uint256 seriesID = ticketStatusDetail[tokenId].seriesID;
         Series storage series = ICHISeries[seriesID];
@@ -343,10 +417,40 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         require(success, "Transfer failed.");
     }
 
-    function getPaginatedSeriesInfo(
-        uint256 startIndex,
-        uint256 endIndex
-    ) public view returns (Series[] memory) {
+    function addCurrencyToken(address currencyToken, address priceFeedAddress)
+        external
+        onlyOwner
+    {
+        currencyList.push(Currency(currencyToken, priceFeedAddress));
+    }
+
+    // withdraw currency token
+    function withdrawCurrencyToken(address currencyToken, uint256 amount)
+        external
+        onlyOwner
+    {
+        IERC20(currencyToken).transfer(msg.sender, amount);
+    }
+
+// Function to get the latest price of MATIC/USDT from Chainlink and pass the price feed address to get price
+    function getChainlinkDataFeedLatestAnswer(address priceFeedAddresss) public view returns (int256) {
+        AggregatorV3Interface priceFeed = AggregatorV3Interface(priceFeedAddresss);
+        // prettier-ignore
+        (
+            /* uint80 roundID */,
+            int answer,
+            /*uint startedAt*/,
+            /*uint timeStamp*/,
+            /*uint80 answeredInRound*/
+        ) = priceFeed.latestRoundData();
+        return answer;
+    }
+
+    function getPaginatedSeriesInfo(uint256 startIndex, uint256 endIndex)
+        public
+        view
+        returns (Series[] memory)
+    {
         require(startIndex <= endIndex, "Invalid index values");
         require(endIndex <= seriesCounter, "End index out of bounds");
 
@@ -358,9 +462,11 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         return seriesArray;
     }
 
-    function getSeriesTokenOwnerList(
-        uint256 seriesID
-    ) public view returns (address[] memory) {
+    function getSeriesTokenOwnerList(uint256 seriesID)
+        public
+        view
+        returns (address[] memory)
+    {
         require(seriesID < seriesCounter, "Series does not exist");
         uint256[] memory tokensInSeries = seriesTokens[seriesID];
         address[] memory tokenOwners = new address[](tokensInSeries.length);
@@ -371,9 +477,11 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
     }
 
     // return ticketStatusDetail and tokenID into return array
-    function getSeriesTokenList(
-        uint256 seriesID
-    ) public view returns (TicketStatusWithTokenIDOwnerAddress[] memory) {
+    function getSeriesTokenList(uint256 seriesID)
+        public
+        view
+        returns (TicketStatusWithTokenIDOwnerAddress[] memory)
+    {
         require(seriesID < seriesCounter, "Series does not exist");
         uint256[] memory tokensInSeries = seriesTokens[seriesID];
         TicketStatusWithTokenIDOwnerAddress[]

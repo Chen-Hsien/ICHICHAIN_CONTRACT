@@ -1,16 +1,19 @@
 import { ethers } from "hardhat";
 
+
+const secondsInADay = 86400;
+
 const seriesData = [
   {
     seriesName: "HunterxHunter",
-    price: ethers.parseEther("0"), // Example price in Ether
-    revealTime: Math.floor(Date.now() / 1000), // Current time
+    price: ethers.parseEther("0.001"), // Example price in Ether
+    // Current time + 1 day
+    revealTime: Math.floor(Date.now() / 1000) + secondsInADay,
     exchangeTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmSsdZVZrDbTWc8W2C3rEJ2DRH3yWRpJP9UUEr77tw4mFo/",
     unrevealTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmSWb9qNc46gQWQop5N27jF68Tdmd4VH1F1rCT3czxxUzQ/0",
     revealTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmRkTPoSoWAzJMfqqNHtpJ1Lr6HLcuMCE2V4JsRuvtaLpj/",
     seriesMetaDataURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmYxweAJixyVVAeQeGf6y8CVk4GmUBTfNiVJvusgcaUuMU/series0.json",
     prizes: [
-      // Assuming Prize is a struct with fields like name and remainingQuantity
       { name: "A", remainingQuantity: 2 },
       { name: "B", remainingQuantity: 2 },
       { name: "C", remainingQuantity: 3 },
@@ -23,8 +26,8 @@ const seriesData = [
   // Repeat for other series...
   {
     seriesName: "JOJO",
-    price: ethers.parseEther("0"), // Example price in Ether
-    revealTime: Math.floor(Date.now() / 1000), // Current time
+    price: ethers.parseEther("0.005"), // Example price in Ether
+    revealTime: Math.floor(Date.now() / 1000) + secondsInADay * 3,
     exchangeTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmaoRXEHHeNUW57rTP17MuNf56qrEVRtEFtopKK598KEqt/",
     unrevealTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmSWb9qNc46gQWQop5N27jF68Tdmd4VH1F1rCT3czxxUzQ/0",
     revealTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmPuJZzKS5aVc267sSVACeqBChmuPCNV6CgzFrZniENB7Z/",
@@ -43,8 +46,8 @@ const seriesData = [
   // Help me to repeat this two series for 15 series, one is HunterxHunter and the other is JOJO
   {
     seriesName: "HunterxHunter",
-    price: ethers.parseEther("0"), // Example price in Ether
-    revealTime: Math.floor(Date.now() / 1000), // Current time
+    price: ethers.parseEther("0.0001"), // Example price in Ether
+    revealTime: Math.floor(Date.now() / 1000) + secondsInADay * 5,
     exchangeTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmSsdZVZrDbTWc8W2C3rEJ2DRH3yWRpJP9UUEr77tw4mFo/",
     unrevealTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmSWb9qNc46gQWQop5N27jF68Tdmd4VH1F1rCT3czxxUzQ/0",
     revealTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmRkTPoSoWAzJMfqqNHtpJ1Lr6HLcuMCE2V4JsRuvtaLpj/",
@@ -62,8 +65,8 @@ const seriesData = [
   },
   {
     seriesName: "JOJO",
-    price: ethers.parseEther("0"), // Example price in Ether
-    revealTime: Math.floor(Date.now() / 1000), // Current time
+    price: ethers.parseEther("10"), // Example price in Ether
+    revealTime: Math.floor(Date.now() / 1000) + secondsInADay * 7,
     exchangeTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmaoRXEHHeNUW57rTP17MuNf56qrEVRtEFtopKK598KEqt/",
     unrevealTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmSWb9qNc46gQWQop5N27jF68Tdmd4VH1F1rCT3czxxUzQ/0",
     revealTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmPuJZzKS5aVc267sSVACeqBChmuPCNV6CgzFrZniENB7Z/",
@@ -82,7 +85,7 @@ const seriesData = [
   {
     seriesName: "HunterxHunter",
     price: ethers.parseEther("0"), // Example price in Ether
-    revealTime: Math.floor(Date.now() / 1000), // Current time
+    revealTime: Math.floor(Date.now() / 1000) + secondsInADay * 9,
     exchangeTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmSsdZVZrDbTWc8W2C3rEJ2DRH3yWRpJP9UUEr77tw4mFo/",
     unrevealTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmSWb9qNc46gQWQop5N27jF68Tdmd4VH1F1rCT3czxxUzQ/0",
     revealTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmRkTPoSoWAzJMfqqNHtpJ1Lr6HLcuMCE2V4JsRuvtaLpj/",
@@ -101,8 +104,8 @@ const seriesData = [
   // Repeat for other series...
   {
     seriesName: "JOJO",
-    price: ethers.parseEther("0"), // Example price in Ether
-    revealTime: Math.floor(Date.now() / 1000), // Current time
+    price: ethers.parseEther("9.9"), // Example price in Ether
+    revealTime: Math.floor(Date.now() / 1000) + secondsInADay * 15,
     exchangeTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmaoRXEHHeNUW57rTP17MuNf56qrEVRtEFtopKK598KEqt/",
     unrevealTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmSWb9qNc46gQWQop5N27jF68Tdmd4VH1F1rCT3czxxUzQ/0",
     revealTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmPuJZzKS5aVc267sSVACeqBChmuPCNV6CgzFrZniENB7Z/",
@@ -120,7 +123,7 @@ const seriesData = [
   },  {
     seriesName: "HunterxHunter",
     price: ethers.parseEther("0"), // Example price in Ether
-    revealTime: Math.floor(Date.now() / 1000), // Current time
+    revealTime: Math.floor(Date.now() / 1000) + secondsInADay * 20,
     exchangeTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmSsdZVZrDbTWc8W2C3rEJ2DRH3yWRpJP9UUEr77tw4mFo/",
     unrevealTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmSWb9qNc46gQWQop5N27jF68Tdmd4VH1F1rCT3czxxUzQ/0",
     revealTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmRkTPoSoWAzJMfqqNHtpJ1Lr6HLcuMCE2V4JsRuvtaLpj/",
@@ -139,8 +142,8 @@ const seriesData = [
   // Repeat for other series...
   {
     seriesName: "JOJO",
-    price: ethers.parseEther("0"), // Example price in Ether
-    revealTime: Math.floor(Date.now() / 1000), // Current time
+    price: ethers.parseEther("8.99"), // Example price in Ether
+    revealTime: Math.floor(Date.now() / 1000) + secondsInADay * 30, // Current time
     exchangeTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmaoRXEHHeNUW57rTP17MuNf56qrEVRtEFtopKK598KEqt/",
     unrevealTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmSWb9qNc46gQWQop5N27jF68Tdmd4VH1F1rCT3czxxUzQ/0",
     revealTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmPuJZzKS5aVc267sSVACeqBChmuPCNV6CgzFrZniENB7Z/",
@@ -158,7 +161,7 @@ const seriesData = [
   },  {
     seriesName: "HunterxHunter",
     price: ethers.parseEther("0"), // Example price in Ether
-    revealTime: Math.floor(Date.now() / 1000), // Current time
+    revealTime: Math.floor(Date.now() / 1000) + secondsInADay * 60, // Current time
     exchangeTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmSsdZVZrDbTWc8W2C3rEJ2DRH3yWRpJP9UUEr77tw4mFo/",
     unrevealTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmSWb9qNc46gQWQop5N27jF68Tdmd4VH1F1rCT3czxxUzQ/0",
     revealTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmRkTPoSoWAzJMfqqNHtpJ1Lr6HLcuMCE2V4JsRuvtaLpj/",
@@ -178,7 +181,7 @@ const seriesData = [
   {
     seriesName: "JOJO",
     price: ethers.parseEther("0"), // Example price in Ether
-    revealTime: Math.floor(Date.now() / 1000), // Current time
+    revealTime: Math.floor(Date.now() / 1000) + secondsInADay * 90, // Current time
     exchangeTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmaoRXEHHeNUW57rTP17MuNf56qrEVRtEFtopKK598KEqt/",
     unrevealTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmSWb9qNc46gQWQop5N27jF68Tdmd4VH1F1rCT3czxxUzQ/0",
     revealTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmPuJZzKS5aVc267sSVACeqBChmuPCNV6CgzFrZniENB7Z/",
@@ -196,7 +199,7 @@ const seriesData = [
   },  {
     seriesName: "HunterxHunter",
     price: ethers.parseEther("0"), // Example price in Ether
-    revealTime: Math.floor(Date.now() / 1000), // Current time
+    revealTime: Math.floor(Date.now() / 1000)+ secondsInADay * 360, // Current time
     exchangeTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmSsdZVZrDbTWc8W2C3rEJ2DRH3yWRpJP9UUEr77tw4mFo/",
     unrevealTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmSWb9qNc46gQWQop5N27jF68Tdmd4VH1F1rCT3czxxUzQ/0",
     revealTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmRkTPoSoWAzJMfqqNHtpJ1Lr6HLcuMCE2V4JsRuvtaLpj/",
@@ -216,7 +219,7 @@ const seriesData = [
   {
     seriesName: "JOJO",
     price: ethers.parseEther("0"), // Example price in Ether
-    revealTime: Math.floor(Date.now() / 1000), // Current time
+    revealTime: Math.floor(Date.now() / 1000) + secondsInADay * 720, // Current time
     exchangeTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmaoRXEHHeNUW57rTP17MuNf56qrEVRtEFtopKK598KEqt/",
     unrevealTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmSWb9qNc46gQWQop5N27jF68Tdmd4VH1F1rCT3czxxUzQ/0",
     revealTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmPuJZzKS5aVc267sSVACeqBChmuPCNV6CgzFrZniENB7Z/",
@@ -234,7 +237,7 @@ const seriesData = [
   },  {
     seriesName: "HunterxHunter",
     price: ethers.parseEther("0"), // Example price in Ether
-    revealTime: Math.floor(Date.now() / 1000), // Current time
+    revealTime: Math.floor(Date.now() / 1000) + secondsInADay * 1, // Current time
     exchangeTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmSsdZVZrDbTWc8W2C3rEJ2DRH3yWRpJP9UUEr77tw4mFo/",
     unrevealTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmSWb9qNc46gQWQop5N27jF68Tdmd4VH1F1rCT3czxxUzQ/0",
     revealTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmRkTPoSoWAzJMfqqNHtpJ1Lr6HLcuMCE2V4JsRuvtaLpj/",
@@ -254,7 +257,7 @@ const seriesData = [
   {
     seriesName: "JOJO",
     price: ethers.parseEther("0"), // Example price in Ether
-    revealTime: Math.floor(Date.now() / 1000), // Current time
+    revealTime: Math.floor(Date.now() / 1000) + secondsInADay * 3, // Current time
     exchangeTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmaoRXEHHeNUW57rTP17MuNf56qrEVRtEFtopKK598KEqt/",
     unrevealTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmSWb9qNc46gQWQop5N27jF68Tdmd4VH1F1rCT3czxxUzQ/0",
     revealTokenURI: "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmPuJZzKS5aVc267sSVACeqBChmuPCNV6CgzFrZniENB7Z/",
