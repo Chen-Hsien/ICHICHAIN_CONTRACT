@@ -87,11 +87,13 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
 
     Currency[] public currencyList;
 
-
     // mumbai price feed matic/usdt 0xd0D5e3DB44DE05E9F294BB0a3bEEaF030DE24Ada
 
     // Constructor for setting up the ICHICHAIN contract
-    constructor(uint64 subscriptionId, address _linkToken)
+    constructor(
+        uint64 subscriptionId,
+        address _linkToken
+    )
         ERC721A("ICHICHAIN", "ICHI")
         VRFConsumerBaseV2(0x7a1BaC17Ccc5b313516C5E16fb24f7659aA5ebed)
     {
@@ -143,7 +145,9 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
     function mintByMatic(uint256 seriesID, uint256 quantity) public payable {
         Series storage series = ICHISeries[seriesID];
         //TODO: change to real matic/usdt contract address
-        int256 maticPriceInUSDT = getChainlinkDataFeedLatestAnswer(0xd0D5e3DB44DE05E9F294BB0a3bEEaF030DE24Ada); // Get latest MATIC/USDT rate
+        int256 maticPriceInUSDT = getChainlinkDataFeedLatestAnswer(
+            0xd0D5e3DB44DE05E9F294BB0a3bEEaF030DE24Ada
+        ); // Get latest MATIC/USDT rate
         uint256 maticPerUSDTInWei = uint256(maticPriceInUSDT) * 1e10; // Convert price to wei (assuming 8 decimals from Chainlink)
         uint256 totalCostInMaticWei = (series.priceInUSDTWei *
             quantity *
@@ -179,17 +183,17 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         int256 priceInUSDT;
         uint256 toeknPerUSDTInWei;
         uint256 totalCostInWei;
-        // if currencyToken is usdt skip get price, 
+        // if currencyToken is usdt skip get price,
         // TODO:// change to real usdt contract address
         if (currencyToken == 0x3Ce7753f160879cc6768338B3Aec56139AbF6EC2) {
             totalCostInWei = series.priceInUSDTWei * quantity;
         } else {
-        priceInUSDT = getChainlinkDataFeedLatestAnswer(priceFeedAddress); // Get latest currency/USDT rate
-        // the calculate logic like mint function
-        toeknPerUSDTInWei = uint256(priceInUSDT) * 1e10; // Convert price to wei (assuming 8 decimals from Chainlink)
-        totalCostInWei = (series.priceInUSDTWei *
-            quantity *
-            1e18) / toeknPerUSDTInWei;
+            priceInUSDT = getChainlinkDataFeedLatestAnswer(priceFeedAddress); // Get latest currency/USDT rate
+            // the calculate logic like mint function
+            toeknPerUSDTInWei = uint256(priceInUSDT) * 1e10; // Convert price to wei (assuming 8 decimals from Chainlink)
+            totalCostInWei =
+                (series.priceInUSDTWei * quantity * 1e18) /
+                toeknPerUSDTInWei;
         }
 
         require(
@@ -219,7 +223,6 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         }
         series.remainingTicketNumbers -= quantity;
     }
-
 
     // Admin function to mint NFTs in a specified series without payment
     function AdminMint(
@@ -293,10 +296,10 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         emit LastPrizeDraw(requestId, 1);
     }
 
-    function fulfillRandomWords(uint256 requestId, uint256[] memory randomWords)
-        internal
-        override
-    {
+    function fulfillRandomWords(
+        uint256 requestId,
+        uint256[] memory randomWords
+    ) internal override {
         emit RequestFulfilled(requestId, randomWords);
 
         Variable variable = requests[requestId];
@@ -312,25 +315,26 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         uint256[] memory randomWords
     ) internal {
         uint256[] memory tokenIDs = requestToRevealToken[requestId];
+        // calculate the remaing prize quantity in each prize)
         for (uint256 i = 0; i < tokenIDs.length; i++) {
             uint256 tokenId = tokenIDs[i];
             Series storage series = ICHISeries[
                 ticketStatusDetail[tokenId].seriesID
             ];
-
-            // Start with the randomly selected prize index
-            uint256 prizeIndex = randomWords[i] % series.seriesPrizes.length;
-
-            // Iterate through the prizes to find an available one
-            while (
-                series.seriesPrizes[prizeIndex].prizeRemainingQuantity == 0
-            ) {
-                prizeIndex = (prizeIndex + 1) % series.seriesPrizes.length;
+            uint256 selectedPrizeIndex = randomWords[i] % series.remainingTicketNumbers; // Selecting from available prizes
+            // Use the selectedPrizeIndex to find the index is in which range of prize
+            for (uint256 j = 0; j < series.seriesPrizes.length; j++) {
+                if (selectedPrizeIndex < series.seriesPrizes[j].prizeRemainingQuantity) {
+                    selectedPrizeIndex = j;
+                    break;
+                }
+                selectedPrizeIndex -= series.seriesPrizes[j].prizeRemainingQuantity;
             }
 
-            Prize storage prize = series.seriesPrizes[prizeIndex];
+            // Award the prize
+            Prize storage prize = series.seriesPrizes[selectedPrizeIndex];
             prize.prizeRemainingQuantity -= 1;
-            ticketStatusDetail[tokenId].tokenRevealedPrize = prizeIndex;
+            ticketStatusDetail[tokenId].tokenRevealedPrize = selectedPrizeIndex;
             ticketStatusDetail[tokenId].tokenRevealed = true;
         }
 
@@ -363,12 +367,9 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
     }
 
     // Override tokenURI to provide the correct metadata based on reveal status
-    function tokenURI(uint256 tokenId)
-        public
-        view
-        override
-        returns (string memory)
-    {
+    function tokenURI(
+        uint256 tokenId
+    ) public view override returns (string memory) {
         require(_exists(tokenId), "Token does not exist");
         uint256 seriesID = ticketStatusDetail[tokenId].seriesID;
         Series storage series = ICHISeries[seriesID];
@@ -417,24 +418,28 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         require(success, "Transfer failed.");
     }
 
-    function addCurrencyToken(address currencyToken, address priceFeedAddress)
-        external
-        onlyOwner
-    {
+    function addCurrencyToken(
+        address currencyToken,
+        address priceFeedAddress
+    ) external onlyOwner {
         currencyList.push(Currency(currencyToken, priceFeedAddress));
     }
 
     // withdraw currency token
-    function withdrawCurrencyToken(address currencyToken, uint256 amount)
-        external
-        onlyOwner
-    {
+    function withdrawCurrencyToken(
+        address currencyToken,
+        uint256 amount
+    ) external onlyOwner {
         IERC20(currencyToken).transfer(msg.sender, amount);
     }
 
-// Function to get the latest price of MATIC/USDT from Chainlink and pass the price feed address to get price
-    function getChainlinkDataFeedLatestAnswer(address priceFeedAddresss) public view returns (int256) {
-        AggregatorV3Interface priceFeed = AggregatorV3Interface(priceFeedAddresss);
+    // Function to get the latest price of MATIC/USDT from Chainlink and pass the price feed address to get price
+    function getChainlinkDataFeedLatestAnswer(
+        address priceFeedAddresss
+    ) public view returns (int256) {
+        AggregatorV3Interface priceFeed = AggregatorV3Interface(
+            priceFeedAddresss
+        );
         // prettier-ignore
         (
             /* uint80 roundID */,
@@ -446,11 +451,10 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         return answer;
     }
 
-    function getPaginatedSeriesInfo(uint256 startIndex, uint256 endIndex)
-        public
-        view
-        returns (Series[] memory)
-    {
+    function getPaginatedSeriesInfo(
+        uint256 startIndex,
+        uint256 endIndex
+    ) public view returns (Series[] memory) {
         require(startIndex <= endIndex, "Invalid index values");
         require(endIndex <= seriesCounter, "End index out of bounds");
 
@@ -462,11 +466,9 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         return seriesArray;
     }
 
-    function getSeriesTokenOwnerList(uint256 seriesID)
-        public
-        view
-        returns (address[] memory)
-    {
+    function getSeriesTokenOwnerList(
+        uint256 seriesID
+    ) public view returns (address[] memory) {
         require(seriesID < seriesCounter, "Series does not exist");
         uint256[] memory tokensInSeries = seriesTokens[seriesID];
         address[] memory tokenOwners = new address[](tokensInSeries.length);
@@ -477,11 +479,9 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
     }
 
     // return ticketStatusDetail and tokenID into return array
-    function getSeriesTokenList(uint256 seriesID)
-        public
-        view
-        returns (TicketStatusWithTokenIDOwnerAddress[] memory)
-    {
+    function getSeriesTokenList(
+        uint256 seriesID
+    ) public view returns (TicketStatusWithTokenIDOwnerAddress[] memory) {
         require(seriesID < seriesCounter, "Series does not exist");
         uint256[] memory tokensInSeries = seriesTokens[seriesID];
         TicketStatusWithTokenIDOwnerAddress[]
