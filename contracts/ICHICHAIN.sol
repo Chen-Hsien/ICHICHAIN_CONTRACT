@@ -27,12 +27,33 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
 
     mapping(uint256 => Variable) public requests;
 
+    // Event emitted when a new series is created
+    event NewSeries(Series series);
+    // Event emitted when a new NFT is minted by MATIC
+    event mintByMatic(
+        address to,
+        uint256 quantity,
+        uint256 seriesID,
+        uint256 totalCostInMaticWei
+    );
+    // Event emitted when a new NFT is minted by currency
+    event mintByCurrency(
+        address to,
+        uint256 quantity,
+        uint256 seriesID,
+        address currencyToken,
+        uint256 totalCostInWei
+    );
+    // Event emitted when a new NFT is minted by admin
+    event AdminMint(address to, uint256 seriesID, uint256 quantity);
     // Event emitted when a random number request is sent
-    event RevealToken(uint256 requestId, uint32 numWords);
+    event RevealToken(uint256 requestId, uint256 seriesID, uint256[] tokenIDs);
     // Event emitted when a last prize random number request is sent
     event LastPrizeDraw(uint256 requestId, uint32 numWords);
     // Event emitted when a random number request is fulfilled
     event RequestFulfilled(uint256 requestId, uint256[] randomWords);
+    // Event emitted when a prize is exchanged
+    event exchangePrize(uint256[] tokenIDs);
 
     // Structure representing each NFT's ticket status
     struct TicketStatus {
@@ -139,6 +160,9 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         for (uint256 i = 0; i < prizes.length; i++) {
             series.seriesPrizes.push(prizes[i]);
         }
+
+        // Emit event for the new series
+        emit NewSeries(series);
     }
 
     // Function to mint NFTs in a specified series
@@ -166,6 +190,9 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
             seriesTokens[seriesID].push(tokenId); // Append the token ID to the series
         }
         series.remainingTicketNumbers -= quantity;
+
+        // event to log the minting
+        emit mintByMatic(msg.sender, quantity, seriesID, totalCostInMaticWei);
     }
 
     // Function to mint NFTs with a currency token list to let user to choose ex usdc, eth  etc.. and pass chainlink price feed address to get price
@@ -222,6 +249,9 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
             seriesTokens[seriesID].push(tokenId); // Append the token ID to the series
         }
         series.remainingTicketNumbers -= quantity;
+
+        // event to log the minting by currency
+        emit mintByCurrency(msg.sender, quantity, seriesID, currencyToken, totalCostInWei);
     }
 
     // Admin function to mint NFTs in a specified series without payment
@@ -246,6 +276,7 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         }
 
         series.remainingTicketNumbers -= quantity;
+        emit AdminMint(to, seriesID, quantity);
     }
 
     // Function to reveal specified NFTs in a series
@@ -274,7 +305,7 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         );
         requestToRevealToken[requestId] = tokenIDs;
         requests[requestId] = Variable.reveal;
-        emit RevealToken(requestId, uint32(tokenIDs.length));
+        emit RevealToken(requestId, seriesID, tokenIDs);
     }
 
     // Function to choose the winner of a series last prize with vrf
@@ -293,7 +324,7 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         );
         requestToLastPrizeToken[requestId] = seriesID;
         requests[requestId] = Variable.lastPrize;
-        emit LastPrizeDraw(requestId, 1);
+        emit LastPrizeDraw(requestId, seriesID);
     }
 
     function fulfillRandomWords(
@@ -409,6 +440,7 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
             );
             ticketStatusDetail[tokenIDs[i]].tokenExchange = true;
         }
+        emit exchangePrize(tokenIDs);
     }
 
     function withdraw() external onlyOwner {
