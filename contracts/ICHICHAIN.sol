@@ -32,13 +32,36 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         uint256 indexed seriesID,
         string seriesName,
         uint256 totalTicketNumbers,
+        uint256 remainingTicketNumbers,
         uint256 priceInUSDTWei,
+        uint256 revealTime,
+        string exchangeTokenURI,
+        string unrevealTokenURI,
+        string revealTokenURI,
+        string seriesMetaDataURI,
+        address lastPrizeOwner
+    );
+    // Event emitted when a new series is updated
+    event UpdateSeriesInformation(
+        uint256 indexed seriesID,
         uint256 revealTime,
         string exchangeTokenURI,
         string unrevealTokenURI,
         string revealTokenURI,
         string seriesMetaDataURI
     );
+    // Event emitted when a series lastPrizeOwner is updated
+    event UpdateSeriesLastPrizeOwner(
+        uint256 indexed seriesID,
+        address lastPrizeOwner
+    );
+
+    //Event emitted when a series remainingTicketNumbers is updated
+    event UpdateSeriesRemainingTicketNumbers(
+        uint256 indexed seriesID,
+        uint256 remainingTicketNumbers
+    );
+
     // Event emitted when a new NFT Prize is created
     event NewPrize(
         uint256 indexed seriesID,
@@ -102,6 +125,7 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         bool tokenExchange; // 有沒有兌換過實體獎品
         bool tokenRevealed; // Whether the token has been revealed
     }
+
     // structure representing each NFT's ticket status and tokenID
     struct TicketStatusWithTokenIDOwnerAddress {
         uint256 tokenID;
@@ -211,12 +235,14 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
             seriesID,
             seriesName,
             totalPrizeQuantity,
+            totalPrizeQuantity,
             priceInUSDTWei,
             revealTime,
             exchangeTokenURI,
             unrevealTokenURI,
             revealTokenURI,
-            seriesMetaDataURI
+            seriesMetaDataURI,
+            address(0)
         );
     }
 
@@ -248,8 +274,15 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         }
         series.remainingTicketNumbers -= quantity;
 
+        // emit event to update series remaining ticket numbers
+        emit UpdateSeriesRemainingTicketNumbers(seriesID, series.remainingTicketNumbers);
         // event to log the minting
-        emit TokenMintByMatic(msg.sender, quantity, seriesID, totalCostInMaticWei);
+        emit TokenMintByMatic(
+            msg.sender,
+            quantity,
+            seriesID,
+            totalCostInMaticWei
+        );
     }
 
     // Function to mint NFTs with a currency token list to let user to choose ex usdc, eth  etc.. and pass chainlink price feed address to get price
@@ -309,6 +342,8 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         }
         series.remainingTicketNumbers -= quantity;
 
+        // emit event to update series remaining ticket numbers
+        emit UpdateSeriesRemainingTicketNumbers(seriesID, series.remainingTicketNumbers);
         // event to log the minting by currency
         emit TokenMintByCurrency(
             msg.sender,
@@ -343,6 +378,8 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         }
 
         series.remainingTicketNumbers -= quantity;
+        // emit event to update series remaining ticket numbers
+        emit UpdateSeriesRemainingTicketNumbers(seriesID, series.remainingTicketNumbers);
         emit TokenMintByAdmin(to, seriesID, quantity);
     }
 
@@ -440,6 +477,12 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
             prize.prizeRemainingQuantity -= 1;
             ticketStatusDetail[tokenId].tokenRevealedPrize = selectedPrizeIndex;
             ticketStatusDetail[tokenId].tokenRevealed = true;
+            // Emit event for the updated prize remaining quantity
+            emit UpdatePrize(
+                ticketStatusDetail[tokenId].seriesID,
+                prize.prizeName,
+                prize.prizeRemainingQuantity
+            );
             // Emit event for the updated ticket status
             emit UpdateTicketStatus(
                 tokenId,
@@ -474,7 +517,8 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         ticketStatusDetail[newTokenId].tokenRevealed = true;
 
         series.lastPrizeOwner = winnerAddress;
-
+        // Emit event for the updated series information
+        emit UpdateSeriesLastPrizeOwner(seriesID, winnerAddress);
         // Emit event for the updated ticket status
         emit UpdateTicketStatus(
             newTokenId,
