@@ -13,8 +13,9 @@ const config: HardhatUserConfig = {
     },
   },
   networks: {
-    mumbai: {
-      url: process.env.MUMBAI_URL,
+    sepolia: {
+      chainId: 11155111,
+      url: process.env.MAINNET_URL,
       accounts: [process.env.PRIVATE_KEY as string],
     },
     arbitrumSepolia: {
@@ -24,19 +25,7 @@ const config: HardhatUserConfig = {
   },
 
   etherscan: {
-    apiKey: {
-        arbitrumSepolia: process.env.SEPOLIASCAN_API_KEY || "",
-    },
-    customChains: [
-        {
-            network: "arbitrumSepolia",
-            chainId: 421614,
-            urls: {
-                apiURL: "https://api-sepolia.arbiscan.io/api",
-                browserURL: "https://sepolia.arbiscan.io/",
-            },
-        },
-    ],
+    apiKey: process.env.MAINNET_API_KEY,
 },
 };
 
