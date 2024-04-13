@@ -15,7 +15,7 @@ const seriesData = [
     revealTokenURI:
       "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmRkTPoSoWAzJMfqqNHtpJ1Lr6HLcuMCE2V4JsRuvtaLpj/",
     seriesMetaDataURI:
-      "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmUVnNNcDRhVTnVfN5q5ijd8UpVir9dqT31A9xw2n5B8uz/series0.json",
+      "https://lime-basic-thrush-351.mypinata.cloud/ipfs/Qmf3MiXgwZgsJiKp5P3zHds2DUwcJUXt7G2G6fZtgHkToB/series0.json",
     prizes: [
       { subPrizeID: 1, prizeGroup: "A", subPrizeName: "A1", subPrizeRemainingQuantity: 2 },
       { subPrizeID: 2, prizeGroup: "B", subPrizeName: "B1", subPrizeRemainingQuantity: 2 },
@@ -31,8 +31,7 @@ const seriesData = [
       { subPrizeID: 12, prizeGroup: "G", subPrizeName: "G1", subPrizeRemainingQuantity: 5 },
       { subPrizeID: 13, prizeGroup: "G", subPrizeName: "G2", subPrizeRemainingQuantity: 5 },
       { subPrizeID: 14, prizeGroup: "G", subPrizeName: "G3", subPrizeRemainingQuantity: 5 },
-      { subPrizeID: 15, prizeGroup: "G", subPrizeName: "G4", subPrizeRemainingQuantity: 5 },
-      { subPrizeID: 16, prizeGroup: "G", subPrizeName: "G5", subPrizeRemainingQuantity: 5 },
+      { subPrizeID: 15, prizeGroup: "G", subPrizeName: "G4", subPrizeRemainingQuantity: 10 }
     ],
   },
   // Repeat for other series...
@@ -47,7 +46,7 @@ const seriesData = [
     revealTokenURI:
       "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmPuJZzKS5aVc267sSVACeqBChmuPCNV6CgzFrZniENB7Z/",
     seriesMetaDataURI:
-      "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmUVnNNcDRhVTnVfN5q5ijd8UpVir9dqT31A9xw2n5B8uz/series1.json",
+      "https://lime-basic-thrush-351.mypinata.cloud/ipfs/Qmf3MiXgwZgsJiKp5P3zHds2DUwcJUXt7G2G6fZtgHkToB/series1.json",
     prizes: [
       // Assuming Prize is a struct with fields like name and remainingQuantity
       // modify to match your contract's subPrize struct
@@ -55,13 +54,11 @@ const seriesData = [
       { subPrizeID: 2, prizeGroup: "B", subPrizeName: "B1", subPrizeRemainingQuantity: 2 },
       { subPrizeID: 3, prizeGroup: "C", subPrizeName: "C1", subPrizeRemainingQuantity: 3 },
       { subPrizeID: 4, prizeGroup: "D", subPrizeName: "D1", subPrizeRemainingQuantity: 3 },
-      { subPrizeID: 5, prizeGroup: "E", subPrizeName: "E1", subPrizeRemainingQuantity: 10 },
-      { subPrizeID: 6, prizeGroup: "E", subPrizeName: "E2", subPrizeRemainingQuantity: 10 },
-      { subPrizeID: 7, prizeGroup: "F", subPrizeName: "F1", subPrizeRemainingQuantity: 10 },
-      { subPrizeID: 8, prizeGroup: "F", subPrizeName: "F2", subPrizeRemainingQuantity: 10 },
-      { subPrizeID: 9, prizeGroup: "G", subPrizeName: "G1", subPrizeRemainingQuantity: 10 },
-      { subPrizeID: 10, prizeGroup: "G", subPrizeName: "G2", subPrizeRemainingQuantity: 10 },
-      { subPrizeID: 10, prizeGroup: "G", subPrizeName: "G2", subPrizeRemainingQuantity: 10 }
+      { subPrizeID: 5, prizeGroup: "E", subPrizeName: "E1", subPrizeRemainingQuantity: 15 },
+      { subPrizeID: 6, prizeGroup: "F", subPrizeName: "F1", subPrizeRemainingQuantity: 10 },
+      { subPrizeID: 7, prizeGroup: "F", subPrizeName: "F2", subPrizeRemainingQuantity: 10 },
+      { subPrizeID: 8, prizeGroup: "G", subPrizeName: "G1", subPrizeRemainingQuantity: 15 },
+      { subPrizeID: 9, prizeGroup: "G", subPrizeName: "G2", subPrizeRemainingQuantity: 10 }
     ],
   }
   // Help me to repeat this two series for 15 series, one is HunterxHunter and the other is JOJO
@@ -423,9 +420,10 @@ async function main() {
   // Deploy the contract
   const ICHICHAINFactory = await ethers.getContractFactory("ICHICHAIN");
   const ICHICHAINContract = await ICHICHAINFactory.deploy(
-    process.env.LINK_SUBSCRIPTIONS || "",
-    process.env.LINK_TOKEN || ""
+    process.env.SEPOLIA_LINK_SUBSCRIPTIONS || "",
+    process.env.SEPOLOIA_LINK_TOKEN || ""
   );
+  console.log("Deploying ICHICHAIN contract...");
   await ICHICHAINContract.waitForDeployment();
 
   console.log("Contract deployed to:", ICHICHAINContract.target);
