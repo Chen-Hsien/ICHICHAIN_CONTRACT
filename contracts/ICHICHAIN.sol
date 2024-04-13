@@ -181,16 +181,20 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         address _linkToken
     )
         ERC721A("ICHICHAIN", "ICHI")
-        VRFConsumerBaseV2(0x7a1BaC17Ccc5b313516C5E16fb24f7659aA5ebed)
+        VRFConsumerBaseV2(0x8103B0A8A00be2DDC778e6e7eaa21791Cd364625)
     {
         COORDINATOR = VRFCoordinatorV2Interface(
-            0x7a1BaC17Ccc5b313516C5E16fb24f7659aA5ebed
+            0x8103B0A8A00be2DDC778e6e7eaa21791Cd364625
         );
+        //plg COORDINATOR = VRFCoordinatorV2Interface(
+        //     0x7a1BaC17Ccc5b313516C5E16fb24f7659aA5ebed
+        // );
         //arb sepolia COORDINATOR = VRFCoordinatorV2Interface(
         //     0x50d47e4142598E3411aA864e08a44284e471AC6f
         // );
         s_subscriptionId = subscriptionId;
-        s_keyHash = 0x4b09e658ed251bcafeebbc69400383d49f344ace09b9576fe248bb02c003fe9f;
+        s_keyHash = 0x474e34a077df58807dbe9c96d3c009b23b3c6d0cce433e59bbf5b34f823bc56c;
+        //plg s_keyHash = 0x4b09e658ed251bcafeebbc69400383d49f344ace09b9576fe248bb02c003fe9f;
         //arb sepolia s_keyHash = 0x027f94ff1465b3525f9fc03e9ff7d6d2c0953482246dd6ae07570c45d6631414;
         linkToken = _linkToken;
     }
@@ -252,7 +256,7 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         Series storage series = ICHISeries[seriesID];
         //TODO: change to real matic/usdt contract address
         int256 maticPriceInUSDT = getChainlinkDataFeedLatestAnswer(
-            0xd0D5e3DB44DE05E9F294BB0a3bEEaF030DE24Ada
+            0x694AA1769357215DE4FAC081bf1f309aDC325306
         ); // Get latest MATIC/USDT rate
         uint256 maticPerUSDTInWei = uint256(maticPriceInUSDT) * 1e10; // Convert price to wei (assuming 8 decimals from Chainlink)
         uint256 totalCostInMaticWei = (series.priceInUSDTWei *
@@ -271,12 +275,22 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
             ticketStatusDetail[tokenId].seriesID = seriesID;
             seriesTokens[seriesID].push(tokenId); // Append the token ID to the series
             // Emit event for the new ticket status
-            emit NewTicketStatus(tokenId, seriesID, 0, false, false, msg.sender);
+            emit NewTicketStatus(
+                tokenId,
+                seriesID,
+                0,
+                false,
+                false,
+                msg.sender
+            );
         }
         series.remainingTicketNumbers -= quantity;
 
         // emit event to update series remaining ticket numbers
-        emit UpdateSeriesRemainingTicketNumbers(seriesID, series.remainingTicketNumbers);
+        emit UpdateSeriesRemainingTicketNumbers(
+            seriesID,
+            series.remainingTicketNumbers
+        );
         // event to log the minting
         emit TokenMintByMatic(
             msg.sender,
@@ -303,7 +317,7 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         uint256 totalCostInWei;
         // if currencyToken is usdt skip get price,
         // TODO:// change to real usdt contract address
-        if (currencyToken == 0xA9F0E65A77bA531E27c1Fb37a69Fc355F4dBB5e2) {
+        if (currencyToken == 0x6a80CcF1b7698968C6d155F32B04AAD3390a5506) {
             totalCostInWei = series.priceInUSDTWei * quantity;
         } else {
             priceInUSDT = getChainlinkDataFeedLatestAnswer(priceFeedAddress); // Get latest currency/USDT rate
@@ -339,12 +353,22 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
             ticketStatusDetail[tokenId].seriesID = seriesID;
             seriesTokens[seriesID].push(tokenId); // Append the token ID to the series
             // Emit event for the new ticket status
-            emit NewTicketStatus(tokenId, seriesID, 0, false, false, msg.sender);
+            emit NewTicketStatus(
+                tokenId,
+                seriesID,
+                0,
+                false,
+                false,
+                msg.sender
+            );
         }
         series.remainingTicketNumbers -= quantity;
 
         // emit event to update series remaining ticket numbers
-        emit UpdateSeriesRemainingTicketNumbers(seriesID, series.remainingTicketNumbers);
+        emit UpdateSeriesRemainingTicketNumbers(
+            seriesID,
+            series.remainingTicketNumbers
+        );
         // event to log the minting by currency
         emit TokenMintByCurrency(
             msg.sender,
@@ -375,12 +399,22 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
             ticketStatusDetail[tokenId].seriesID = seriesID;
             seriesTokens[seriesID].push(tokenId); // Append the token ID to the series
             // Emit event for the new ticket status
-            emit NewTicketStatus(tokenId, seriesID, 0, false, false, msg.sender);
+            emit NewTicketStatus(
+                tokenId,
+                seriesID,
+                0,
+                false,
+                false,
+                msg.sender
+            );
         }
 
         series.remainingTicketNumbers -= quantity;
         // emit event to update series remaining ticket numbers
-        emit UpdateSeriesRemainingTicketNumbers(seriesID, series.remainingTicketNumbers);
+        emit UpdateSeriesRemainingTicketNumbers(
+            seriesID,
+            series.remainingTicketNumbers
+        );
         emit TokenMintByAdmin(to, seriesID, quantity);
     }
 
@@ -521,7 +555,14 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         // Emit event for the updated series information
         emit UpdateSeriesLastPrizeOwner(seriesID, winnerAddress);
         // Emit event for the new ticket status
-        emit NewTicketStatus(newTokenId, seriesID, 0, false, true, winnerAddress);
+        emit NewTicketStatus(
+            newTokenId,
+            seriesID,
+            0,
+            false,
+            true,
+            winnerAddress
+        );
         delete requestToLastPrizeToken[requestId];
     }
 
