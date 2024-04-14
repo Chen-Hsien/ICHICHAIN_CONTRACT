@@ -187,14 +187,14 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
     // Constructor for setting up the ICHICHAIN contract
     constructor(uint64 subscriptionId, address _linkToken)
         ERC721A("ICHICHAIN", "ICHI")
-        VRFConsumerBaseV2(0x8103B0A8A00be2DDC778e6e7eaa21791Cd364625)
+        VRFConsumerBaseV2(0x6A2AAd07396B36Fe02a22b33cf443582f682c82f)
     {
         // COORDINATOR = VRFCoordinatorV2Interface(
         //     0x7a1BaC17Ccc5b313516C5E16fb24f7659aA5ebed
         // );
         //arb sepolia 
         COORDINATOR = VRFCoordinatorV2Interface(
-            0x8103B0A8A00be2DDC778e6e7eaa21791Cd364625
+            0x6A2AAd07396B36Fe02a22b33cf443582f682c82f
         );
         //plg COORDINATOR = VRFCoordinatorV2Interface(
         //     0x7a1BaC17Ccc5b313516C5E16fb24f7659aA5ebed
@@ -203,7 +203,7 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         //     0x50d47e4142598E3411aA864e08a44284e471AC6f
         // );
         s_subscriptionId = subscriptionId;
-        s_keyHash = 0x474e34a077df58807dbe9c96d3c009b23b3c6d0cce433e59bbf5b34f823bc56c;
+        s_keyHash = 0xd4bb89654db74673a187bd804519e65e3f71a52bc55f11da7601a13dcf505314;
         //plg s_keyHash = 0x4b09e658ed251bcafeebbc69400383d49f344ace09b9576fe248bb02c003fe9f;
         //arb sepolia s_keyHash = 0x027f94ff1465b3525f9fc03e9ff7d6d2c0953482246dd6ae07570c45d6631414;
         linkToken = _linkToken;
@@ -296,7 +296,7 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         Series storage series = ICHISeries[seriesID];
         //TODO: change to real matic/usdt contract address
         int256 maticPriceInUSDT = getChainlinkDataFeedLatestAnswer(
-            0x694AA1769357215DE4FAC081bf1f309aDC325306
+            0x2514895c72f50D8bd4B4F9b1110F0D6bD2c97526
         ); // Get latest MATIC/USDT rate
         uint256 maticPerUSDTInWei = uint256(maticPriceInUSDT) * 1e10; // Convert price to wei (assuming 8 decimals from Chainlink)
         uint256 totalCostInMaticWei = (series.priceInUSDTWei *
@@ -367,7 +367,7 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         uint256 totalCostInWei;
         // if currencyToken is usdt skip get price,
         // TODO:// change to real usdt contract address
-        if (currencyToken == 0x6a80CcF1b7698968C6d155F32B04AAD3390a5506) {
+        if (currencyToken == 0x69a68F1a7C3A502cf9A290519b2088B1848BF259) {
             totalCostInWei = series.priceInUSDTWei * quantity;
         } else {
             priceInUSDT = getChainlinkDataFeedLatestAnswer(priceFeedAddress); // Get latest currency/USDT rate

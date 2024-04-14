@@ -420,8 +420,8 @@ async function main() {
   // Deploy the contract
   const ICHICHAINFactory = await ethers.getContractFactory("ICHICHAIN");
   const ICHICHAINContract = await ICHICHAINFactory.deploy(
-    process.env.MAINNET_LINK_SUBSCRIPTIONS || "",
-    process.env.MAINNET_LINK_TOKEN || ""
+    process.env.BNB_LINK_SUBSCRIPTIONS || "",
+    process.env.BNB_LINK_TOKEN || ""
   );
   console.log("Deploying ICHICHAIN contract...");
   await ICHICHAINContract.waitForDeployment();
