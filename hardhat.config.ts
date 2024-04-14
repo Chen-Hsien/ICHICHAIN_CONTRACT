@@ -18,10 +18,16 @@ const config: HardhatUserConfig = {
       url: process.env.MAINNET_URL,
       accounts: [process.env.PRIVATE_KEY as string],
     },
+    bscTestnet: {
+      url: "https://data-seed-prebsc-1-s1.bnbchain.org:8545",
+      chainId: 97,
+      gasPrice: 5e9, // adjust gas price if needed
+      accounts: [process.env.PRIVATE_KEY as string],
+    },
   },
 
   etherscan: {
-    apiKey: process.env.MAINNET_API_KEY,
+    apiKey: process.env.BNB_API_KEY,
 },
 };
 
