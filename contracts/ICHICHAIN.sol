@@ -185,14 +185,17 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
     // mumbai price feed matic/usdt 0xd0D5e3DB44DE05E9F294BB0a3bEEaF030DE24Ada
 
     // Constructor for setting up the ICHICHAIN contract
-    constructor(uint64 subscriptionId, address _linkToken)
+    constructor(
+        uint64 subscriptionId,
+        address _linkToken
+    )
         ERC721A("ICHICHAIN", "ICHI")
         VRFConsumerBaseV2(0x6A2AAd07396B36Fe02a22b33cf443582f682c82f)
     {
         // COORDINATOR = VRFCoordinatorV2Interface(
         //     0x7a1BaC17Ccc5b313516C5E16fb24f7659aA5ebed
         // );
-        //arb sepolia 
+        //arb sepolia
         COORDINATOR = VRFCoordinatorV2Interface(
             0x6A2AAd07396B36Fe02a22b33cf443582f682c82f
         );
@@ -316,30 +319,20 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
             seriesTokens[seriesID].push(tokenId); // Append the token ID to the series
             // Emit event for the new ticket status
             emit NewTicketStatus(
-                
                 tokenId,
-               
                 seriesID,
-               
                 0,
-               
                 false,
-               
                 false,
-               
                 msg.sender
-            
             );
         }
         series.remainingTicketNumbers -= quantity;
 
         // emit event to update series remaining ticket numbers
         emit UpdateSeriesRemainingTicketNumbers(
-            
             seriesID,
-           
             series.remainingTicketNumbers
-        
         );
         // event to log the minting
         emit TokenMintByMatic(
@@ -404,30 +397,20 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
             seriesTokens[seriesID].push(tokenId); // Append the token ID to the series
             // Emit event for the new ticket status
             emit NewTicketStatus(
-                
                 tokenId,
-               
                 seriesID,
-               
                 0,
-               
                 false,
-               
                 false,
-               
                 msg.sender
-            
             );
         }
         series.remainingTicketNumbers -= quantity;
 
         // emit event to update series remaining ticket numbers
         emit UpdateSeriesRemainingTicketNumbers(
-            
             seriesID,
-           
             series.remainingTicketNumbers
-        
         );
         // event to log the minting by currency
         emit TokenMintByCurrency(
@@ -460,30 +443,20 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
             seriesTokens[seriesID].push(tokenId); // Append the token ID to the series
             // Emit event for the new ticket status
             emit NewTicketStatus(
-                
                 tokenId,
-               
                 seriesID,
-               
                 0,
-               
                 false,
-               
                 false,
-               
                 msg.sender
-            
             );
         }
 
         series.remainingTicketNumbers -= quantity;
         // emit event to update series remaining ticket numbers
         emit UpdateSeriesRemainingTicketNumbers(
-            
             seriesID,
-           
             series.remainingTicketNumbers
-        
         );
         emit TokenMintByAdmin(to, seriesID, quantity);
     }
@@ -536,10 +509,10 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         emit LastPrizeDraw(requestId, seriesID);
     }
 
-    function fulfillRandomWords(uint256 requestId, uint256[] memory randomWords)
-        internal
-        override
-    {
+    function fulfillRandomWords(
+        uint256 requestId,
+        uint256[] memory randomWords
+    ) internal override {
         emit RequestFulfilled(requestId, randomWords);
 
         Variable variable = requests[requestId];
@@ -628,30 +601,20 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         emit UpdateSeriesLastPrizeOwner(seriesID, winnerAddress);
         // Emit event for the new ticket status
         emit NewTicketStatus(
-            
             newTokenId,
-           
             seriesID,
-           
             0,
-           
             false,
-           
             true,
-           
             winnerAddress
-        
         );
         delete requestToLastPrizeToken[requestId];
     }
 
     // Override tokenURI to provide the correct metadata based on reveal status
-    function tokenURI(uint256 tokenId)
-        public
-        view
-        override
-        returns (string memory)
-    {
+    function tokenURI(
+        uint256 tokenId
+    ) public view override returns (string memory) {
         require(_exists(tokenId), "Token does not exist");
         uint256 seriesID = ticketStatusDetail[tokenId].seriesID;
         Series storage series = ICHISeries[seriesID];
@@ -682,12 +645,31 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         }
     }
 
+    function goodsArrived(uint256 seriesID) public onlyOwner {
+        Series storage series = ICHISeries[seriesID];
+        require(!series.isGoodArrived, "Already arrived");
+        series.isGoodArrived = true;
+        emit UpdateSeriesInformation(
+            seriesID,
+            true,
+            series.estimateDeliverTime,
+            series.exchangeTokenURI,
+            series.unrevealTokenURI,
+            series.revealTokenURI,
+            series.seriesMetaDataURI
+        );
+    }
+
     function exchangePrize(uint256[] memory tokenIDs) public {
         for (uint256 i = 0; i < tokenIDs.length; i++) {
             require(ownerOf(tokenIDs[i]) == msg.sender, "Not the token owner");
             require(
                 ticketStatusDetail[tokenIDs[i]].tokenRevealed,
                 "Token not revealed"
+            );
+            require(
+                ticketStatusDetail[tokenIDs[i]].tokenExchange == false,
+                "Token already exchanged"
             );
             ticketStatusDetail[tokenIDs[i]].tokenExchange = true;
             emit UpdateTicketStatus(
@@ -709,28 +691,26 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         require(success, "Transfer failed.");
     }
 
-    function addCurrencyToken(address currencyToken, address priceFeedAddress)
-        external
-        onlyOwner
-    {
+    function addCurrencyToken(
+        address currencyToken,
+        address priceFeedAddress
+    ) external onlyOwner {
         currencyList.push(Currency(currencyToken, priceFeedAddress));
         emit AddCurrencyToken(currencyToken, priceFeedAddress);
     }
 
     // withdraw currency token
-    function withdrawCurrencyToken(address currencyToken, uint256 amount)
-        external
-        onlyOwner
-    {
+    function withdrawCurrencyToken(
+        address currencyToken,
+        uint256 amount
+    ) external onlyOwner {
         IERC20(currencyToken).transfer(msg.sender, amount);
     }
 
     // Function to get the latest price of MATIC/USDT from Chainlink and pass the price feed address to get price
-    function getChainlinkDataFeedLatestAnswer(address priceFeedAddresss)
-        public
-        view
-        returns (int256)
-    {
+    function getChainlinkDataFeedLatestAnswer(
+        address priceFeedAddresss
+    ) public view returns (int256) {
         AggregatorV3Interface priceFeed = AggregatorV3Interface(
             priceFeedAddresss
         );
@@ -745,27 +725,9 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         return answer;
     }
 
-    function getPaginatedSeriesInfo(uint256 startIndex, uint256 endIndex)
-        public
-        view
-        returns (Series[] memory)
-    {
-        require(startIndex <= endIndex, "Invalid index values");
-        require(endIndex <= seriesCounter, "End index out of bounds");
-
-        Series[] memory seriesArray = new Series[](endIndex - startIndex + 1);
-        for (uint256 i = startIndex; i <= endIndex; i++) {
-            Series storage series = ICHISeries[i];
-            seriesArray[i - startIndex] = series;
-        }
-        return seriesArray;
-    }
-
-    function getSeriesTokenOwnerList(uint256 seriesID)
-        public
-        view
-        returns (address[] memory)
-    {
+    function getSeriesTokenOwnerList(
+        uint256 seriesID
+    ) public view returns (address[] memory) {
         require(seriesID < seriesCounter, "Series does not exist");
         uint256[] memory tokensInSeries = seriesTokens[seriesID];
         address[] memory tokenOwners = new address[](tokensInSeries.length);
@@ -776,11 +738,9 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
     }
 
     // return ticketStatusDetail and tokenID into return array
-    function getSeriesTokenList(uint256 seriesID)
-        public
-        view
-        returns (TicketStatusWithTokenIDOwnerAddress[] memory)
-    {
+    function getSeriesTokenList(
+        uint256 seriesID
+    ) public view returns (TicketStatusWithTokenIDOwnerAddress[] memory) {
         require(seriesID < seriesCounter, "Series does not exist");
         uint256[] memory tokensInSeries = seriesTokens[seriesID];
         TicketStatusWithTokenIDOwnerAddress[]
