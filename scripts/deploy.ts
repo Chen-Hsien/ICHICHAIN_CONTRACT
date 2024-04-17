@@ -15,7 +15,7 @@ const seriesData = [
     revealTokenURI:
       "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmV3HW1ygbq65ATckXx1v57qPf6M31p77qzVvsjwdS7X2t/",
     seriesMetaDataURI:
-      "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmRJEuZA55okBADVeoK2Fd6Uy5CRHEBNn2DumXKpZnxN9A/series0.json",
+      "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmeewYHSqmREuBXho8MNWfVj6JXRi3n8QTDqfSCJ7xZKKn",
     prizes: [
       { subPrizeID: 1, prizeGroup: "A", subPrizeName: "A1", subPrizeRemainingQuantity: 2 },
       { subPrizeID: 2, prizeGroup: "B", subPrizeName: "B1", subPrizeRemainingQuantity: 2 },
@@ -46,7 +46,7 @@ const seriesData = [
     revealTokenURI:
       "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmT6gkLAfPeFWfghVgPEYgMcmYqFHA6Ypy9P46pu1H4ARe/",
     seriesMetaDataURI:
-      "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmRJEuZA55okBADVeoK2Fd6Uy5CRHEBNn2DumXKpZnxN9A/series1.json",
+      "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmcnVY84huMyMiSsV68bmW5kqMBQq8LMofmJ2q38Rux7Pm",
     prizes: [
       // Assuming Prize is a struct with fields like name and remainingQuantity
       // modify to match your contract's subPrize struct
