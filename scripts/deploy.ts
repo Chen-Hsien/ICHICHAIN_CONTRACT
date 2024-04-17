@@ -9,13 +9,13 @@ const seriesData = [
     // Current time + 1 day
     estimateDeliverTime: Math.floor(Date.now() / 1000),
     exchangeTokenURI:
-      "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmSsdZVZrDbTWc8W2C3rEJ2DRH3yWRpJP9UUEr77tw4mFo/",
+      "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmdsHZtT989VEXkhtU3M2fMVRua43YNvqayutT1AoBiQ2c/",
     unrevealTokenURI:
       "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmSWb9qNc46gQWQop5N27jF68Tdmd4VH1F1rCT3czxxUzQ/0",
     revealTokenURI:
-      "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmRkTPoSoWAzJMfqqNHtpJ1Lr6HLcuMCE2V4JsRuvtaLpj/",
+      "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmV3HW1ygbq65ATckXx1v57qPf6M31p77qzVvsjwdS7X2t/",
     seriesMetaDataURI:
-      "https://lime-basic-thrush-351.mypinata.cloud/ipfs/Qmf3MiXgwZgsJiKp5P3zHds2DUwcJUXt7G2G6fZtgHkToB/series0.json",
+      "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmRJEuZA55okBADVeoK2Fd6Uy5CRHEBNn2DumXKpZnxN9A/series0.json",
     prizes: [
       { subPrizeID: 1, prizeGroup: "A", subPrizeName: "A1", subPrizeRemainingQuantity: 2 },
       { subPrizeID: 2, prizeGroup: "B", subPrizeName: "B1", subPrizeRemainingQuantity: 2 },
@@ -40,13 +40,13 @@ const seriesData = [
     price: ethers.parseEther("0"), // Example price in Ether
     estimateDeliverTime: Math.floor(Date.now() / 1000),
     exchangeTokenURI:
-      "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmaoRXEHHeNUW57rTP17MuNf56qrEVRtEFtopKK598KEqt/",
+      "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmZH2bCxyHHheyucyoQrCuT2jgAqcKqrDMHdLPbEb13ur5/",
     unrevealTokenURI:
       "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmSWb9qNc46gQWQop5N27jF68Tdmd4VH1F1rCT3czxxUzQ/0",
     revealTokenURI:
-      "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmPuJZzKS5aVc267sSVACeqBChmuPCNV6CgzFrZniENB7Z/",
+      "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmT6gkLAfPeFWfghVgPEYgMcmYqFHA6Ypy9P46pu1H4ARe/",
     seriesMetaDataURI:
-      "https://lime-basic-thrush-351.mypinata.cloud/ipfs/Qmf3MiXgwZgsJiKp5P3zHds2DUwcJUXt7G2G6fZtgHkToB/series1.json",
+      "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmRJEuZA55okBADVeoK2Fd6Uy5CRHEBNn2DumXKpZnxN9A/series1.json",
     prizes: [
       // Assuming Prize is a struct with fields like name and remainingQuantity
       // modify to match your contract's subPrize struct

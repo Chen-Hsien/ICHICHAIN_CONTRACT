@@ -528,6 +528,17 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         uint256[] memory randomWords
     ) internal {
         uint256[] memory tokenIDs = requestToRevealToken[requestId];
+        Series storage calculateSeries = ICHISeries[
+            ticketStatusDetail[tokenIDs[0]].seriesID
+        ];
+        // iterate through the series to calculate the unreveal prize quantity
+        uint256 totalReaminingPrizeQuantity = 0;
+        for (uint256 i = 0; i < calculateSeries.subPrizes.length; i++) {
+            totalReaminingPrizeQuantity += calculateSeries
+                .subPrizes[i]
+                .subPrizeRemainingQuantity;
+        }
+
         // calculate the remaing prize quantity in each prize)
         for (uint256 i = 0; i < tokenIDs.length; i++) {
             uint256 tokenId = tokenIDs[i];
@@ -535,7 +546,7 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
                 ticketStatusDetail[tokenId].seriesID
             ];
             uint256 selectedPrizeIndex = randomWords[i] %
-                series.remainingTicketNumbers; // Selecting from available prizes
+                totalReaminingPrizeQuantity; // Selecting from available prizes
             // Use the selectedPrizeIndex to find the index is in which range of prize
             for (uint256 j = 0; j < series.subPrizes.length; j++) {
                 if (
@@ -554,8 +565,9 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
             subPrize storage selectedSubPrize = series.subPrizes[
                 selectedPrizeIndex
             ];
+            totalReaminingPrizeQuantity -= 1;
             selectedSubPrize.subPrizeRemainingQuantity -= 1;
-            ticketStatusDetail[tokenId].tokenRevealedPrize = selectedPrizeIndex;
+            ticketStatusDetail[tokenId].tokenRevealedPrize = selectedSubPrize.subPrizeID;
             ticketStatusDetail[tokenId].tokenRevealed = true;
             // Emit event for the updated prize remaining quantity
             emit UpdatePrize(
@@ -567,7 +579,7 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
             emit UpdateTicketStatus(
                 tokenId,
                 ticketStatusDetail[tokenId].seriesID,
-                selectedPrizeIndex,
+                selectedSubPrize.subPrizeID,
                 false,
                 true
             );
@@ -593,7 +605,7 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         _safeMint(winnerAddress, 1);
         uint256 newTokenId = _nextTokenId() - 1;
         ticketStatusDetail[newTokenId].seriesID = seriesID;
-        ticketStatusDetail[newTokenId].tokenRevealedPrize = 90;
+        ticketStatusDetail[newTokenId].tokenRevealedPrize = 999;
         ticketStatusDetail[newTokenId].tokenRevealed = true;
 
         series.lastPrizeOwner = winnerAddress;
@@ -603,7 +615,7 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         emit NewTicketStatus(
             newTokenId,
             seriesID,
-            0,
+            999,
             false,
             true,
             winnerAddress
