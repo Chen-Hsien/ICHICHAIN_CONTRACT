@@ -35,32 +35,32 @@ const seriesData = [
     ],
   },
   // Repeat for other series...
-  // {
-  //   seriesName: "JOJO",
-  //   price: ethers.parseEther("0"), // Example price in Ether
-  //   estimateDeliverTime: Math.floor(Date.now() / 1000),
-  //   exchangeTokenURI:
-  //     "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmZH2bCxyHHheyucyoQrCuT2jgAqcKqrDMHdLPbEb13ur5/",
-  //   unrevealTokenURI:
-  //     "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmSWb9qNc46gQWQop5N27jF68Tdmd4VH1F1rCT3czxxUzQ/0",
-  //   revealTokenURI:
-  //     "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmT6gkLAfPeFWfghVgPEYgMcmYqFHA6Ypy9P46pu1H4ARe/",
-  //   seriesMetaDataURI:
-  //     "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmRJEuZA55okBADVeoK2Fd6Uy5CRHEBNn2DumXKpZnxN9A/series1.json",
-  //   prizes: [
-  //     // Assuming Prize is a struct with fields like name and remainingQuantity
-  //     // modify to match your contract's subPrize struct
-  //     { subPrizeID: 1, prizeGroup: "A", subPrizeName: "A1", subPrizeRemainingQuantity: 2 },
-  //     { subPrizeID: 2, prizeGroup: "B", subPrizeName: "B1", subPrizeRemainingQuantity: 2 },
-  //     { subPrizeID: 3, prizeGroup: "C", subPrizeName: "C1", subPrizeRemainingQuantity: 3 },
-  //     { subPrizeID: 4, prizeGroup: "D", subPrizeName: "D1", subPrizeRemainingQuantity: 3 },
-  //     { subPrizeID: 5, prizeGroup: "E", subPrizeName: "E1", subPrizeRemainingQuantity: 15 },
-  //     { subPrizeID: 6, prizeGroup: "F", subPrizeName: "F1", subPrizeRemainingQuantity: 10 },
-  //     { subPrizeID: 7, prizeGroup: "F", subPrizeName: "F2", subPrizeRemainingQuantity: 10 },
-  //     { subPrizeID: 8, prizeGroup: "G", subPrizeName: "G1", subPrizeRemainingQuantity: 15 },
-  //     { subPrizeID: 9, prizeGroup: "G", subPrizeName: "G2", subPrizeRemainingQuantity: 10 }
-  //   ],
-  // }
+  {
+    seriesName: "JOJO",
+    price: ethers.parseEther("0"), // Example price in Ether
+    estimateDeliverTime: Math.floor(Date.now() / 1000),
+    exchangeTokenURI:
+      "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmZH2bCxyHHheyucyoQrCuT2jgAqcKqrDMHdLPbEb13ur5/",
+    unrevealTokenURI:
+      "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmSWb9qNc46gQWQop5N27jF68Tdmd4VH1F1rCT3czxxUzQ/0",
+    revealTokenURI:
+      "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmT6gkLAfPeFWfghVgPEYgMcmYqFHA6Ypy9P46pu1H4ARe/",
+    seriesMetaDataURI:
+      "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmRJEuZA55okBADVeoK2Fd6Uy5CRHEBNn2DumXKpZnxN9A/series1.json",
+    prizes: [
+      // Assuming Prize is a struct with fields like name and remainingQuantity
+      // modify to match your contract's subPrize struct
+      { subPrizeID: 1, prizeGroup: "A", subPrizeName: "A1", subPrizeRemainingQuantity: 2 },
+      { subPrizeID: 2, prizeGroup: "B", subPrizeName: "B1", subPrizeRemainingQuantity: 2 },
+      { subPrizeID: 3, prizeGroup: "C", subPrizeName: "C1", subPrizeRemainingQuantity: 3 },
+      { subPrizeID: 4, prizeGroup: "D", subPrizeName: "D1", subPrizeRemainingQuantity: 3 },
+      { subPrizeID: 5, prizeGroup: "E", subPrizeName: "E1", subPrizeRemainingQuantity: 15 },
+      { subPrizeID: 6, prizeGroup: "F", subPrizeName: "F1", subPrizeRemainingQuantity: 10 },
+      { subPrizeID: 7, prizeGroup: "F", subPrizeName: "F2", subPrizeRemainingQuantity: 10 },
+      { subPrizeID: 8, prizeGroup: "G", subPrizeName: "G1", subPrizeRemainingQuantity: 15 },
+      { subPrizeID: 9, prizeGroup: "G", subPrizeName: "G2", subPrizeRemainingQuantity: 10 }
+    ],
+  }
   // Help me to repeat this two series for 15 series, one is HunterxHunter and the other is JOJO
   // {
   //   seriesName: "HunterxHunter",
