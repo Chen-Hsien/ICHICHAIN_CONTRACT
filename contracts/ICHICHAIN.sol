@@ -34,7 +34,7 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         uint256 totalTicketNumbers,
         uint256 remainingTicketNumbers,
         uint256 priceInUSDTWei,
-        bool isGoodArrived,
+        bool isGoodsArrived,
         uint256 estimateDeliverTime,
         uint256 exchangeExpireTime,
         string exchangeTokenURI,
@@ -46,7 +46,7 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
     // Event emitted when a new series is updated
     event UpdateSeriesInformation(
         uint256 indexed seriesID,
-        bool isGoodArrived, // 是否獎品已送達開放Reveal
+        bool isGoodsArrived, // 是否獎品已送達開放Reveal
         uint256 estimateDeliverTime,
         string exchangeTokenURI,
         string unrevealTokenURI,
@@ -154,7 +154,7 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         uint256 totalTicketNumbers; // 總共提供幾抽
         uint256 remainingTicketNumbers; // 剩餘幾抽
         uint256 priceInUSDTWei; // 每抽多少錢
-        bool isGoodArrived; // 是否獎品已送達開放Reveal
+        bool isGoodsArrived; // 是否獎品已送達開放Reveal
         uint256 estimateDeliverTime; // 預估到貨時間
         uint256 exchangeExpireTime; // 取貨最後時間
         address lastPrizeOwner; // 最後一賞得主
@@ -234,7 +234,7 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         series.totalTicketNumbers = totalPrizeQuantity;
         series.remainingTicketNumbers = totalPrizeQuantity;
         series.priceInUSDTWei = priceInUSDTWei;
-        series.isGoodArrived = false;
+        series.isGoodsArrived = false;
         series.estimateDeliverTime = estimateDeliverTime;
         series.exchangeExpireTime = estimateDeliverTime + 86400 * 60;
         series.exchangeTokenURI = exchangeTokenURI;
@@ -464,7 +464,7 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
     // Function to reveal specified NFTs in a series
     function reveal(uint256 seriesID, uint256[] memory tokenIDs) public {
         Series storage series = ICHISeries[seriesID];
-        require(series.isGoodArrived, "Not yet arrived");
+        require(series.isGoodsArrived, "Not yet arrived");
         require(
             tokenIDs.length <= balanceOf(msg.sender),
             "Not enough tokens to reveal"
@@ -659,8 +659,8 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
 
     function goodsArrived(uint256 seriesID) public onlyOwner {
         Series storage series = ICHISeries[seriesID];
-        require(!series.isGoodArrived, "Already arrived");
-        series.isGoodArrived = true;
+        require(!series.isGoodsArrived, "Already arrived");
+        series.isGoodsArrived = true;
         emit UpdateSeriesInformation(
             seriesID,
             true,
