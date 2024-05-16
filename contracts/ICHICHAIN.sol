@@ -34,6 +34,7 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         uint256 totalTicketNumbers,
         uint256 remainingTicketNumbers,
         uint256 priceInUSDTWei,
+        uint256 priceInTWD,
         bool isGoodsArrived,
         uint256 estimateDeliverTime,
         uint256 exchangeExpireTime,
@@ -162,6 +163,7 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         string unrevealTokenURI; // 抽獎前票券長相
         string revealTokenURI; // 抽獎後票券長相
         string seriesMetaDataURI; // Link to off chain infromation like image source
+        uint256 priceInTWD; // 每抽多少台幣
     }
 
     // Mappings for series data and token status
@@ -216,6 +218,7 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
     function createSeries(
         string memory seriesName,
         uint256 priceInUSDTWei,
+        uint256 priceInTWD,
         uint256 estimateDeliverTime,
         string memory exchangeTokenURI,
         string memory unrevealTokenURI,
@@ -234,6 +237,7 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         series.totalTicketNumbers = totalPrizeQuantity;
         series.remainingTicketNumbers = totalPrizeQuantity;
         series.priceInUSDTWei = priceInUSDTWei;
+        series.priceInTWD = priceInTWD;
         series.isGoodsArrived = false;
         series.estimateDeliverTime = estimateDeliverTime;
         series.exchangeExpireTime = estimateDeliverTime + 86400 * 60;
@@ -258,6 +262,7 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
             seriesName,
             totalPrizeQuantity,
             priceInUSDTWei,
+            priceInTWD,
             estimateDeliverTime,
             exchangeTokenURI,
             unrevealTokenURI,
@@ -271,6 +276,7 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         string memory seriesName,
         uint256 totalTicketNumbers,
         uint256 priceInUSDTWei,
+        uint256 priceInTWD,
         uint256 estimateDeliverTime,
         string memory exchangeTokenURI,
         string memory unrevealTokenURI,
@@ -283,6 +289,7 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
             totalTicketNumbers,
             totalTicketNumbers,
             priceInUSDTWei,
+            priceInTWD,
             false,
             estimateDeliverTime,
             estimateDeliverTime + 86400 * 60,
