@@ -3,35 +3,68 @@ import { ethers } from "hardhat";
 const secondsInADay = 86400;
 
 const seriesData = [
+  // {
+  //   seriesName: "HunterxHunter",
+  //   price: ethers.parseEther("0"), // Example price in Ether
+  //   // Current time + 1 day
+  //   estimateDeliverTime: Math.floor(Date.now() / 1000),
+  //   exchangeTokenURI:
+  //     "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmdsHZtT989VEXkhtU3M2fMVRua43YNvqayutT1AoBiQ2c/",
+  //   unrevealTokenURI:
+  //     "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmSWb9qNc46gQWQop5N27jF68Tdmd4VH1F1rCT3czxxUzQ/0",
+  //   revealTokenURI:
+  //     "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmV3HW1ygbq65ATckXx1v57qPf6M31p77qzVvsjwdS7X2t/",
+  //   seriesMetaDataURI:
+  //     "https://lime-basic-thrush-351.mypinata.cloud/ipfs/Qmb2ujVhM76YbyGGPYbFuCkC8ZiP6rdqoF1c8aUVK4NgAN",
+  //   prizes: [
+  //     { subPrizeID: 1, prizeGroup: "A", subPrizeName: "A1", subPrizeRemainingQuantity: 2 },
+  //     { subPrizeID: 2, prizeGroup: "B", subPrizeName: "B1", subPrizeRemainingQuantity: 2 },
+  //     { subPrizeID: 3, prizeGroup: "C", subPrizeName: "C1", subPrizeRemainingQuantity: 3 },
+  //     { subPrizeID: 4, prizeGroup: "D", subPrizeName: "D1", subPrizeRemainingQuantity: 3 },
+  //     { subPrizeID: 5, prizeGroup: "E", subPrizeName: "E1", subPrizeRemainingQuantity: 5 },
+  //     { subPrizeID: 6, prizeGroup: "E", subPrizeName: "E2", subPrizeRemainingQuantity: 5 },
+  //     { subPrizeID: 7, prizeGroup: "E", subPrizeName: "E3", subPrizeRemainingQuantity: 5 },
+  //     { subPrizeID: 8, prizeGroup: "F", subPrizeName: "F1", subPrizeRemainingQuantity: 5 },
+  //     { subPrizeID: 9, prizeGroup: "F", subPrizeName: "F2", subPrizeRemainingQuantity: 5 },
+  //     { subPrizeID: 10, prizeGroup: "F", subPrizeName: "F3", subPrizeRemainingQuantity: 5 },
+  //     { subPrizeID: 11, prizeGroup: "F", subPrizeName: "F3", subPrizeRemainingQuantity: 5 },
+  //     { subPrizeID: 12, prizeGroup: "G", subPrizeName: "G1", subPrizeRemainingQuantity: 5 },
+  //     { subPrizeID: 13, prizeGroup: "G", subPrizeName: "G2", subPrizeRemainingQuantity: 5 },
+  //     { subPrizeID: 14, prizeGroup: "G", subPrizeName: "G3", subPrizeRemainingQuantity: 5 },
+  //     { subPrizeID: 15, prizeGroup: "G", subPrizeName: "G4", subPrizeRemainingQuantity: 10 }
+  //   ],
+  // },
   {
-    seriesName: "HunterxHunter",
+    seriesName: "YU-GI-OH! SERIES VOL.3",
     price: ethers.parseEther("0"), // Example price in Ether
-    // Current time + 1 day
     estimateDeliverTime: Math.floor(Date.now() / 1000),
     exchangeTokenURI:
-      "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmdsHZtT989VEXkhtU3M2fMVRua43YNvqayutT1AoBiQ2c/",
+      "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmcPrzGkq1DKDDrQ1NpXxYJBhRDGrpp4H1hdfz62mJm3yG/",
     unrevealTokenURI:
-      "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmSWb9qNc46gQWQop5N27jF68Tdmd4VH1F1rCT3czxxUzQ/0",
+      "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmYqPLb3bUowPsMa3hXz5mosBW6N1zmut2PNuh5GuQWfQj/1",
     revealTokenURI:
-      "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmV3HW1ygbq65ATckXx1v57qPf6M31p77qzVvsjwdS7X2t/",
+      "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmSV7FFzoY9iNCeu874HxVKCCgZ9yXraE7LSqDhdKUbRUp/",
     seriesMetaDataURI:
-      "https://lime-basic-thrush-351.mypinata.cloud/ipfs/Qmb2ujVhM76YbyGGPYbFuCkC8ZiP6rdqoF1c8aUVK4NgAN",
+      "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmVo7xG7d9iXn3yn5K9oXKxzgu4fC7tJoNESjcFWZ8u6Uz",
     prizes: [
       { subPrizeID: 1, prizeGroup: "A", subPrizeName: "A1", subPrizeRemainingQuantity: 2 },
       { subPrizeID: 2, prizeGroup: "B", subPrizeName: "B1", subPrizeRemainingQuantity: 2 },
-      { subPrizeID: 3, prizeGroup: "C", subPrizeName: "C1", subPrizeRemainingQuantity: 3 },
-      { subPrizeID: 4, prizeGroup: "D", subPrizeName: "D1", subPrizeRemainingQuantity: 3 },
-      { subPrizeID: 5, prizeGroup: "E", subPrizeName: "E1", subPrizeRemainingQuantity: 5 },
-      { subPrizeID: 6, prizeGroup: "E", subPrizeName: "E2", subPrizeRemainingQuantity: 5 },
-      { subPrizeID: 7, prizeGroup: "E", subPrizeName: "E3", subPrizeRemainingQuantity: 5 },
-      { subPrizeID: 8, prizeGroup: "F", subPrizeName: "F1", subPrizeRemainingQuantity: 5 },
-      { subPrizeID: 9, prizeGroup: "F", subPrizeName: "F2", subPrizeRemainingQuantity: 5 },
-      { subPrizeID: 10, prizeGroup: "F", subPrizeName: "F3", subPrizeRemainingQuantity: 5 },
-      { subPrizeID: 11, prizeGroup: "F", subPrizeName: "F3", subPrizeRemainingQuantity: 5 },
-      { subPrizeID: 12, prizeGroup: "G", subPrizeName: "G1", subPrizeRemainingQuantity: 5 },
-      { subPrizeID: 13, prizeGroup: "G", subPrizeName: "G2", subPrizeRemainingQuantity: 5 },
-      { subPrizeID: 14, prizeGroup: "G", subPrizeName: "G3", subPrizeRemainingQuantity: 5 },
-      { subPrizeID: 15, prizeGroup: "G", subPrizeName: "G4", subPrizeRemainingQuantity: 10 }
+      { subPrizeID: 3, prizeGroup: "C", subPrizeName: "C1", subPrizeRemainingQuantity: 2 },
+      { subPrizeID: 4, prizeGroup: "D", subPrizeName: "D1", subPrizeRemainingQuantity: 6 },
+      { subPrizeID: 5, prizeGroup: "E", subPrizeName: "E1", subPrizeRemainingQuantity: 14 },
+      { subPrizeID: 6, prizeGroup: "F", subPrizeName: "F1", subPrizeRemainingQuantity: 2 },
+      { subPrizeID: 7, prizeGroup: "F", subPrizeName: "F2", subPrizeRemainingQuantity: 2 },
+      { subPrizeID: 8, prizeGroup: "F", subPrizeName: "F3", subPrizeRemainingQuantity: 2 },
+      { subPrizeID: 9, prizeGroup: "F", subPrizeName: "F4", subPrizeRemainingQuantity: 2 },
+      { subPrizeID: 10, prizeGroup: "F", subPrizeName: "F5", subPrizeRemainingQuantity: 2 },
+      { subPrizeID: 11, prizeGroup: "F", subPrizeName: "F6", subPrizeRemainingQuantity: 2 },
+      { subPrizeID: 12, prizeGroup: "F", subPrizeName: "F7", subPrizeRemainingQuantity: 2 },
+      { subPrizeID: 13, prizeGroup: "F", subPrizeName: "F8", subPrizeRemainingQuantity: 2 },
+      { subPrizeID: 14, prizeGroup: "F", subPrizeName: "F9", subPrizeRemainingQuantity: 2 },
+      { subPrizeID: 15, prizeGroup: "F", subPrizeName: "F10", subPrizeRemainingQuantity: 2 },
+      { subPrizeID: 16, prizeGroup: "F", subPrizeName: "F11", subPrizeRemainingQuantity: 2 },
+      { subPrizeID: 17, prizeGroup: "F", subPrizeName: "F12", subPrizeRemainingQuantity: 2 },
+      { subPrizeID: 18, prizeGroup: "G", subPrizeName: "G1", subPrizeRemainingQuantity: 30 }
     ],
   },
   {
@@ -45,7 +78,7 @@ const seriesData = [
     revealTokenURI:
       "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmSV7FFzoY9iNCeu874HxVKCCgZ9yXraE7LSqDhdKUbRUp/",
     seriesMetaDataURI:
-      "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmXSy7b57agoJh5nJ3Ld9P3ight91qdE6WUeSQnzNqkCQz",
+      "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmcEFXZ4YjbffkhNPwywXJ621CUu5KD18o7Q8oS7xQb82y",
     prizes: [
       { subPrizeID: 1, prizeGroup: "A", subPrizeName: "A1", subPrizeRemainingQuantity: 2 },
       { subPrizeID: 2, prizeGroup: "B", subPrizeName: "B1", subPrizeRemainingQuantity: 2 },

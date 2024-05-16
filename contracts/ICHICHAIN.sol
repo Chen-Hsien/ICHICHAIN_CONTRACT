@@ -101,7 +101,7 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
     // Event emitted when a last prize random number request is fulfilled
     event LastPrizeWinner(uint256 requestId, uint256 seriesID, uint256 randomWord);
     // Event emitted when a reveal random number request is sent
-    event RevealDrawSent(uint256 requestId, uint256[] tokenIDs);
+    event RevealDrawSent(uint256 requestId, uint256 seriesID, uint256[] tokenIDs);
     // Event emitted when a reveal random number request is fulfilled
     event RevealDrawFulfilled(uint256 requestId, uint256[] randomWords);
 
@@ -445,7 +445,7 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         );
         requestToRevealToken[requestId] = tokenIDs;
         requests[requestId] = Variable.reveal;
-        emit RevealDrawSent(requestId, tokenIDs);
+        emit RevealDrawSent(requestId, seriesID, tokenIDs);
     }
 
     // Function to choose the winner of a series last prize with vrf
