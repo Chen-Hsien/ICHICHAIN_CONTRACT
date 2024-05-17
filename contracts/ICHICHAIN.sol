@@ -99,9 +99,13 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
     // Event emitted when a last prize random number request is sent
     event LastPrizeDraw(uint256 requestId, uint256 seriesID);
     // Event emitted when a last prize random number request is fulfilled
-    event LastPrizeWinner(uint256 requestId, uint256 seriesID, uint256 randomWord);
+    event LastPrizeWinner(uint256 requestId, uint256 randomWord);
     // Event emitted when a reveal random number request is sent
-    event RevealDrawSent(uint256 requestId, uint256 seriesID, uint256[] tokenIDs);
+    event RevealDrawSent(
+        uint256 requestId,
+        uint256 seriesID,
+        uint256[] tokenIDs
+    );
     // Event emitted when a reveal random number request is fulfilled
     event RevealDrawFulfilled(uint256 requestId, uint256[] randomWords);
 
@@ -525,7 +529,8 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
             ];
             totalReaminingPrizeQuantity -= 1;
             selectedSubPrize.subPrizeRemainingQuantity -= 1;
-            ticketStatusDetail[tokenId].tokenRevealedPrize = selectedSubPrize.subPrizeID;
+            ticketStatusDetail[tokenId].tokenRevealedPrize = selectedSubPrize
+                .subPrizeID;
             ticketStatusDetail[tokenId].tokenRevealed = true;
             // Emit event for the updated prize remaining quantity
             emit UpdatePrize(
@@ -579,7 +584,7 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
             winnerAddress
         );
         // Emit event for the last prize winner
-        emit LastPrizeWinner(requestId, seriesID, randomWords[0]);
+        emit LastPrizeWinner(requestId, randomWords[0]);
         delete requestToLastPrizeToken[requestId];
     }
 
@@ -696,5 +701,11 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
 
     function getSeriesTotalLength() public view returns (uint256) {
         return seriesCounter;
+    }
+
+    function getSubPrizesDetail(
+        uint256 seriesID
+    ) public view returns (subPrize[] memory) {
+        return ICHISeries[seriesID].subPrizes;
     }
 }
