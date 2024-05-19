@@ -72,7 +72,7 @@ const seriesData = [
   {
     seriesName: "YU-GI-OH! SERIES VOL.3",
     price: ethers.parseEther("9"), // Example price in Ether
-    priceInTWD: 270,
+    priceInTWD: 0,
     estimateDeliverTime: Math.floor(Date.now() / 1000),
     exchangeTokenURI:
       "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmcPrzGkq1DKDDrQ1NpXxYJBhRDGrpp4H1hdfz62mJm3yG/",
