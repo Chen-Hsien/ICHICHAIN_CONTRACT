@@ -15,7 +15,7 @@ const seriesData = [
   //   revealTokenURI:
   //     "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmV3HW1ygbq65ATckXx1v57qPf6M31p77qzVvsjwdS7X2t/",
   //   seriesMetaDataURI:
-  //     "https://lime-basic-thrush-351.mypinata.cloud/ipfs/Qmb2ujVhM76YbyGGPYbFuCkC8ZiP6rdqoF1c8aUVK4NgAN",
+  //     "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmRJEuZA55okBADVeoK2Fd6Uy5CRHEBNn2DumXKpZnxN9A/series0.json",
   //   prizes: [
   //     { subPrizeID: 1, prizeGroup: "A", subPrizeName: "A1", subPrizeRemainingQuantity: 2 },
   //     { subPrizeID: 2, prizeGroup: "B", subPrizeName: "B1", subPrizeRemainingQuantity: 2 },
@@ -34,9 +34,11 @@ const seriesData = [
   //     { subPrizeID: 15, prizeGroup: "G", subPrizeName: "G4", subPrizeRemainingQuantity: 10 }
   //   ],
   // },
+  // Repeat for other series...
   {
     seriesName: "YU-GI-OH! SERIES VOL.3",
-    price: ethers.parseEther("0"), // Example price in Ether
+    price: ethers.parseEther("10"), // Example price in Ether
+    priceInTWD: 300,
     estimateDeliverTime: Math.floor(Date.now() / 1000),
     exchangeTokenURI:
       "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmcPrzGkq1DKDDrQ1NpXxYJBhRDGrpp4H1hdfz62mJm3yG/",
@@ -69,7 +71,8 @@ const seriesData = [
   },
   {
     seriesName: "YU-GI-OH! SERIES VOL.3",
-    price: ethers.parseEther("0"), // Example price in Ether
+    price: ethers.parseEther("9"), // Example price in Ether
+    priceInTWD: 0,
     estimateDeliverTime: Math.floor(Date.now() / 1000),
     exchangeTokenURI:
       "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmcPrzGkq1DKDDrQ1NpXxYJBhRDGrpp4H1hdfz62mJm3yG/",
@@ -510,6 +513,7 @@ async function main() {
     await ICHICHAINContract.createSeries(
       series.seriesName,
       series.price,
+      series.priceInTWD,
       series.estimateDeliverTime,
       series.exchangeTokenURI,
       series.unrevealTokenURI,
