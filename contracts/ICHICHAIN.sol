@@ -455,7 +455,7 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
                 0,
                 false,
                 false,
-                msg.sender
+                to
             );
         }
 
