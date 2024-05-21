@@ -80,25 +80,6 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         uint256 subPrizeID,
         uint256 subPrizeRemainingQuantity
     );
-    // Event emitted when a new NFT is minted by MATIC
-    event TokenMintByMatic(
-        address to,
-        uint256 quantity,
-        uint256 seriesID,
-        uint256 totalCostInMaticWei
-    );
-    // Event emitted when a new NFT is minted by currency
-    event TokenMintByCurrency(
-        address to,
-        uint256 quantity,
-        uint256 seriesID,
-        address currencyToken,
-        uint256 totalCostInWei
-    );
-    // Event emitted when a new NFT is minted by admin
-    event TokenMintByAdmin(address to, uint256 seriesID, uint256 quantity);
-    // Event emitted when a random number request is sent
-    event RevealToken(uint256 requestId, uint256 seriesID, uint256[] tokenIDs);
     // Event emitted when a ticket status is created
     event NewTicketStatus(
         uint256 tokenID,
@@ -118,12 +99,16 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
     );
     // Event emitted when a last prize random number request is sent
     event LastPrizeDraw(uint256 requestId, uint256 seriesID);
-    // Event emitted when a random number request is fulfilled
-    event RequestFulfilled(uint256 requestId, uint256[] randomWords);
-    // Event emitted when a prize is exchanged
-    event RequestExchangePrize(uint256[] tokenIDs);
-    // Event emitted when new currency token is added
-    event AddCurrencyToken(address currencyToken, address priceFeedAddress);
+    // Event emitted when a last prize random number request is fulfilled
+    event LastPrizeWinner(uint256 requestId, uint256 randomWord);
+    // Event emitted when a reveal random number request is sent
+    event RevealDrawSent(uint256 requestId, uint256[] tokenIDs);
+    // Event emitted when a reveal random number request is fulfilled
+    event RevealDrawFulfilled(
+        uint256 requestId,
+        uint256 seriesID,
+        uint256[] randomWords
+    );
 
     // Structure representing each NFT's ticket status
     struct TicketStatus {
@@ -131,13 +116,6 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         uint256 tokenRevealedPrize; //開獎結果 Ex 1~8代表 A~H賞
         bool tokenExchange; // 有沒有兌換過實體獎品
         bool tokenRevealed; // Whether the token has been revealed
-    }
-
-    // structure representing each NFT's ticket status and tokenID
-    struct TicketStatusWithTokenIDOwnerAddress {
-        uint256 tokenID;
-        address tokenOwner;
-        TicketStatus ticketStatus;
     }
 
     // Structure representing each subprize in a series
@@ -341,13 +319,6 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
             seriesID,
             series.remainingTicketNumbers
         );
-        // event to log the minting
-        emit TokenMintByMatic(
-            msg.sender,
-            quantity,
-            seriesID,
-            totalCostInMaticWei
-        );
     }
 
     // Function to mint NFTs with a currency token list to let user to choose ex usdc, eth  etc.. and pass chainlink price feed address to get price
@@ -419,14 +390,6 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
             seriesID,
             series.remainingTicketNumbers
         );
-        // event to log the minting by currency
-        emit TokenMintByCurrency(
-            msg.sender,
-            quantity,
-            seriesID,
-            currencyToken,
-            totalCostInWei
-        );
     }
 
     // Admin function to mint NFTs in a specified series without payment
@@ -449,14 +412,7 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
             ticketStatusDetail[tokenId].seriesID = seriesID;
             seriesTokens[seriesID].push(tokenId); // Append the token ID to the series
             // Emit event for the new ticket status
-            emit NewTicketStatus(
-                tokenId,
-                seriesID,
-                0,
-                false,
-                false,
-                msg.sender
-            );
+            emit NewTicketStatus(tokenId, seriesID, 0, false, false, to);
         }
 
         series.remainingTicketNumbers -= quantity;
@@ -465,7 +421,6 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
             seriesID,
             series.remainingTicketNumbers
         );
-        emit TokenMintByAdmin(to, seriesID, quantity);
     }
 
     // Function to reveal specified NFTs in a series
@@ -494,7 +449,7 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         );
         requestToRevealToken[requestId] = tokenIDs;
         requests[requestId] = Variable.reveal;
-        emit RevealToken(requestId, seriesID, tokenIDs);
+        emit RevealDrawSent(requestId, tokenIDs);
     }
 
     // Function to choose the winner of a series last prize with vrf
@@ -520,8 +475,6 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         uint256 requestId,
         uint256[] memory randomWords
     ) internal override {
-        emit RequestFulfilled(requestId, randomWords);
-
         Variable variable = requests[requestId];
         if (variable == Variable.reveal) {
             fulfillRevealRandomWords(requestId, randomWords);
@@ -538,6 +491,13 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         Series storage calculateSeries = ICHISeries[
             ticketStatusDetail[tokenIDs[0]].seriesID
         ];
+        // emit event for the fulfilled reveal draw
+        emit RevealDrawFulfilled(
+            requestId,
+            ticketStatusDetail[tokenIDs[0]].seriesID,
+            randomWords
+        );
+
         // iterate through the series to calculate the unreveal prize quantity
         uint256 totalReaminingPrizeQuantity = 0;
         for (uint256 i = 0; i < calculateSeries.subPrizes.length; i++) {
@@ -574,7 +534,8 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
             ];
             totalReaminingPrizeQuantity -= 1;
             selectedSubPrize.subPrizeRemainingQuantity -= 1;
-            ticketStatusDetail[tokenId].tokenRevealedPrize = selectedSubPrize.subPrizeID;
+            ticketStatusDetail[tokenId].tokenRevealedPrize = selectedSubPrize
+                .subPrizeID;
             ticketStatusDetail[tokenId].tokenRevealed = true;
             // Emit event for the updated prize remaining quantity
             emit UpdatePrize(
@@ -627,6 +588,8 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
             true,
             winnerAddress
         );
+        // Emit event for the last prize winner
+        emit LastPrizeWinner(requestId, randomWords[0]);
         delete requestToLastPrizeToken[requestId];
     }
 
@@ -699,8 +662,6 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
                 true
             );
         }
-        emit RequestExchangePrize(tokenIDs);
-        // Emit event for the updated ticket status
     }
 
     function withdraw() external onlyOwner {
@@ -715,7 +676,6 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         address priceFeedAddress
     ) external onlyOwner {
         currencyList.push(Currency(currencyToken, priceFeedAddress));
-        emit AddCurrencyToken(currencyToken, priceFeedAddress);
     }
 
     // withdraw currency token
@@ -744,42 +704,13 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         return answer;
     }
 
-    function getSeriesTokenOwnerList(
-        uint256 seriesID
-    ) public view returns (address[] memory) {
-        require(seriesID < seriesCounter, "Series does not exist");
-        uint256[] memory tokensInSeries = seriesTokens[seriesID];
-        address[] memory tokenOwners = new address[](tokensInSeries.length);
-        for (uint256 i = 0; i < tokensInSeries.length; i++) {
-            tokenOwners[i] = ownerOf(tokensInSeries[i]);
-        }
-        return tokenOwners;
-    }
-
-    // return ticketStatusDetail and tokenID into return array
-    function getSeriesTokenList(
-        uint256 seriesID
-    ) public view returns (TicketStatusWithTokenIDOwnerAddress[] memory) {
-        require(seriesID < seriesCounter, "Series does not exist");
-        uint256[] memory tokensInSeries = seriesTokens[seriesID];
-        TicketStatusWithTokenIDOwnerAddress[]
-            memory tokenPrizes = new TicketStatusWithTokenIDOwnerAddress[](
-                tokensInSeries.length
-            );
-
-        // add ticketStatusDetail,tokenID,owner into return array
-        for (uint256 i = 0; i < tokensInSeries.length; i++) {
-            uint256 tokenId = tokensInSeries[i];
-            tokenPrizes[i] = TicketStatusWithTokenIDOwnerAddress({
-                tokenID: tokenId,
-                tokenOwner: ownerOf(tokensInSeries[i]),
-                ticketStatus: ticketStatusDetail[tokenId]
-            });
-        }
-        return tokenPrizes;
-    }
-
     function getSeriesTotalLength() public view returns (uint256) {
         return seriesCounter;
+    }
+
+    function getSubPrizesDetail(
+        uint256 seriesID
+    ) public view returns (subPrize[] memory) {
+        return ICHISeries[seriesID].subPrizes;
     }
 }
