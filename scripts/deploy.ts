@@ -72,7 +72,7 @@ const seriesData = [
   {
     seriesName: "YU-GI-OH! SERIES VOL.3",
     price: ethers.parseEther("9"), // Example price in Ether
-    priceInTWD: 0,
+    priceInTWD: 270,
     estimateDeliverTime: Math.floor(Date.now() / 1000),
     exchangeTokenURI:
       "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmcPrzGkq1DKDDrQ1NpXxYJBhRDGrpp4H1hdfz62mJm3yG/",
@@ -522,6 +522,7 @@ async function main() {
       prizes
     );
   }
+  await ICHICHAINContract.addCurrencyToken("0x69a68F1a7C3A502cf9A290519b2088B1848BF259","0x69a68F1a7C3A502cf9A290519b2088B1848BF259")
 }
 
 main().catch((error) => {
