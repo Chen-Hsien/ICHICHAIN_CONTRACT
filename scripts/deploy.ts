@@ -102,7 +102,31 @@ const seriesData = [
       { subPrizeID: 17, prizeGroup: "F", subPrizeName: "F12", subPrizeRemainingQuantity: 2 },
       { subPrizeID: 18, prizeGroup: "G", subPrizeName: "G1", subPrizeRemainingQuantity: 30 }
     ],
+  },
+  {
+    seriesName: "Comic Nova14 - tinaaaaalee.cosplay",
+    price: ethers.parseEther("12.5"), // Example price in Ether
+    priceInTWD: 400,
+    estimateDeliverTime: 1716480321,
+    exchangeTokenURI:
+      "https://lime-basic-thrush-351.mypinata.cloud/ipfs/Qme5zEcxXy22uDopvo8HCmUkM4yYoDcXY1wjgStRbcWiVQ/",
+    unrevealTokenURI:
+      "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmSRGc9Wz28NK3dCjUkM7sSuX1e36y3qiqW2hyQxQyKJBa",
+    revealTokenURI:
+      "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmR6cnyxQ9mfS4Mgxhsb15MVxXC6f25TaQ1wGwDbbU5t9g/",
+    seriesMetaDataURI:
+      "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmPEQVf9RtvuJcr925M7rJucfwu4HSJ2h94wvMWM7VkixK",
+    prizes: [
+      { subPrizeID: 1, prizeGroup: "A", subPrizeName: "A1", subPrizeRemainingQuantity: 4 },
+      { subPrizeID: 2, prizeGroup: "B", subPrizeName: "B1", subPrizeRemainingQuantity: 43 },
+      { subPrizeID: 3, prizeGroup: "C", subPrizeName: "C1", subPrizeRemainingQuantity: 88 },
+      { subPrizeID: 4, prizeGroup: "D", subPrizeName: "D1", subPrizeRemainingQuantity: 26 },
+      { subPrizeID: 5, prizeGroup: "E", subPrizeName: "E1", subPrizeRemainingQuantity: 84 },
+      { subPrizeID: 6, prizeGroup: "F", subPrizeName: "F1", subPrizeRemainingQuantity: 43 },
+      { subPrizeID: 7, prizeGroup: "G", subPrizeName: "G1", subPrizeRemainingQuantity: 58 }
+    ],
   }
+  
   // Repeat for other series...
   // {
   //   seriesName: "JOJO",
