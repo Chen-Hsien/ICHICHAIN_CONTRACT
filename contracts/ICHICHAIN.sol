@@ -77,6 +77,10 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         string subPrizeName,
         uint256 subPrizeRemainingQuantity
     );
+    // Event emitted when subPrize reset
+    event ResetSubPrize(
+        uint256 indexed seriesID
+    );
     // Event emitted when a new NFT Prize is updated
     event UpdatePrize(
         uint256 indexed seriesID,
@@ -202,17 +206,13 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         uint256 priceInUSDTWei,
         uint256 priceInTWD,
         uint256 estimateDeliverTime,
+        uint256 totalPrizeQuantity,
         string memory exchangeTokenURI,
         string memory unrevealTokenURI,
         string memory revealTokenURI,
-        string memory seriesMetaDataURI,
-        subPrize[] memory subPrizes
+        string memory seriesMetaDataURI
     ) public onlyOwner {
         // Calculate the total of all prize quantities
-        uint256 totalPrizeQuantity = 0;
-        for (uint256 i = 0; i < subPrizes.length; i++) {
-            totalPrizeQuantity += subPrizes[i].subPrizeRemainingQuantity;
-        }
         uint256 seriesID = seriesCounter++;
         Series storage series = ICHISeries[seriesID];
         series.seriesName = seriesName;
@@ -228,16 +228,6 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         series.revealTokenURI = revealTokenURI;
         series.seriesMetaDataURI = seriesMetaDataURI;
         series.isRefund = false;
-        for (uint256 i = 0; i < subPrizes.length; i++) {
-            series.subPrizes.push(subPrizes[i]);
-            emit NewSubPrize(
-                seriesID,
-                1 + i,
-                subPrizes[i].prizeGroup,
-                subPrizes[i].subPrizeName,
-                subPrizes[i].subPrizeRemainingQuantity
-            );
-        }
 
         // Emit event for the new series
         emitNewSeriesEvent(
@@ -283,6 +273,66 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
             address(0),
             false
         );
+    }
+
+    function updateSeriesInfo(
+        uint256 seriesID,
+        uint256 estimateDeliverTime,
+        string memory exchangeTokenURI,
+        string memory unrevealTokenURI,
+        string memory revealTokenURI,
+        string memory seriesMetaDataURI
+    ) public onlyOwner {
+        Series storage series = ICHISeries[seriesID];
+        // require series is not arrived
+        require(!series.isGoodsArrived, "Goods already arrived");
+
+        series.estimateDeliverTime = estimateDeliverTime;
+        series.exchangeTokenURI = exchangeTokenURI;
+        series.unrevealTokenURI = unrevealTokenURI;
+        series.revealTokenURI = revealTokenURI;
+        series.seriesMetaDataURI = seriesMetaDataURI;
+        emit UpdateSeriesInformation(
+            seriesID,
+            series.isGoodsArrived,
+            estimateDeliverTime,
+            exchangeTokenURI,
+            unrevealTokenURI,
+            revealTokenURI,
+            seriesMetaDataURI
+        );
+    }
+
+    function updateSeriesSubPrize(
+        uint256 seriesID,
+        subPrize[] memory subPrizes
+    ) public onlyOwner {
+        Series storage series = ICHISeries[seriesID];
+        // check series is not arrived
+        require(!series.isGoodsArrived, "Goods already arrived");
+        // check subprize remaining quantity = total ticket numbers
+        uint256 totalPrizeQuantity = 0;
+        for (uint256 i = 0; i < subPrizes.length; i++) {
+            totalPrizeQuantity += subPrizes[i].subPrizeRemainingQuantity;
+        }
+        require(
+            totalPrizeQuantity == series.totalTicketNumbers,
+            "Subprize quantity not equal to total ticket numbers"
+        );
+        // reset subprize
+        series.subPrizes = new subPrize[](0);
+        emit ResetSubPrize(seriesID);
+        
+        for (uint256 i = 0; i < subPrizes.length; i++) {
+            series.subPrizes.push(subPrizes[i]);
+            emit NewSubPrize(
+                seriesID,
+                1 + i,
+                subPrizes[i].prizeGroup,
+                subPrizes[i].subPrizeName,
+                subPrizes[i].subPrizeRemainingQuantity
+            );
+        }
     }
 
     // Function to mint NFTs in a specified series
