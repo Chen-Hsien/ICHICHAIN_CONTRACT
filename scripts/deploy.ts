@@ -40,6 +40,7 @@ const seriesData = [
     price: ethers.parseEther("10"), // Example price in Ether
     priceInTWD: 300,
     estimateDeliverTime: Math.floor(Date.now() / 1000),
+    totalPrizeQuantity: 80,
     exchangeTokenURI:
       "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmcPrzGkq1DKDDrQ1NpXxYJBhRDGrpp4H1hdfz62mJm3yG/",
     unrevealTokenURI:
@@ -49,24 +50,114 @@ const seriesData = [
     seriesMetaDataURI:
       "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmVo7xG7d9iXn3yn5K9oXKxzgu4fC7tJoNESjcFWZ8u6Uz",
     prizes: [
-      { subPrizeID: 1, prizeGroup: "A", subPrizeName: "A1", subPrizeRemainingQuantity: 2 },
-      { subPrizeID: 2, prizeGroup: "B", subPrizeName: "B1", subPrizeRemainingQuantity: 2 },
-      { subPrizeID: 3, prizeGroup: "C", subPrizeName: "C1", subPrizeRemainingQuantity: 2 },
-      { subPrizeID: 4, prizeGroup: "D", subPrizeName: "D1", subPrizeRemainingQuantity: 6 },
-      { subPrizeID: 5, prizeGroup: "E", subPrizeName: "E1", subPrizeRemainingQuantity: 14 },
-      { subPrizeID: 6, prizeGroup: "F", subPrizeName: "F1", subPrizeRemainingQuantity: 2 },
-      { subPrizeID: 7, prizeGroup: "F", subPrizeName: "F2", subPrizeRemainingQuantity: 2 },
-      { subPrizeID: 8, prizeGroup: "F", subPrizeName: "F3", subPrizeRemainingQuantity: 2 },
-      { subPrizeID: 9, prizeGroup: "F", subPrizeName: "F4", subPrizeRemainingQuantity: 2 },
-      { subPrizeID: 10, prizeGroup: "F", subPrizeName: "F5", subPrizeRemainingQuantity: 2 },
-      { subPrizeID: 11, prizeGroup: "F", subPrizeName: "F6", subPrizeRemainingQuantity: 2 },
-      { subPrizeID: 12, prizeGroup: "F", subPrizeName: "F7", subPrizeRemainingQuantity: 2 },
-      { subPrizeID: 13, prizeGroup: "F", subPrizeName: "F8", subPrizeRemainingQuantity: 2 },
-      { subPrizeID: 14, prizeGroup: "F", subPrizeName: "F9", subPrizeRemainingQuantity: 2 },
-      { subPrizeID: 15, prizeGroup: "F", subPrizeName: "F10", subPrizeRemainingQuantity: 2 },
-      { subPrizeID: 16, prizeGroup: "F", subPrizeName: "F11", subPrizeRemainingQuantity: 2 },
-      { subPrizeID: 17, prizeGroup: "F", subPrizeName: "F12", subPrizeRemainingQuantity: 2 },
-      { subPrizeID: 18, prizeGroup: "G", subPrizeName: "G1", subPrizeRemainingQuantity: 30 }
+      {
+        subPrizeID: 1,
+        prizeGroup: "A",
+        subPrizeName: "A1",
+        subPrizeRemainingQuantity: 2,
+      },
+      {
+        subPrizeID: 2,
+        prizeGroup: "B",
+        subPrizeName: "B1",
+        subPrizeRemainingQuantity: 2,
+      },
+      {
+        subPrizeID: 3,
+        prizeGroup: "C",
+        subPrizeName: "C1",
+        subPrizeRemainingQuantity: 2,
+      },
+      {
+        subPrizeID: 4,
+        prizeGroup: "D",
+        subPrizeName: "D1",
+        subPrizeRemainingQuantity: 6,
+      },
+      {
+        subPrizeID: 5,
+        prizeGroup: "E",
+        subPrizeName: "E1",
+        subPrizeRemainingQuantity: 14,
+      },
+      {
+        subPrizeID: 6,
+        prizeGroup: "F",
+        subPrizeName: "F1",
+        subPrizeRemainingQuantity: 2,
+      },
+      {
+        subPrizeID: 7,
+        prizeGroup: "F",
+        subPrizeName: "F2",
+        subPrizeRemainingQuantity: 2,
+      },
+      {
+        subPrizeID: 8,
+        prizeGroup: "F",
+        subPrizeName: "F3",
+        subPrizeRemainingQuantity: 2,
+      },
+      {
+        subPrizeID: 9,
+        prizeGroup: "F",
+        subPrizeName: "F4",
+        subPrizeRemainingQuantity: 2,
+      },
+      {
+        subPrizeID: 10,
+        prizeGroup: "F",
+        subPrizeName: "F5",
+        subPrizeRemainingQuantity: 2,
+      },
+      {
+        subPrizeID: 11,
+        prizeGroup: "F",
+        subPrizeName: "F6",
+        subPrizeRemainingQuantity: 2,
+      },
+      {
+        subPrizeID: 12,
+        prizeGroup: "F",
+        subPrizeName: "F7",
+        subPrizeRemainingQuantity: 2,
+      },
+      {
+        subPrizeID: 13,
+        prizeGroup: "F",
+        subPrizeName: "F8",
+        subPrizeRemainingQuantity: 2,
+      },
+      {
+        subPrizeID: 14,
+        prizeGroup: "F",
+        subPrizeName: "F9",
+        subPrizeRemainingQuantity: 2,
+      },
+      {
+        subPrizeID: 15,
+        prizeGroup: "F",
+        subPrizeName: "F10",
+        subPrizeRemainingQuantity: 2,
+      },
+      {
+        subPrizeID: 16,
+        prizeGroup: "F",
+        subPrizeName: "F11",
+        subPrizeRemainingQuantity: 2,
+      },
+      {
+        subPrizeID: 17,
+        prizeGroup: "F",
+        subPrizeName: "F12",
+        subPrizeRemainingQuantity: 2,
+      },
+      {
+        subPrizeID: 18,
+        prizeGroup: "G",
+        subPrizeName: "G1",
+        subPrizeRemainingQuantity: 30,
+      },
     ],
   },
   {
@@ -74,6 +165,7 @@ const seriesData = [
     price: ethers.parseEther("9"), // Example price in Ether
     priceInTWD: 270,
     estimateDeliverTime: Math.floor(Date.now() / 1000),
+    totalPrizeQuantity: 80,
     exchangeTokenURI:
       "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmcPrzGkq1DKDDrQ1NpXxYJBhRDGrpp4H1hdfz62mJm3yG/",
     unrevealTokenURI:
@@ -83,24 +175,114 @@ const seriesData = [
     seriesMetaDataURI:
       "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmcEFXZ4YjbffkhNPwywXJ621CUu5KD18o7Q8oS7xQb82y",
     prizes: [
-      { subPrizeID: 1, prizeGroup: "A", subPrizeName: "A1", subPrizeRemainingQuantity: 2 },
-      { subPrizeID: 2, prizeGroup: "B", subPrizeName: "B1", subPrizeRemainingQuantity: 2 },
-      { subPrizeID: 3, prizeGroup: "C", subPrizeName: "C1", subPrizeRemainingQuantity: 2 },
-      { subPrizeID: 4, prizeGroup: "D", subPrizeName: "D1", subPrizeRemainingQuantity: 6 },
-      { subPrizeID: 5, prizeGroup: "E", subPrizeName: "E1", subPrizeRemainingQuantity: 14 },
-      { subPrizeID: 6, prizeGroup: "F", subPrizeName: "F1", subPrizeRemainingQuantity: 2 },
-      { subPrizeID: 7, prizeGroup: "F", subPrizeName: "F2", subPrizeRemainingQuantity: 2 },
-      { subPrizeID: 8, prizeGroup: "F", subPrizeName: "F3", subPrizeRemainingQuantity: 2 },
-      { subPrizeID: 9, prizeGroup: "F", subPrizeName: "F4", subPrizeRemainingQuantity: 2 },
-      { subPrizeID: 10, prizeGroup: "F", subPrizeName: "F5", subPrizeRemainingQuantity: 2 },
-      { subPrizeID: 11, prizeGroup: "F", subPrizeName: "F6", subPrizeRemainingQuantity: 2 },
-      { subPrizeID: 12, prizeGroup: "F", subPrizeName: "F7", subPrizeRemainingQuantity: 2 },
-      { subPrizeID: 13, prizeGroup: "F", subPrizeName: "F8", subPrizeRemainingQuantity: 2 },
-      { subPrizeID: 14, prizeGroup: "F", subPrizeName: "F9", subPrizeRemainingQuantity: 2 },
-      { subPrizeID: 15, prizeGroup: "F", subPrizeName: "F10", subPrizeRemainingQuantity: 2 },
-      { subPrizeID: 16, prizeGroup: "F", subPrizeName: "F11", subPrizeRemainingQuantity: 2 },
-      { subPrizeID: 17, prizeGroup: "F", subPrizeName: "F12", subPrizeRemainingQuantity: 2 },
-      { subPrizeID: 18, prizeGroup: "G", subPrizeName: "G1", subPrizeRemainingQuantity: 30 }
+      {
+        subPrizeID: 1,
+        prizeGroup: "A",
+        subPrizeName: "A1",
+        subPrizeRemainingQuantity: 2,
+      },
+      {
+        subPrizeID: 2,
+        prizeGroup: "B",
+        subPrizeName: "B1",
+        subPrizeRemainingQuantity: 2,
+      },
+      {
+        subPrizeID: 3,
+        prizeGroup: "C",
+        subPrizeName: "C1",
+        subPrizeRemainingQuantity: 2,
+      },
+      {
+        subPrizeID: 4,
+        prizeGroup: "D",
+        subPrizeName: "D1",
+        subPrizeRemainingQuantity: 6,
+      },
+      {
+        subPrizeID: 5,
+        prizeGroup: "E",
+        subPrizeName: "E1",
+        subPrizeRemainingQuantity: 14,
+      },
+      {
+        subPrizeID: 6,
+        prizeGroup: "F",
+        subPrizeName: "F1",
+        subPrizeRemainingQuantity: 2,
+      },
+      {
+        subPrizeID: 7,
+        prizeGroup: "F",
+        subPrizeName: "F2",
+        subPrizeRemainingQuantity: 2,
+      },
+      {
+        subPrizeID: 8,
+        prizeGroup: "F",
+        subPrizeName: "F3",
+        subPrizeRemainingQuantity: 2,
+      },
+      {
+        subPrizeID: 9,
+        prizeGroup: "F",
+        subPrizeName: "F4",
+        subPrizeRemainingQuantity: 2,
+      },
+      {
+        subPrizeID: 10,
+        prizeGroup: "F",
+        subPrizeName: "F5",
+        subPrizeRemainingQuantity: 2,
+      },
+      {
+        subPrizeID: 11,
+        prizeGroup: "F",
+        subPrizeName: "F6",
+        subPrizeRemainingQuantity: 2,
+      },
+      {
+        subPrizeID: 12,
+        prizeGroup: "F",
+        subPrizeName: "F7",
+        subPrizeRemainingQuantity: 2,
+      },
+      {
+        subPrizeID: 13,
+        prizeGroup: "F",
+        subPrizeName: "F8",
+        subPrizeRemainingQuantity: 2,
+      },
+      {
+        subPrizeID: 14,
+        prizeGroup: "F",
+        subPrizeName: "F9",
+        subPrizeRemainingQuantity: 2,
+      },
+      {
+        subPrizeID: 15,
+        prizeGroup: "F",
+        subPrizeName: "F10",
+        subPrizeRemainingQuantity: 2,
+      },
+      {
+        subPrizeID: 16,
+        prizeGroup: "F",
+        subPrizeName: "F11",
+        subPrizeRemainingQuantity: 2,
+      },
+      {
+        subPrizeID: 17,
+        prizeGroup: "F",
+        subPrizeName: "F12",
+        subPrizeRemainingQuantity: 2,
+      },
+      {
+        subPrizeID: 18,
+        prizeGroup: "G",
+        subPrizeName: "G1",
+        subPrizeRemainingQuantity: 30,
+      },
     ],
   },
   {
@@ -108,6 +290,7 @@ const seriesData = [
     price: ethers.parseEther("12.5"), // Example price in Ether
     priceInTWD: 400,
     estimateDeliverTime: 1716480321,
+    totalPrizeQuantity: 346,
     exchangeTokenURI:
       "https://lime-basic-thrush-351.mypinata.cloud/ipfs/Qme5zEcxXy22uDopvo8HCmUkM4yYoDcXY1wjgStRbcWiVQ/",
     unrevealTokenURI:
@@ -117,16 +300,51 @@ const seriesData = [
     seriesMetaDataURI:
       "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmPEQVf9RtvuJcr925M7rJucfwu4HSJ2h94wvMWM7VkixK",
     prizes: [
-      { subPrizeID: 1, prizeGroup: "A", subPrizeName: "A1", subPrizeRemainingQuantity: 4 },
-      { subPrizeID: 2, prizeGroup: "B", subPrizeName: "B1", subPrizeRemainingQuantity: 43 },
-      { subPrizeID: 3, prizeGroup: "C", subPrizeName: "C1", subPrizeRemainingQuantity: 88 },
-      { subPrizeID: 4, prizeGroup: "D", subPrizeName: "D1", subPrizeRemainingQuantity: 26 },
-      { subPrizeID: 5, prizeGroup: "E", subPrizeName: "E1", subPrizeRemainingQuantity: 84 },
-      { subPrizeID: 6, prizeGroup: "F", subPrizeName: "F1", subPrizeRemainingQuantity: 43 },
-      { subPrizeID: 7, prizeGroup: "G", subPrizeName: "G1", subPrizeRemainingQuantity: 58 }
+      {
+        subPrizeID: 1,
+        prizeGroup: "A",
+        subPrizeName: "A1",
+        subPrizeRemainingQuantity: 4,
+      },
+      {
+        subPrizeID: 2,
+        prizeGroup: "B",
+        subPrizeName: "B1",
+        subPrizeRemainingQuantity: 43,
+      },
+      {
+        subPrizeID: 3,
+        prizeGroup: "C",
+        subPrizeName: "C1",
+        subPrizeRemainingQuantity: 88,
+      },
+      {
+        subPrizeID: 4,
+        prizeGroup: "D",
+        subPrizeName: "D1",
+        subPrizeRemainingQuantity: 26,
+      },
+      {
+        subPrizeID: 5,
+        prizeGroup: "E",
+        subPrizeName: "E1",
+        subPrizeRemainingQuantity: 84,
+      },
+      {
+        subPrizeID: 6,
+        prizeGroup: "F",
+        subPrizeName: "F1",
+        subPrizeRemainingQuantity: 43,
+      },
+      {
+        subPrizeID: 7,
+        prizeGroup: "G",
+        subPrizeName: "G1",
+        subPrizeRemainingQuantity: 58,
+      },
     ],
-  }
-  
+  },
+
   // Repeat for other series...
   // {
   //   seriesName: "JOJO",
@@ -522,7 +740,7 @@ async function main() {
   console.log("Contract deployed to:", ICHICHAINContract.target);
 
   // Create each series
-  for (const series of seriesData) {
+  for (const [index, series] of seriesData.entries()) {
     // Convert Prize[] structure to match your contract's expectations
     const prizes = series.prizes.map((prize) => {
       // Adapt this part based on your contract's Prize struct
@@ -539,14 +757,21 @@ async function main() {
       series.price,
       series.priceInTWD,
       series.estimateDeliverTime,
+      series.totalPrizeQuantity,
       series.exchangeTokenURI,
       series.unrevealTokenURI,
       series.revealTokenURI,
-      series.seriesMetaDataURI,
-      prizes
+      series.seriesMetaDataURI
     );
+    // sleep for 2 mins
+    await new Promise((resolve) => setTimeout(resolve, 120000));
+    // Update the series prizes by for each length of the prizes
+    await ICHICHAINContract.updateSeriesSubPrize(index, prizes);
   }
-  await ICHICHAINContract.addCurrencyToken("0x69a68F1a7C3A502cf9A290519b2088B1848BF259","0x69a68F1a7C3A502cf9A290519b2088B1848BF259")
+  await ICHICHAINContract.addCurrencyToken(
+    "0x69a68F1a7C3A502cf9A290519b2088B1848BF259",
+    "0x69a68F1a7C3A502cf9A290519b2088B1848BF259"
+  );
 }
 
 main().catch((error) => {
