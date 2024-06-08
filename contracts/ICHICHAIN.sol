@@ -79,9 +79,7 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2, ReentrancyGuard {
         uint256 subPrizeRemainingQuantity
     );
     // Event emitted when subPrize reset
-    event ResetSubPrize(
-        uint256 indexed seriesID
-    );
+    event ResetSubPrize(uint256 indexed seriesID);
     // Event emitted when a new NFT Prize is updated
     event UpdatePrize(
         uint256 indexed seriesID,
@@ -164,9 +162,11 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2, ReentrancyGuard {
     uint256 private seriesCounter = 0;
 
     // Erc20 token to let user to choose which currency to pay, include contract address, and price feed address
+    // customizedRateToUSDTinWei EX 1 token = 0.8 USDT then customizedRateToUSDTinWei = 0.8 * 1e18
     struct Currency {
         address currencyToken;
         address priceFeedAddress;
+        uint256 customizedRateToUSDTinWei;
     }
 
     Currency[] public currencyList;
@@ -323,7 +323,7 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2, ReentrancyGuard {
         // reset subprize
         series.subPrizes = new subPrize[](0);
         emit ResetSubPrize(seriesID);
-        
+
         for (uint256 i = 0; i < subPrizes.length; i++) {
             series.subPrizes.push(subPrizes[i]);
             emit NewSubPrize(
@@ -337,7 +337,10 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2, ReentrancyGuard {
     }
 
     // Function to mint NFTs in a specified series
-    function mintByMatic(uint256 seriesID, uint256 quantity) public payable nonReentrant {
+    function mintByMatic(
+        uint256 seriesID,
+        uint256 quantity
+    ) public payable nonReentrant {
         Series storage series = ICHISeries[seriesID];
         //TODO: change to real matic/usdt contract address
         int256 maticPriceInUSDT = getChainlinkDataFeedLatestAnswer(
@@ -392,13 +395,17 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2, ReentrancyGuard {
         require(series.isRefund == false, "This series is refund");
         address currencyToken = currencyList[CurrencyIndex].currencyToken;
         address priceFeedAddress = currencyList[CurrencyIndex].priceFeedAddress;
+        uint256 customizedRateToUSDTinWei = currencyList[CurrencyIndex]
+            .customizedRateToUSDTinWei;
         int256 priceInUSDT;
         uint256 toeknPerUSDTInWei;
         uint256 totalCostInWei;
         // if currencyToken is usdt skip get price,
         // TODO:// change to real usdt contract address
-        if (currencyToken == 0x69a68F1a7C3A502cf9A290519b2088B1848BF259) {
-            totalCostInWei = series.priceInUSDTWei * quantity;
+        if (customizedRateToUSDTinWei != 0) {
+            totalCostInWei =
+                (series.priceInUSDTWei * quantity * 1e18) /
+                customizedRateToUSDTinWei;
         } else {
             priceInUSDT = getChainlinkDataFeedLatestAnswer(priceFeedAddress); // Get latest currency/USDT rate
             // the calculate logic like mint function
@@ -751,9 +758,10 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2, ReentrancyGuard {
 
     function addCurrencyToken(
         address currencyToken,
-        address priceFeedAddress
+        address priceFeedAddress,
+        uint256 customizedRateToUSDTinWei
     ) external onlyOwner {
-        currencyList.push(Currency(currencyToken, priceFeedAddress));
+        currencyList.push(Currency(currencyToken, priceFeedAddress, customizedRateToUSDTinWei));
     }
 
     // withdraw currency token

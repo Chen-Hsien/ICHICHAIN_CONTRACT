@@ -770,7 +770,8 @@ async function main() {
   }
   await ICHICHAINContract.addCurrencyToken(
     "0x69a68F1a7C3A502cf9A290519b2088B1848BF259",
-    "0x69a68F1a7C3A502cf9A290519b2088B1848BF259"
+    "0x69a68F1a7C3A502cf9A290519b2088B1848BF259",
+    ethers.parseEther("1")
   );
 }
 
