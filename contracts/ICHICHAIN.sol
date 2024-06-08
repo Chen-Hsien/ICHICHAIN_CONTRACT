@@ -501,6 +501,11 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2, ReentrancyGuard {
                 !ticketStatusDetail[tokenIDs[i]].tokenRevealed,
                 "Token already revealed"
             );
+            // check if the token is in the series
+            require(
+                ticketStatusDetail[tokenIDs[i]].seriesID == seriesID,
+                "Token not in the series"
+            );
         }
         uint256 requestId = COORDINATOR.requestRandomWords(
             s_keyHash,
