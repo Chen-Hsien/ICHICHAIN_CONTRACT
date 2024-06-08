@@ -2,6 +2,7 @@
 pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
 import "@chainlink/contracts/src/v0.8/vrf/VRFConsumerBaseV2.sol";
 import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
@@ -10,7 +11,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 // ICHICHAIN contract implementing ERC721A for efficient batch minting,
 // and integrating with Chainlink VRF for randomness in reveals.
-contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
+contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2, ReentrancyGuard {
     // Chainlink VRF-related variables and constants
     VRFCoordinatorV2Interface COORDINATOR;
     uint64 s_subscriptionId;
@@ -336,7 +337,7 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
     }
 
     // Function to mint NFTs in a specified series
-    function mintByMatic(uint256 seriesID, uint256 quantity) public payable {
+    function mintByMatic(uint256 seriesID, uint256 quantity) public payable nonReentrant {
         Series storage series = ICHISeries[seriesID];
         //TODO: change to real matic/usdt contract address
         int256 maticPriceInUSDT = getChainlinkDataFeedLatestAnswer(
@@ -386,7 +387,7 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2 {
         uint256 seriesID,
         uint256 quantity,
         uint256 CurrencyIndex // index of currencyList
-    ) public {
+    ) public nonReentrant {
         Series storage series = ICHISeries[seriesID];
         require(series.isRefund == false, "This series is refund");
         address currencyToken = currencyList[CurrencyIndex].currencyToken;
