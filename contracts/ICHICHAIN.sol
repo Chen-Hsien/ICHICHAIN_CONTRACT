@@ -1,22 +1,20 @@
 // SPDX-License-Identifier: GPL3.0
 pragma solidity ^0.8.9;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
-import "@chainlink/contracts/src/v0.8/vrf/VRFConsumerBaseV2.sol";
-import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
+import {VRFConsumerBaseV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
+import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
+
+import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
 import "erc721a/contracts/ERC721A.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 // ICHICHAIN contract implementing ERC721A for efficient batch minting,
 // and integrating with Chainlink VRF for randomness in reveals.
-contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2, ReentrancyGuard {
+contract ICHICHAIN is ERC721A, VRFConsumerBaseV2Plus, ReentrancyGuard {
     // Chainlink VRF-related variables and constants
-    VRFCoordinatorV2Interface COORDINATOR;
-    uint64 s_subscriptionId;
+    uint256 s_subscriptionId;
     bytes32 immutable s_keyHash;
-    address public immutable linkToken;
     uint32 callbackGasLimit = 2500000;
     uint16 requestConfirmations = 3;
 
@@ -195,30 +193,15 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2, ReentrancyGuard {
 
     // Constructor for setting up the ICHICHAIN contract
     constructor(
-        uint64 subscriptionId,
-        address _linkToken
+        uint256 subscriptionId
     )
         ERC721A("ICHICHAIN", "ICHI")
-        VRFConsumerBaseV2(0x6A2AAd07396B36Fe02a22b33cf443582f682c82f)
+        VRFConsumerBaseV2Plus(0xDA3b641D438362C440Ac5458c57e00a712b66700)
     {
-        // COORDINATOR = VRFCoordinatorV2Interface(
-        //     0x7a1BaC17Ccc5b313516C5E16fb24f7659aA5ebed
-        // );
-        //arb sepolia
-        COORDINATOR = VRFCoordinatorV2Interface(
-            0x6A2AAd07396B36Fe02a22b33cf443582f682c82f
-        );
-        //plg COORDINATOR = VRFCoordinatorV2Interface(
-        //     0x7a1BaC17Ccc5b313516C5E16fb24f7659aA5ebed
-        // );
-        //arb sepolia COORDINATOR = VRFCoordinatorV2Interface(
-        //     0x50d47e4142598E3411aA864e08a44284e471AC6f
-        // );
         s_subscriptionId = subscriptionId;
-        s_keyHash = 0xd4bb89654db74673a187bd804519e65e3f71a52bc55f11da7601a13dcf505314;
+        s_keyHash = 0x8596b430971ac45bdf6088665b9ad8e8630c9d5049ab54b14dff711bee7c0e26;
         //plg s_keyHash = 0x4b09e658ed251bcafeebbc69400383d49f344ace09b9576fe248bb02c003fe9f;
         //arb sepolia s_keyHash = 0x027f94ff1465b3525f9fc03e9ff7d6d2c0953482246dd6ae07570c45d6631414;
-        linkToken = _linkToken;
     }
 
     // Function to create a new NFT series
@@ -546,12 +529,15 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2, ReentrancyGuard {
                 revert TokenNotInTheSeries();
             }
         }
-        uint256 requestId = COORDINATOR.requestRandomWords(
-            s_keyHash,
-            s_subscriptionId,
-            requestConfirmations,
-            callbackGasLimit,
-            uint32(tokenIDs.length)
+        uint256 requestId = s_vrfCoordinator.requestRandomWords(
+            VRFV2PlusClient.RandomWordsRequest({
+            keyHash: s_keyHash,
+            subId: s_subscriptionId,
+            requestConfirmations: requestConfirmations,
+            callbackGasLimit: callbackGasLimit,
+            numWords: uint32(tokenIDs.length),
+            extraArgs: VRFV2PlusClient._argsToBytes(VRFV2PlusClient.ExtraArgsV1({nativePayment: false}))
+            })
         );
         requestToRevealToken[requestId] = tokenIDs;
         requests[requestId] = Variable.reveal;
@@ -572,12 +558,15 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2, ReentrancyGuard {
         }
 
         // Request randomness for each token
-        uint256 requestId = COORDINATOR.requestRandomWords(
-            s_keyHash,
-            s_subscriptionId,
-            requestConfirmations,
-            callbackGasLimit,
-            1
+        uint256 requestId = s_vrfCoordinator.requestRandomWords(
+            VRFV2PlusClient.RandomWordsRequest({
+            keyHash: s_keyHash,
+            subId: s_subscriptionId,
+            requestConfirmations: requestConfirmations,
+            callbackGasLimit: callbackGasLimit,
+            numWords: 1,
+            extraArgs: VRFV2PlusClient._argsToBytes(VRFV2PlusClient.ExtraArgsV1({nativePayment: false}))
+            })
         );
         requestToLastPrizeToken[requestId] = seriesID;
         requests[requestId] = Variable.lastPrize;
@@ -586,7 +575,7 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2, ReentrancyGuard {
 
     function fulfillRandomWords(
         uint256 requestId,
-        uint256[] memory randomWords
+        uint256[] calldata randomWords
     ) internal override {
         Variable variable = requests[requestId];
         if (variable == Variable.reveal) {
@@ -598,7 +587,7 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2, ReentrancyGuard {
 
     function fulfillRevealRandomWords(
         uint256 requestId,
-        uint256[] memory randomWords
+        uint256[] calldata randomWords
     ) internal {
         uint256[] memory tokenIDs = requestToRevealToken[requestId];
         Series storage calculateSeries = ICHISeries[
@@ -671,7 +660,7 @@ contract ICHICHAIN is ERC721A, Ownable, VRFConsumerBaseV2, ReentrancyGuard {
 
     function fulfillLastPrizeRandomWords(
         uint256 requestId,
-        uint256[] memory randomWords
+        uint256[] calldata randomWords
     ) internal {
         uint256 seriesID = requestToLastPrizeToken[requestId];
         Series storage series = ICHISeries[seriesID];
