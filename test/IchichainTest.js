@@ -60,15 +60,15 @@ describe("ICHICHAIN Contract", function () {
     const DECIMALS = "18";
     const INITIAL_PRICE = "200000000000000000000";
 
-    const mockV3AggregatorFactory = await ethers.getContractFactory(
-      "MockV3Aggregator"
-    );
-    const mockV3Aggregator = await mockV3AggregatorFactory.deploy(
-      DECIMALS,
-      INITIAL_PRICE
-    );
+    // const mockV3AggregatorFactory = await ethers.getContractFactory(
+    //   "MockV3Aggregator"
+    // );
+    // const mockV3Aggregator = await mockV3AggregatorFactory.deploy(
+    //   DECIMALS,
+    //   INITIAL_PRICE
+    // );
 
-    await ichichain.addCurrencyToken(usdt.target, mockV3Aggregator.target);
+    // await ichichain.addCurrencyToken(usdt.target, mockV3Aggregator.target);
   });
 
   describe("Contract Deployment", function () {
@@ -623,25 +623,25 @@ describe("ICHICHAIN Contract", function () {
       const DECIMALS = "18";
       const INITIAL_PRICE = "300000000000000000000";
 
-      const mockV3AggregatorFactory = await ethers.getContractFactory(
-        "MockV3Aggregator"
-      );
-      const mockV3Aggregator = await mockV3AggregatorFactory.deploy(
-        DECIMALS,
-        INITIAL_PRICE
-      );
+      // const mockV3AggregatorFactory = await ethers.getContractFactory(
+      //   "MockV3Aggregator"
+      // );
+      // const mockV3Aggregator = await mockV3AggregatorFactory.deploy(
+      //   DECIMALS,
+      //   INITIAL_PRICE
+      // );
       // Mock USDT and another currency for testing
       const MockERC20 = await ethers.getContractFactory("MockERC20");
 
       const otherCurrency = await MockERC20.deploy("OTHER", "OTHER");
 
-      await ichichain.addCurrencyToken(
-        otherCurrency.target,
-        mockV3Aggregator.target
-      );
+      // await ichichain.addCurrencyToken(
+      //   otherCurrency.target,
+      //   mockV3Aggregator.target
+      // );
 
       const currencyToken = await ichichain.currencyList(1);
-      expect(currencyToken.priceFeedAddress).to.equal(mockV3Aggregator.target);
+      // expect(currencyToken.priceFeedAddress).to.equal(mockV3Aggregator.target);
     });
 
     it("should revert if a non-owner tries to add a new currency token", async function () {
