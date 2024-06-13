@@ -59,7 +59,7 @@ contract ICHICHAIN is ERC721A, VRFConsumerBaseV2Plus, ReentrancyGuard {
     // Event emitted when a series lastPrizeOwner is updated
     event UpdateSeriesLastPrizeOwner(
         uint256 indexed seriesID,
-        address lastPrizeOwner
+        address[] lastPrizeOwner
     );
 
     //Event emitted when a series remainingTicketNumbers is updated
@@ -102,9 +102,9 @@ contract ICHICHAIN is ERC721A, VRFConsumerBaseV2Plus, ReentrancyGuard {
         bool tokenRevealed
     );
     // Event emitted when a last prize random number request is sent
-    event LastPrizeDraw(uint256 requestId, uint256 seriesID);
+    event LastPrizeDraw(uint256 requestId, uint256 seriesID, uint256 quantity);
     // Event emitted when a last prize random number request is fulfilled
-    event LastPrizeWinner(uint256 requestId, uint256 randomWord);
+    event LastPrizeWinner(uint256 requestId, uint256[] randomWord);
     // Event emitted when a reveal random number request is sent
     event RevealDrawSent(uint256 requestId, uint256[] tokenIDs);
     // Event emitted when a reveal random number request is fulfilled
@@ -140,7 +140,7 @@ contract ICHICHAIN is ERC721A, VRFConsumerBaseV2Plus, ReentrancyGuard {
         bool isGoodsArrived; // 是否獎品已送達開放Reveal
         uint256 estimateDeliverTime; // 預估到貨時間
         uint256 exchangeExpireTime; // 取貨最後時間
-        address lastPrizeOwner; // 最後一賞得主
+        address[] lastPrizeOwner; // 最後一賞得主
         string exchangeTokenURI; // 兌換獎品修改metadata
         string unrevealTokenURI; // 抽獎前票券長相
         string revealTokenURI; // 抽獎後票券長相
@@ -531,12 +531,14 @@ contract ICHICHAIN is ERC721A, VRFConsumerBaseV2Plus, ReentrancyGuard {
         }
         uint256 requestId = s_vrfCoordinator.requestRandomWords(
             VRFV2PlusClient.RandomWordsRequest({
-            keyHash: s_keyHash,
-            subId: s_subscriptionId,
-            requestConfirmations: requestConfirmations,
-            callbackGasLimit: callbackGasLimit,
-            numWords: uint32(tokenIDs.length),
-            extraArgs: VRFV2PlusClient._argsToBytes(VRFV2PlusClient.ExtraArgsV1({nativePayment: false}))
+                keyHash: s_keyHash,
+                subId: s_subscriptionId,
+                requestConfirmations: requestConfirmations,
+                callbackGasLimit: callbackGasLimit,
+                numWords: uint32(tokenIDs.length),
+                extraArgs: VRFV2PlusClient._argsToBytes(
+                    VRFV2PlusClient.ExtraArgsV1({nativePayment: false})
+                )
             })
         );
         requestToRevealToken[requestId] = tokenIDs;
@@ -545,12 +547,15 @@ contract ICHICHAIN is ERC721A, VRFConsumerBaseV2Plus, ReentrancyGuard {
     }
 
     // Function to choose the winner of a series last prize with vrf
-    function chooseLastPrizeWinner(uint256 seriesID) public onlyOwner {
+    function chooseLastPrizeWinner(
+        uint256 seriesID,
+        uint32 quantity
+    ) public onlyOwner {
         Series storage series = ICHISeries[seriesID];
         if (series.remainingTicketNumbers != 0) {
             revert NotSoldOutYet();
         }
-        if (series.lastPrizeOwner != address(0)) {
+        if (series.lastPrizeOwner.length != 0) {
             revert AlreadyChoseWinner();
         }
         if (series.isRefund) {
@@ -560,17 +565,19 @@ contract ICHICHAIN is ERC721A, VRFConsumerBaseV2Plus, ReentrancyGuard {
         // Request randomness for each token
         uint256 requestId = s_vrfCoordinator.requestRandomWords(
             VRFV2PlusClient.RandomWordsRequest({
-            keyHash: s_keyHash,
-            subId: s_subscriptionId,
-            requestConfirmations: requestConfirmations,
-            callbackGasLimit: callbackGasLimit,
-            numWords: 1,
-            extraArgs: VRFV2PlusClient._argsToBytes(VRFV2PlusClient.ExtraArgsV1({nativePayment: false}))
+                keyHash: s_keyHash,
+                subId: s_subscriptionId,
+                requestConfirmations: requestConfirmations,
+                callbackGasLimit: callbackGasLimit,
+                numWords: quantity,
+                extraArgs: VRFV2PlusClient._argsToBytes(
+                    VRFV2PlusClient.ExtraArgsV1({nativePayment: false})
+                )
             })
         );
         requestToLastPrizeToken[requestId] = seriesID;
         requests[requestId] = Variable.lastPrize;
-        emit LastPrizeDraw(requestId, seriesID);
+        emit LastPrizeDraw(requestId, seriesID, quantity);
     }
 
     function fulfillRandomWords(
@@ -668,30 +675,35 @@ contract ICHICHAIN is ERC721A, VRFConsumerBaseV2Plus, ReentrancyGuard {
         uint256[] memory tokensInSeries = seriesTokens[seriesID];
         uint256 totalTokensInSeries = tokensInSeries.length;
 
-        // Use the random number to select the winner
-        uint256 randomIndex = randomWords[0] % totalTokensInSeries;
-        address winnerAddress = ownerOf(tokensInSeries[randomIndex]);
-        // Mint the last prize token to the winner address
-        _safeMint(winnerAddress, 1);
-        uint256 newTokenId = _nextTokenId() - 1;
-        ticketStatusDetail[newTokenId].seriesID = seriesID;
-        ticketStatusDetail[newTokenId].tokenRevealedPrize = 999;
-        ticketStatusDetail[newTokenId].tokenRevealed = true;
+        // Loop over the randomWords array
+        for (uint256 i = 0; i < randomWords.length; i++) {
+            // Use the random number to select the winner
+            uint256 randomIndex = randomWords[i] % totalTokensInSeries;
+            address winnerAddress = ownerOf(tokensInSeries[randomIndex]);
+            // Mint the last prize token to the winner address
+            _safeMint(winnerAddress, 1);
+            uint256 newTokenId = _nextTokenId() - 1;
+            ticketStatusDetail[newTokenId].seriesID = seriesID;
+            ticketStatusDetail[newTokenId].tokenRevealedPrize = 999;
+            ticketStatusDetail[newTokenId].tokenRevealed = true;
 
-        series.lastPrizeOwner = winnerAddress;
+            // Add the winner to the lastPrizeOwner array
+            series.lastPrizeOwner.push(winnerAddress);
+
+            // Emit event for the new ticket status
+            emit NewTicketStatus(
+                newTokenId,
+                seriesID,
+                999,
+                false,
+                true,
+                winnerAddress
+            );
+        }
         // Emit event for the updated series information
-        emit UpdateSeriesLastPrizeOwner(seriesID, winnerAddress);
-        // Emit event for the new ticket status
-        emit NewTicketStatus(
-            newTokenId,
-            seriesID,
-            999,
-            false,
-            true,
-            winnerAddress
-        );
+        emit UpdateSeriesLastPrizeOwner(seriesID, series.lastPrizeOwner);
         // Emit event for the last prize winner
-        emit LastPrizeWinner(requestId, randomWords[0]);
+        emit LastPrizeWinner(requestId, randomWords);
         delete requestToLastPrizeToken[requestId];
     }
 
@@ -839,5 +851,11 @@ contract ICHICHAIN is ERC721A, VRFConsumerBaseV2Plus, ReentrancyGuard {
         uint256 seriesID
     ) public view returns (subPrize[] memory) {
         return ICHISeries[seriesID].subPrizes;
+    }
+
+    function getLastPrizeWinner(
+        uint256 seriesID
+    ) public view returns (address[] memory) {
+        return ICHISeries[seriesID].lastPrizeOwner;
     }
 }
