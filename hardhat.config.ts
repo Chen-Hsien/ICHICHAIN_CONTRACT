@@ -25,10 +25,15 @@ const config: HardhatUserConfig = {
       gasPrice: 5e9, // adjust gas price if needed
       accounts: [process.env.PRIVATE_KEY as string],
     },
+    polygon: {
+      url: "https://polygon.drpc.org",
+      chainId: 137,
+      accounts: [process.env.PRIVATE_KEY as string],
+    },
   },
 
   etherscan: {
-    apiKey: process.env.BNB_API_KEY,
+    apiKey: process.env.POLYGONSCAN_API_KEY,
 },
 };
 
