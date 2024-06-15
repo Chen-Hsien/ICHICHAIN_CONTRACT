@@ -37,18 +37,18 @@ const seriesData = [
   // Repeat for other series...
   {
     seriesName: "YU-GI-OH! SERIES VOL.3",
-    price: ethers.parseEther("10"), // Example price in Ether
-    priceInTWD: 300,
-    estimateDeliverTime: Math.floor(Date.now() / 1000),
+    price: ethers.parseEther("3"), // Example price in Ether
+    priceInTWD: 100,
+    estimateDeliverTime: 1718625600,
     totalPrizeQuantity: 80,
     exchangeTokenURI:
-      "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmcPrzGkq1DKDDrQ1NpXxYJBhRDGrpp4H1hdfz62mJm3yG/",
+      "https://lime-basic-thrush-351.mypinata.cloud/ipfs/Qmf5db116gdHfssfDGW83CyEYD1oUpoLnqR8ECLT4EiAG5/",
     unrevealTokenURI:
-      "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmYqPLb3bUowPsMa3hXz5mosBW6N1zmut2PNuh5GuQWfQj/1",
+      "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmU9brYLGCpTB6kuVLSeM466mwWGHAio6Gc7U1k2Sp8aEm",
     revealTokenURI:
-      "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmSV7FFzoY9iNCeu874HxVKCCgZ9yXraE7LSqDhdKUbRUp/",
+      "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmU5aNDhTVLdFNGyvu5NX4qCmJr1QFfUCCMiKhAgWKRvRu/",
     seriesMetaDataURI:
-      "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmVo7xG7d9iXn3yn5K9oXKxzgu4fC7tJoNESjcFWZ8u6Uz",
+      "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmPmUrBSNhW6DaThVfhwv2Xt9fchwTJ7SiyETYkMYZCP5Y",
     prizes: [
       {
         subPrizeID: 1,
@@ -289,14 +289,14 @@ const seriesData = [
     seriesName: "Comic Nova14 - tinaaaaalee.cosplay",
     price: ethers.parseEther("12.5"), // Example price in Ether
     priceInTWD: 400,
-    estimateDeliverTime: 1716480321,
+    estimateDeliverTime: 1718625600,
     totalPrizeQuantity: 346,
     exchangeTokenURI:
-      "https://lime-basic-thrush-351.mypinata.cloud/ipfs/Qme5zEcxXy22uDopvo8HCmUkM4yYoDcXY1wjgStRbcWiVQ/",
+      "https://lime-basic-thrush-351.mypinata.cloud/ipfs/Qmesc22Uk7d2eTfzcF1FyZau7Amf4yAcKqcwbUJGLJP6ud/",
     unrevealTokenURI:
-      "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmSRGc9Wz28NK3dCjUkM7sSuX1e36y3qiqW2hyQxQyKJBa",
+      "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmWvVU6yZowstj1rr4ey6G1n5mWmwMhefEoyqhMedGPqCY",
     revealTokenURI:
-      "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmR6cnyxQ9mfS4Mgxhsb15MVxXC6f25TaQ1wGwDbbU5t9g/",
+      "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmYkVaNGNuQv51wjjsJj2fyBF29b2mmRnz3C1b9o6PM9yw/",
     seriesMetaDataURI:
       "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmXzgirac9MiZPAXkHG6uR4itehV8rpJJHNTWn2M8eN7jK",
     prizes: [
@@ -731,7 +731,7 @@ async function main() {
   // Deploy the contract
   const ICHICHAINFactory = await ethers.getContractFactory("ICHICHAIN");
   const ICHICHAINContract = await ICHICHAINFactory.deploy(
-    process.env.BNB_LINK_SUBSCRIPTIONS || "",
+    process.env.POLYGON_LINK_SUBSCRIPTIONS || "",
   );
   console.log("Deploying ICHICHAIN contract...");
   await ICHICHAINContract.waitForDeployment();
@@ -768,13 +768,13 @@ async function main() {
     await ICHICHAINContract.updateSeriesSubPrize(index, prizes);
   }
   await ICHICHAINContract.addCurrencyToken(
-    "0x69a68F1a7C3A502cf9A290519b2088B1848BF259",
-    "0x69a68F1a7C3A502cf9A290519b2088B1848BF259",
+    "0xc2132D05D31c914a87C6611C10748AEb04B58e8F",
+    "0xc2132D05D31c914a87C6611C10748AEb04B58e8F",
     ethers.parseEther("1")
   );
-  for (const [index] of seriesData.entries()) {
-    await ICHICHAINContract.goodsArrived(index);
-  }
+  // for (const [index] of seriesData.entries()) {
+  //   await ICHICHAINContract.goodsArrived(index);
+  // }
 }
 
 main().catch((error) => {

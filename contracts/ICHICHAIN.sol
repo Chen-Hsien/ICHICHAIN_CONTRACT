@@ -169,8 +169,6 @@ contract ICHICHAIN is ERC721A, VRFConsumerBaseV2Plus, ReentrancyGuard {
 
     Currency[] public currencyList;
 
-    // mumbai price feed matic/usdt 0xd0D5e3DB44DE05E9F294BB0a3bEEaF030DE24Ada
-
     // Custom error messages
     error GoodsAlreadyArrived();
     error GoodsNotArrived();
@@ -196,12 +194,10 @@ contract ICHICHAIN is ERC721A, VRFConsumerBaseV2Plus, ReentrancyGuard {
         uint256 subscriptionId
     )
         ERC721A("ICHICHAIN", "ICHI")
-        VRFConsumerBaseV2Plus(0xDA3b641D438362C440Ac5458c57e00a712b66700)
+        VRFConsumerBaseV2Plus(0xec0Ed46f36576541C75739E915ADbCb3DE24bD77)
     {
         s_subscriptionId = subscriptionId;
-        s_keyHash = 0x8596b430971ac45bdf6088665b9ad8e8630c9d5049ab54b14dff711bee7c0e26;
-        //plg s_keyHash = 0x4b09e658ed251bcafeebbc69400383d49f344ace09b9576fe248bb02c003fe9f;
-        //arb sepolia s_keyHash = 0x027f94ff1465b3525f9fc03e9ff7d6d2c0953482246dd6ae07570c45d6631414;
+        s_keyHash = 0x192234a5cda4cc07c0b66dfbcfbb785341cc790edc50032e842667dbb506cada;
     }
 
     // Function to create a new NFT series
@@ -350,7 +346,7 @@ contract ICHICHAIN is ERC721A, VRFConsumerBaseV2Plus, ReentrancyGuard {
         Series storage series = ICHISeries[seriesID];
         //TODO: change to real matic/usdt contract address
         int256 maticPriceInUSDT = getChainlinkDataFeedLatestAnswer(
-            0x2514895c72f50D8bd4B4F9b1110F0D6bD2c97526
+            0xAB594600376Ec9fD91F8e885dADF0CE036862dE0
         ); // Get latest MATIC/USDT rate
         uint256 maticPerUSDTInWei = uint256(maticPriceInUSDT) * 1e10; // Convert price to wei (assuming 8 decimals from Chainlink)
         uint256 totalCostInMaticWei = (series.priceInUSDTWei *
@@ -412,7 +408,6 @@ contract ICHICHAIN is ERC721A, VRFConsumerBaseV2Plus, ReentrancyGuard {
         uint256 toeknPerUSDTInWei;
         uint256 totalCostInWei;
         // if currencyToken is usdt skip get price,
-        // TODO:// change to real usdt contract address
         if (customizedRateToUSDTinWei != 0) {
             totalCostInWei =
                 (series.priceInUSDTWei * quantity * 1e18) /
