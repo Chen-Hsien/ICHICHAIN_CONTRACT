@@ -285,65 +285,65 @@ const seriesData = [
   //     },
   //   ],
   // },
-  // {
-  //   seriesName: "Comic Nova14 - tinaaaaalee.cosplay",
-  //   price: ethers.parseEther("12.5"), // Example price in Ether
-  //   priceInTWD: 400,
-  //   estimateDeliverTime: 1718559361,
-  //   totalPrizeQuantity: 346,
-  //   exchangeTokenURI:
-  //     "https://lime-basic-thrush-351.mypinata.cloud/ipfs/Qmesc22Uk7d2eTfzcF1FyZau7Amf4yAcKqcwbUJGLJP6ud/",
-  //   unrevealTokenURI:
-  //     "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmWvVU6yZowstj1rr4ey6G1n5mWmwMhefEoyqhMedGPqCY",
-  //   revealTokenURI:
-  //     "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmYkVaNGNuQv51wjjsJj2fyBF29b2mmRnz3C1b9o6PM9yw/",
-  //   seriesMetaDataURI:
-  //     "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmXzgirac9MiZPAXkHG6uR4itehV8rpJJHNTWn2M8eN7jK",
-  //   prizes: [
-  //     {
-  //       subPrizeID: 1,
-  //       prizeGroup: "A",
-  //       subPrizeName: "A1",
-  //       subPrizeRemainingQuantity: 4,
-  //     },
-  //     {
-  //       subPrizeID: 2,
-  //       prizeGroup: "B",
-  //       subPrizeName: "B1",
-  //       subPrizeRemainingQuantity: 43,
-  //     },
-  //     {
-  //       subPrizeID: 3,
-  //       prizeGroup: "C",
-  //       subPrizeName: "C1",
-  //       subPrizeRemainingQuantity: 88,
-  //     },
-  //     {
-  //       subPrizeID: 4,
-  //       prizeGroup: "D",
-  //       subPrizeName: "D1",
-  //       subPrizeRemainingQuantity: 26,
-  //     },
-  //     {
-  //       subPrizeID: 5,
-  //       prizeGroup: "E",
-  //       subPrizeName: "E1",
-  //       subPrizeRemainingQuantity: 84,
-  //     },
-  //     {
-  //       subPrizeID: 6,
-  //       prizeGroup: "F",
-  //       subPrizeName: "F1",
-  //       subPrizeRemainingQuantity: 43,
-  //     },
-  //     {
-  //       subPrizeID: 7,
-  //       prizeGroup: "G",
-  //       subPrizeName: "G1",
-  //       subPrizeRemainingQuantity: 58,
-  //     },
-  //   ],
-  // },
+  {
+    seriesName: "Comic Nova14 - tinaaaaalee.cosplay",
+    price: 12.5e6, // Example price in Ether
+    priceInTWD: 400,
+    estimateDeliverTime: 1718559361,
+    totalPrizeQuantity: 346,
+    exchangeTokenURI:
+      "https://lime-basic-thrush-351.mypinata.cloud/ipfs/Qmesc22Uk7d2eTfzcF1FyZau7Amf4yAcKqcwbUJGLJP6ud/",
+    unrevealTokenURI:
+      "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmWvVU6yZowstj1rr4ey6G1n5mWmwMhefEoyqhMedGPqCY",
+    revealTokenURI:
+      "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmYkVaNGNuQv51wjjsJj2fyBF29b2mmRnz3C1b9o6PM9yw/",
+    seriesMetaDataURI:
+      "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmXzgirac9MiZPAXkHG6uR4itehV8rpJJHNTWn2M8eN7jK",
+    prizes: [
+      {
+        subPrizeID: 1,
+        prizeGroup: "A",
+        subPrizeName: "A1",
+        subPrizeRemainingQuantity: 4,
+      },
+      {
+        subPrizeID: 2,
+        prizeGroup: "B",
+        subPrizeName: "B1",
+        subPrizeRemainingQuantity: 43,
+      },
+      {
+        subPrizeID: 3,
+        prizeGroup: "C",
+        subPrizeName: "C1",
+        subPrizeRemainingQuantity: 88,
+      },
+      {
+        subPrizeID: 4,
+        prizeGroup: "D",
+        subPrizeName: "D1",
+        subPrizeRemainingQuantity: 26,
+      },
+      {
+        subPrizeID: 5,
+        prizeGroup: "E",
+        subPrizeName: "E1",
+        subPrizeRemainingQuantity: 84,
+      },
+      {
+        subPrizeID: 6,
+        prizeGroup: "F",
+        subPrizeName: "F1",
+        subPrizeRemainingQuantity: 43,
+      },
+      {
+        subPrizeID: 7,
+        prizeGroup: "G",
+        subPrizeName: "G1",
+        subPrizeRemainingQuantity: 58,
+      },
+    ],
+  },
 
   // Repeat for other series...
   // {
