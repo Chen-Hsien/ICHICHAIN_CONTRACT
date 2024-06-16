@@ -37,9 +37,9 @@ const seriesData = [
   // Repeat for other series...
   {
     seriesName: "YU-GI-OH! SERIES VOL.3",
-    price: ethers.parseEther("3"), // Example price in Ether
+    price: 3e6, // Example price in Ether
     priceInTWD: 100,
-    estimateDeliverTime: 1718625600,
+    estimateDeliverTime: 1718559361,
     totalPrizeQuantity: 80,
     exchangeTokenURI:
       "https://lime-basic-thrush-351.mypinata.cloud/ipfs/Qmf5db116gdHfssfDGW83CyEYD1oUpoLnqR8ECLT4EiAG5/",
@@ -287,9 +287,9 @@ const seriesData = [
   // },
   {
     seriesName: "Comic Nova14 - tinaaaaalee.cosplay",
-    price: ethers.parseEther("12.5"), // Example price in Ether
+    price: 12.5e6, // Example price in Ether
     priceInTWD: 400,
-    estimateDeliverTime: 1718625600,
+    estimateDeliverTime: 1718559361,
     totalPrizeQuantity: 346,
     exchangeTokenURI:
       "https://lime-basic-thrush-351.mypinata.cloud/ipfs/Qmesc22Uk7d2eTfzcF1FyZau7Amf4yAcKqcwbUJGLJP6ud/",
@@ -770,11 +770,13 @@ async function main() {
   await ICHICHAINContract.addCurrencyToken(
     "0xc2132D05D31c914a87C6611C10748AEb04B58e8F",
     "0xc2132D05D31c914a87C6611C10748AEb04B58e8F",
-    ethers.parseEther("1")
+    1e6,
+    6
   );
-  // for (const [index] of seriesData.entries()) {
-  //   await ICHICHAINContract.goodsArrived(index);
-  // }
+  
+  for (const [index] of seriesData.entries()) {
+    await ICHICHAINContract.goodsArrived(index);
+  }
 }
 
 main().catch((error) => {
