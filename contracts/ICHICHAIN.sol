@@ -165,6 +165,7 @@ contract ICHICHAIN is ERC721A, VRFConsumerBaseV2Plus, ReentrancyGuard {
         address currencyToken;
         address priceFeedAddress;
         uint256 customizedRateToUSDTinWei;
+        uint8 decimals;
     }
 
     Currency[] public currencyList;
@@ -344,31 +345,37 @@ contract ICHICHAIN is ERC721A, VRFConsumerBaseV2Plus, ReentrancyGuard {
         uint256 quantity
     ) public payable nonReentrant {
         Series storage series = ICHISeries[seriesID];
-        //TODO: change to real matic/usdt contract address
-        int256 maticPriceInUSDT = getChainlinkDataFeedLatestAnswer(
-            0xAB594600376Ec9fD91F8e885dADF0CE036862dE0
-        ); // Get latest MATIC/USDT rate
-        uint256 maticPerUSDTInWei = uint256(maticPriceInUSDT) * 1e10; // Convert price to wei (assuming 8 decimals from Chainlink)
-        uint256 totalCostInMaticWei = (series.priceInUSDTWei *
-            quantity *
-            1e18) / maticPerUSDTInWei;
         if (series.isRefund) {
             revert SeriesIsRefund();
         }
 
+        // Get latest MATIC/USDT rate from Chainlink
+        int256 maticPriceInUSDT = getChainlinkDataFeedLatestAnswer(
+            0xAB594600376Ec9fD91F8e885dADF0CE036862dE0
+        ); // Chainlink MATIC/USDT rate with 8 decimals
+        uint256 maticPerUSDTInWei = uint256(maticPriceInUSDT) * 1e10; // Adjust Chainlink price to 18 decimals
+
+        // Calculate the total cost in MATIC wei
+        uint256 totalCostInMaticWei = (series.priceInUSDTWei * 1e12 *
+            quantity *
+            1e18) / maticPerUSDTInWei;
+
+        // Check if sent MATIC is sufficient
         if (msg.value < totalCostInMaticWei) {
             revert InsufficientMaticSent();
         }
 
+        // Check if there are enough NFTs remaining to mint
         if (quantity > series.remainingTicketNumbers) {
             revert NotEnoughNFTsRemaining();
         }
+
+        // Minting process
         _safeMint(msg.sender, quantity);
         for (uint256 i = 0; i < quantity; ++i) {
             uint256 tokenId = _nextTokenId() - quantity + i;
             ticketStatusDetail[tokenId].seriesID = seriesID;
-            seriesTokens[seriesID].push(tokenId); // Append the token ID to the series
-            // Emit event for the new ticket status
+            seriesTokens[seriesID].push(tokenId); // Track each NFT by series
             emit NewTicketStatus(
                 tokenId,
                 seriesID,
@@ -378,9 +385,9 @@ contract ICHICHAIN is ERC721A, VRFConsumerBaseV2Plus, ReentrancyGuard {
                 msg.sender
             );
         }
-        series.remainingTicketNumbers -= quantity;
 
-        // emit event to update series remaining ticket numbers
+        // Update and emit remaining ticket numbers for the series
+        series.remainingTicketNumbers -= quantity;
         emit UpdateSeriesRemainingTicketNumbers(
             seriesID,
             series.remainingTicketNumbers
@@ -400,52 +407,51 @@ contract ICHICHAIN is ERC721A, VRFConsumerBaseV2Plus, ReentrancyGuard {
         if (series.isRefund) {
             revert SeriesIsRefund();
         }
-        address currencyToken = currencyList[CurrencyIndex].currencyToken;
-        address priceFeedAddress = currencyList[CurrencyIndex].priceFeedAddress;
-        uint256 customizedRateToUSDTinWei = currencyList[CurrencyIndex]
-            .customizedRateToUSDTinWei;
-        int256 priceInUSDT;
-        uint256 toeknPerUSDTInWei;
+
+        Currency memory currency = currencyList[CurrencyIndex];
         uint256 totalCostInWei;
-        // if currencyToken is usdt skip get price,
-        if (customizedRateToUSDTinWei != 0) {
+
+        uint256 adjustedDecimals = 10 ** currency.decimals;
+
+        if (currency.customizedRateToUSDTinWei != 0) {
+            // Use the custom rate if defined
             totalCostInWei =
-                (series.priceInUSDTWei * quantity * 1e18) /
-                customizedRateToUSDTinWei;
+                (series.priceInUSDTWei * quantity * adjustedDecimals) /
+                currency.customizedRateToUSDTinWei;
         } else {
-            priceInUSDT = getChainlinkDataFeedLatestAnswer(priceFeedAddress); // Get latest currency/USDT rate
+           int256 priceInUSDT = getChainlinkDataFeedLatestAnswer(currency.priceFeedAddress); // Get latest currency/USDT rate
             // the calculate logic like mint function
-            toeknPerUSDTInWei = uint256(priceInUSDT) * 1e10; // Convert price to wei (assuming 8 decimals from Chainlink)
+           uint256 toeknPerUSDTInWei = uint256(priceInUSDT) * 1e10; // Convert price to wei (assuming 8 decimals from Chainlink)
             totalCostInWei =
                 (series.priceInUSDTWei * quantity * 1e18) /
                 toeknPerUSDTInWei;
         }
 
         if (
-            IERC20(currencyToken).allowance(msg.sender, address(this)) <
+            IERC20(currency.currencyToken).allowance(msg.sender, address(this)) <
             totalCostInWei
         ) {
             revert InsufficientCurrencyAllowance();
         }
 
-        if (IERC20(currencyToken).balanceOf(msg.sender) < totalCostInWei) {
+        if (IERC20(currency.currencyToken).balanceOf(msg.sender) < totalCostInWei) {
             revert InsufficientCurrencyBalance();
         }
-        IERC20(currencyToken).transferFrom(
+
+        IERC20(currency.currencyToken).transferFrom(
             msg.sender,
             address(this),
             totalCostInWei
         );
-
         if (quantity > series.remainingTicketNumbers) {
             revert NotEnoughNFTsRemaining();
         }
+
         _safeMint(msg.sender, quantity);
         for (uint256 i = 0; i < quantity; ++i) {
             uint256 tokenId = _nextTokenId() - quantity + i;
             ticketStatusDetail[tokenId].seriesID = seriesID;
-            seriesTokens[seriesID].push(tokenId); // Append the token ID to the series
-            // Emit event for the new ticket status
+            seriesTokens[seriesID].push(tokenId);
             emit NewTicketStatus(
                 tokenId,
                 seriesID,
@@ -455,9 +461,8 @@ contract ICHICHAIN is ERC721A, VRFConsumerBaseV2Plus, ReentrancyGuard {
                 msg.sender
             );
         }
-        series.remainingTicketNumbers -= quantity;
 
-        // emit event to update series remaining ticket numbers
+        series.remainingTicketNumbers -= quantity;
         emit UpdateSeriesRemainingTicketNumbers(
             seriesID,
             series.remainingTicketNumbers
@@ -805,10 +810,16 @@ contract ICHICHAIN is ERC721A, VRFConsumerBaseV2Plus, ReentrancyGuard {
     function addCurrencyToken(
         address currencyToken,
         address priceFeedAddress,
-        uint256 customizedRateToUSDTinWei
+        uint256 customizedRateToUSDTinWei,
+        uint8 decimals
     ) external onlyOwner {
         currencyList.push(
-            Currency(currencyToken, priceFeedAddress, customizedRateToUSDTinWei)
+            Currency(
+                currencyToken,
+                priceFeedAddress,
+                customizedRateToUSDTinWei,
+                decimals
+            )
         );
     }
 
