@@ -24,3 +24,5 @@ npx hardhat verify --network mumbai 0x8fCEE249b499CfD2C8F8b8027bE0010f4e82cf10 "
 
 ## Contract Address
 BNB TEST: https://testnet.bscscan.com/address/0xEE755f82D8e366170fC17b79560E1A2D9319d824#code
+POLTGON TEST: https://polygonscan.com/address/0x9D1330Ff2D1bFe039191beBc924648aCfC33ed96
+POLYGON MAINNET: https://polygonscan.com/address/0xD1bFc1c7b2B672aB14E80D40Cb76F9a15a6d3eB0
