@@ -9,9 +9,9 @@ import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/shared/interf
 import "erc721a/contracts/ERC721A.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-// DUODOCHAIN contract implementing ERC721A for efficient batch minting,
+// DOUDOCHAIN contract implementing ERC721A for efficient batch minting,
 // and integrating with Chainlink VRF for randomness in reveals.
-contract DUODOCHAIN is
+contract DOUDOCHAIN is
     ERC721A,
     VRFConsumerBaseV2Plus,
     ReentrancyGuard,
@@ -202,11 +202,11 @@ contract DUODOCHAIN is
     error TokenNotInTheSeries();
     error TokenDoesNotExist();
 
-    // Constructor for setting up the DUODOCHAIN contract
+    // Constructor for setting up the DOUDOCHAIN contract
     constructor(
         uint256 subscriptionId
     )
-        ERC721A("DUODOCHAIN", "DUODO")
+        ERC721A("DOUDOCHAIN", "DOUDO")
         VRFConsumerBaseV2Plus(0xec0Ed46f36576541C75739E915ADbCb3DE24bD77)
     {
         s_subscriptionId = subscriptionId;
