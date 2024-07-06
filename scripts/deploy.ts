@@ -219,132 +219,132 @@ const seriesData = [
       }
     ]
   },
-  {
-    seriesName: "YU-GI-OH! SERIES VOL.3",
-    price: 3e6, // Example price in Ether
-    priceInTWD: 100,
-    estimateDeliverTime: 1719763200,
-    totalPrizeQuantity: 80,
-    isPreOrder: true,
-    exchangeTokenURI:
-      "https://lime-basic-thrush-351.mypinata.cloud/ipfs/Qmf5db116gdHfssfDGW83CyEYD1oUpoLnqR8ECLT4EiAG5/",
-    unrevealTokenURI:
-      "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmU9brYLGCpTB6kuVLSeM466mwWGHAio6Gc7U1k2Sp8aEm",
-    revealTokenURI:
-      "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmU5aNDhTVLdFNGyvu5NX4qCmJr1QFfUCCMiKhAgWKRvRu/",
-    seriesMetaDataURI:
-      "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmX66xLCNDMuJZunP7H5Gh66dBxTDYHe6Dhp9S6h9XSp94",
-    prizes: [
-      {
-        subPrizeID: 1,
-        prizeGroup: "A",
-        subPrizeName: "A1",
-        subPrizeRemainingQuantity: 2,
-      },
-      {
-        subPrizeID: 2,
-        prizeGroup: "B",
-        subPrizeName: "B1",
-        subPrizeRemainingQuantity: 2,
-      },
-      {
-        subPrizeID: 3,
-        prizeGroup: "C",
-        subPrizeName: "C1",
-        subPrizeRemainingQuantity: 2,
-      },
-      {
-        subPrizeID: 4,
-        prizeGroup: "D",
-        subPrizeName: "D1",
-        subPrizeRemainingQuantity: 6,
-      },
-      {
-        subPrizeID: 5,
-        prizeGroup: "E",
-        subPrizeName: "E1",
-        subPrizeRemainingQuantity: 14,
-      },
-      {
-        subPrizeID: 6,
-        prizeGroup: "F",
-        subPrizeName: "F1",
-        subPrizeRemainingQuantity: 2,
-      },
-      {
-        subPrizeID: 7,
-        prizeGroup: "F",
-        subPrizeName: "F2",
-        subPrizeRemainingQuantity: 2,
-      },
-      {
-        subPrizeID: 8,
-        prizeGroup: "F",
-        subPrizeName: "F3",
-        subPrizeRemainingQuantity: 2,
-      },
-      {
-        subPrizeID: 9,
-        prizeGroup: "F",
-        subPrizeName: "F4",
-        subPrizeRemainingQuantity: 2,
-      },
-      {
-        subPrizeID: 10,
-        prizeGroup: "F",
-        subPrizeName: "F5",
-        subPrizeRemainingQuantity: 2,
-      },
-      {
-        subPrizeID: 11,
-        prizeGroup: "F",
-        subPrizeName: "F6",
-        subPrizeRemainingQuantity: 2,
-      },
-      {
-        subPrizeID: 12,
-        prizeGroup: "F",
-        subPrizeName: "F7",
-        subPrizeRemainingQuantity: 2,
-      },
-      {
-        subPrizeID: 13,
-        prizeGroup: "F",
-        subPrizeName: "F8",
-        subPrizeRemainingQuantity: 2,
-      },
-      {
-        subPrizeID: 14,
-        prizeGroup: "F",
-        subPrizeName: "F9",
-        subPrizeRemainingQuantity: 2,
-      },
-      {
-        subPrizeID: 15,
-        prizeGroup: "F",
-        subPrizeName: "F10",
-        subPrizeRemainingQuantity: 2,
-      },
-      {
-        subPrizeID: 16,
-        prizeGroup: "F",
-        subPrizeName: "F11",
-        subPrizeRemainingQuantity: 2,
-      },
-      {
-        subPrizeID: 17,
-        prizeGroup: "F",
-        subPrizeName: "F12",
-        subPrizeRemainingQuantity: 2,
-      },
-      {
-        subPrizeID: 18,
-        prizeGroup: "G",
-        subPrizeName: "G1",
-        subPrizeRemainingQuantity: 30,
-      },
-    ],
-  },
+  // {
+  //   seriesName: "YU-GI-OH! SERIES VOL.3",
+  //   price: 3e6, // Example price in Ether
+  //   priceInTWD: 100,
+  //   estimateDeliverTime: 1719763200,
+  //   totalPrizeQuantity: 80,
+  //   isPreOrder: true,
+  //   exchangeTokenURI:
+  //     "https://lime-basic-thrush-351.mypinata.cloud/ipfs/Qmf5db116gdHfssfDGW83CyEYD1oUpoLnqR8ECLT4EiAG5/",
+  //   unrevealTokenURI:
+  //     "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmU9brYLGCpTB6kuVLSeM466mwWGHAio6Gc7U1k2Sp8aEm",
+  //   revealTokenURI:
+  //     "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmU5aNDhTVLdFNGyvu5NX4qCmJr1QFfUCCMiKhAgWKRvRu/",
+  //   seriesMetaDataURI:
+  //     "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmX66xLCNDMuJZunP7H5Gh66dBxTDYHe6Dhp9S6h9XSp94",
+  //   prizes: [
+  //     {
+  //       subPrizeID: 1,
+  //       prizeGroup: "A",
+  //       subPrizeName: "A1",
+  //       subPrizeRemainingQuantity: 2,
+  //     },
+  //     {
+  //       subPrizeID: 2,
+  //       prizeGroup: "B",
+  //       subPrizeName: "B1",
+  //       subPrizeRemainingQuantity: 2,
+  //     },
+  //     {
+  //       subPrizeID: 3,
+  //       prizeGroup: "C",
+  //       subPrizeName: "C1",
+  //       subPrizeRemainingQuantity: 2,
+  //     },
+  //     {
+  //       subPrizeID: 4,
+  //       prizeGroup: "D",
+  //       subPrizeName: "D1",
+  //       subPrizeRemainingQuantity: 6,
+  //     },
+  //     {
+  //       subPrizeID: 5,
+  //       prizeGroup: "E",
+  //       subPrizeName: "E1",
+  //       subPrizeRemainingQuantity: 14,
+  //     },
+  //     {
+  //       subPrizeID: 6,
+  //       prizeGroup: "F",
+  //       subPrizeName: "F1",
+  //       subPrizeRemainingQuantity: 2,
+  //     },
+  //     {
+  //       subPrizeID: 7,
+  //       prizeGroup: "F",
+  //       subPrizeName: "F2",
+  //       subPrizeRemainingQuantity: 2,
+  //     },
+  //     {
+  //       subPrizeID: 8,
+  //       prizeGroup: "F",
+  //       subPrizeName: "F3",
+  //       subPrizeRemainingQuantity: 2,
+  //     },
+  //     {
+  //       subPrizeID: 9,
+  //       prizeGroup: "F",
+  //       subPrizeName: "F4",
+  //       subPrizeRemainingQuantity: 2,
+  //     },
+  //     {
+  //       subPrizeID: 10,
+  //       prizeGroup: "F",
+  //       subPrizeName: "F5",
+  //       subPrizeRemainingQuantity: 2,
+  //     },
+  //     {
+  //       subPrizeID: 11,
+  //       prizeGroup: "F",
+  //       subPrizeName: "F6",
+  //       subPrizeRemainingQuantity: 2,
+  //     },
+  //     {
+  //       subPrizeID: 12,
+  //       prizeGroup: "F",
+  //       subPrizeName: "F7",
+  //       subPrizeRemainingQuantity: 2,
+  //     },
+  //     {
+  //       subPrizeID: 13,
+  //       prizeGroup: "F",
+  //       subPrizeName: "F8",
+  //       subPrizeRemainingQuantity: 2,
+  //     },
+  //     {
+  //       subPrizeID: 14,
+  //       prizeGroup: "F",
+  //       subPrizeName: "F9",
+  //       subPrizeRemainingQuantity: 2,
+  //     },
+  //     {
+  //       subPrizeID: 15,
+  //       prizeGroup: "F",
+  //       subPrizeName: "F10",
+  //       subPrizeRemainingQuantity: 2,
+  //     },
+  //     {
+  //       subPrizeID: 16,
+  //       prizeGroup: "F",
+  //       subPrizeName: "F11",
+  //       subPrizeRemainingQuantity: 2,
+  //     },
+  //     {
+  //       subPrizeID: 17,
+  //       prizeGroup: "F",
+  //       subPrizeName: "F12",
+  //       subPrizeRemainingQuantity: 2,
+  //     },
+  //     {
+  //       subPrizeID: 18,
+  //       prizeGroup: "G",
+  //       subPrizeName: "G1",
+  //       subPrizeRemainingQuantity: 30,
+  //     },
+  //   ],
+  // },
 
   // Repeat for other series...
   // {
@@ -730,15 +730,15 @@ const seriesData = [
 
 async function main() {
   // Deploy the contract
-  const DUODOCHAINFactory = await ethers.getContractFactory("DUODOCHAIN");
-  const DUODOCHAINContract = await DUODOCHAINFactory.deploy(
+  const DOUDOCHAINFactory = await ethers.getContractFactory("DOUDOCHAIN");
+  const DOUDOCHAINContract = await DOUDOCHAINFactory.deploy(
     process.env.POLYGON_LINK_SUBSCRIPTIONS || "",
     // process.env.BNB_LINK_SUBSCRIPTIONS || "",
   );
-  console.log("Deploying DUODOCHAIN contract...");
-  await DUODOCHAINContract.waitForDeployment();
+  console.log("Deploying DOUDOCHAIN contract...");
+  await DOUDOCHAINContract.waitForDeployment();
 
-  console.log("Contract deployed to:", DUODOCHAINContract.target);
+  console.log("Contract deployed to:", DOUDOCHAINContract.target);
 
   // Create each series
   for (const [index, series] of seriesData.entries()) {
@@ -753,7 +753,7 @@ async function main() {
       };
     });
 
-    await DUODOCHAINContract.createSeries(
+    await DOUDOCHAINContract.createSeries(
       series.seriesName,
       series.price,
       series.priceInTWD,
@@ -768,11 +768,11 @@ async function main() {
     // sleep for 2 mins
     await new Promise((resolve) => setTimeout(resolve, 90000));
     // Update the series prizes by for each length of the prizes
-    await DUODOCHAINContract.updateSeriesSubPrize(index, prizes);
+    await DOUDOCHAINContract.updateSeriesSubPrize(index, prizes);
   }
 
   // 0x673e82bDcB9dE5605C0eCAc91b1a64d6e176c7E4 bnbtest token
-  await DUODOCHAINContract.addCurrencyToken(
+  await DOUDOCHAINContract.addCurrencyToken(
     "0xc2132D05D31c914a87C6611C10748AEb04B58e8F",
     "0xc2132D05D31c914a87C6611C10748AEb04B58e8F",
     1e6,
@@ -780,7 +780,7 @@ async function main() {
   );
   
   // for (const [index] of seriesData.entries()) {
-  //   await DUODOCHAINContract.goodsArrived(index);
+  //   await DOUDOCHAINContract.goodsArrived(index);
   // }
 }
 
