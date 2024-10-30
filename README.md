@@ -20,6 +20,9 @@ https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmZTqjCCkXe3VNAP5vCXVNo13AfZjz
 npx hardhat compile
 npx hardhat run scripts/deploy.ts --network mumbai
 npx hardhat verify --network mumbai 0x8fCEE249b499CfD2C8F8b8027bE0010f4e82cf10 "constructor1" "constructor2"
+npx hardhat verify --network bscTestnet 0x022CB0f165dC491878839AC9DE9D9292E2318eC6 "0x2f758DE9c4B83ed1a3B777b5f905d46Fa1c2C725" "0x9D6f354C356E6118dF84D279670CA27d86E26feE" "0x9D6f354C356E6118dF84D279670CA27d86E26feE"
+
+npx hardhat verify --network bscTestnet 0x8d9514aA146a4Ed1a353258847073B94ff75a512 "0x2f758DE9c4B83ed1a3B777b5f905d46Fa1c2C725" "0x022CB0f165dC491878839AC9DE9D9292E2318eC6"
 ```
 
 ## Contract Address
