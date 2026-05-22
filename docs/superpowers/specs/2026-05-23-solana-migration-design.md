@@ -8,8 +8,10 @@ Approved direction from product owner:
 - Build the Solana version as a single Anchor program with business modules.
 - Use formal wallet-recognized NFTs with the highest practical ecosystem support.
 - Use Switchboard randomness in production and a mock randomness provider in tests.
-- Preserve SOL and SPL token payment flows for ticket minting.
-- Redesign DOUDO as non-transferable reward points because of Taiwan regulatory concerns.
+- Ticket minting is paid primarily with non-transferable DOUDO points, with USDT SPL token as the secondary payment option.
+- Redesign DOUDO as non-transferable reward points with 18 decimals because of Taiwan regulatory concerns and continuity with existing EVM reward accounting.
+- Ticket NFTs and membership NFTs remain freely transferable as standard Metaplex `NonFungible` NFTs.
+- Each series chooses whether tickets reveal immediately after mint or whether users trigger reveal themselves.
 - Write tests from the existing Solidity behavior before implementation.
 
 This document is a technical product spec, not a legal opinion. The DOUDO points design reduces transferability and market-circulation risk, but Taiwan legal classification still depends on the actual business model, marketing, redemption terms, cash-out policy, merchant scope, and regulatory advice.
@@ -65,6 +67,10 @@ Required changes:
 - Series information remains editable after `goods_arrived`.
 - `series_metadata_uri`, `unreveal_token_uri`, `reveal_token_uri`, and `exchange_token_uri` remain editable after `goods_arrived`.
 - Sub-prize data remains editable after `goods_arrived`, subject to reveal accounting safety.
+- Series information and metadata remain editable after refund so operations can correct indexer/display content.
+- Series creation includes `reveal_mode`:
+  - `UserTriggered`: preserves the current flow where users call reveal after goods arrive.
+  - `ImmediateOnMint`: minting automatically opens a reveal request for the newly minted tickets. With production Switchboard, fulfillment is still asynchronous; with mock randomness in tests, assignment can be deterministic.
 
 ### `contracts/DOUDOCOINNFT.sol`
 
@@ -86,7 +92,7 @@ Solana target:
 - Voucher NFTs and membership NFTs are formal Metaplex NFTs.
 - Voucher and membership business state is stored in program-owned PDAs.
 - Voucher burn redeems non-transferable DOUDO points.
-- Membership state updates are enforced by program instructions.
+- Membership NFTs remain freely transferable. Membership benefits are resolved by current NFT ownership plus program state synchronization.
 
 ## Architecture
 
@@ -98,27 +104,29 @@ Use one Anchor program named `doudou_program` with these internal modules:
 - `voucher`: voucher NFT and membership NFT logic.
 - `nft`: CPI helpers for SPL Token mint creation and Metaplex Token Metadata creation/update.
 - `randomness`: production Switchboard adapter and local mock adapter.
-- `payment`: SOL/SPL payment accounting and withdrawal.
+- `payment`: DOUDO point burn payment, USDT SPL token payment, and USDT withdrawal.
 
 External programs:
 
-- System Program for account creation and SOL movement.
+- System Program for account creation and rent funding.
 - Token-2022 Program for DOUDO non-transferable points.
-- SPL Token Program for standard NFT mints and payment token accounts.
+- SPL Token Program for standard NFT mints and USDT token accounts.
 - Associated Token Program for ATAs.
 - Metaplex Token Metadata Program for formal NFT metadata.
 - Switchboard program for production randomness.
 
 Standards rationale:
 
-- Metaplex Token Metadata is the most widely supported route for wallet-visible Solana NFTs. Each ticket, last prize, voucher, and membership NFT should be a supply-one, decimals-zero mint with a Metaplex metadata account and master edition.
+- Metaplex Token Metadata is the most widely supported route for wallet-visible Solana NFTs. Each ticket, last prize, voucher, and membership NFT should be a standard transferable supply-one, decimals-zero `NonFungible` mint with a Metaplex metadata account and master edition.
 - DOUDO fungible points should use Token-2022 `NonTransferable` because the extension makes token transfers fail at the token-program level. This is stronger than only checking transfers inside the business program.
 - Switchboard randomness gives production oracle-backed randomness; mock randomness makes tests deterministic.
+- Programmable NFTs are reserved for a later version if transfer restrictions become necessary. The first version uses standard `NonFungible` assets because wallet and marketplace support is broader, and the current product requirement is free transferability.
 
 References:
 
 - Solana Metaplex metadata: https://solana.com/docs/tokens/metaplex
 - Metaplex Token Metadata overview: https://www.metaplex.com/docs/smart-contracts/token-metadata
+- Metaplex programmable NFTs: https://www.metaplex.com/docs/token-metadata/pnfts
 - Solana Token-2022 non-transferable tokens: https://solana.com/docs/tokens/extensions/non-transferrable-tokens
 - Switchboard Solana randomness: https://docs.switchboard.xyz/docs-by-chain/solana-svm/randomness
 - Anchor account constraints: https://www.anchor-lang.com/docs/references/account-constraints
@@ -202,6 +210,7 @@ Fields:
 - `exchange_expire_time: i64`
 - `is_refund: bool`
 - `is_pre_order: bool`
+- `reveal_mode: RevealMode`
 - `exchange_token_uri: String`
 - `unreveal_token_uri: String`
 - `reveal_token_uri: String`
@@ -219,6 +228,12 @@ Responsibilities:
 - Stores mutable series configuration.
 - Tracks supply and lock state.
 - Tracks reveal and last prize status.
+- Controls whether tickets use user-triggered reveal or automatic reveal request creation after mint.
+
+`RevealMode` values:
+
+- `UserTriggered`
+- `ImmediateOnMint`
 
 URI limits:
 
@@ -330,30 +345,28 @@ Responsibilities:
 - Replaces `Series.lastPrizeOwner`.
 - Avoids an unbounded vector inside `Series`.
 
-### `CurrencyConfig`
+### `UsdtPaymentConfig`
 
 PDA seeds:
 
 ```text
-["currency", currency_index_le_bytes]
+["payment", "usdt"]
 ```
 
 Fields:
 
-- `currency_index: u16`
 - `mint: Pubkey`
 - `treasury_token_account: Pubkey`
-- `price_feed: Pubkey`
-- `customized_rate_to_usdt_base_units: u64`
 - `decimals: u8`
 - `is_active: bool`
 - `bump: u8`
 
 Responsibilities:
 
-- Replaces `currencyList`.
-- If `customized_rate_to_usdt_base_units != 0`, use fixed rate.
-- Otherwise use an oracle adapter account.
+- Replaces the broad Solidity `currencyList` for the first Solana release.
+- Supports USDT-denominated ticket prices directly.
+- Keeps the payment surface narrow: DOUDO points or USDT only.
+- Additional SPL currencies can be added later with a generalized currency config if the product needs them.
 
 ### `RandomnessRequest`
 
@@ -583,7 +596,7 @@ Tests:
 
 ### DOUDO Points
 
-#### `create_doudo_points_mint(name, symbol, uri, decimals)`
+#### `create_doudo_points_mint(name, symbol, uri)`
 
 Accounts:
 
@@ -599,6 +612,7 @@ Behavior:
 
 - Requires `Admin`.
 - Creates a Token-2022 mint with `NonTransferable`.
+- Uses 18 decimals to preserve continuity with the existing EVM reward amounts and membership thresholds.
 - Sets mint authority to program authority PDA.
 - Stores mint in `Config`.
 
@@ -651,6 +665,7 @@ Args:
 - `unreveal_token_uri`
 - `reveal_token_uri`
 - `series_metadata_uri`
+- `reveal_mode`
 
 Behavior:
 
@@ -659,6 +674,7 @@ Behavior:
 - Sets `exchange_expire_time = estimate_deliver_time + 60 days`.
 - Sets `is_goods_arrived = false`.
 - Sets `is_refund = false`.
+- Stores `reveal_mode`.
 - Initializes mint lock as inactive with `mint_lock_until = 0`.
 
 Tests:
@@ -683,12 +699,14 @@ Args:
 - `reveal_token_uri`
 - `series_metadata_uri`
 - `is_pre_order`
+- `reveal_mode`
 
 Behavior:
 
 - Requires `Operation`.
 - Allowed before and after goods arrived.
-- Rejects updates if series is refunded except metadata-only corrections explicitly marked by `allow_refund_metadata_update`.
+- Allowed after refund so operations can correct metadata and display details.
+- Refunded series still rejects mint, reveal, last prize, and exchange flows that would create new user-facing obligations.
 - Does not reset reveal state.
 
 Tests:
@@ -697,7 +715,7 @@ Tests:
 - Can update after goods arrived.
 - Metadata URI update affects future metadata update calls.
 - Non-operation signer cannot update.
-- Refunded series blocks ordinary updates.
+- Refunded series can still update series information and metadata.
 
 #### `upsert_sub_prize(args)`
 
@@ -772,54 +790,41 @@ Tests:
 - Cannot refund twice.
 - Refunded series rejects mint/reveal.
 
-### Currency and Payment
+### Payment
 
-#### `add_currency_token(args)`
+#### `set_usdt_payment_config(args)`
 
 Args:
 
-- `currency_index`
 - `mint`
 - `treasury_token_account`
-- `price_feed`
-- `customized_rate_to_usdt_base_units`
 - `decimals`
+- `is_active`
 
 Behavior:
 
 - Requires `Operation`.
-- Creates `CurrencyConfig`.
+- Creates or updates `UsdtPaymentConfig`.
+- USDT prices use `Series.price_in_usdt_base_units` directly.
 
 Tests:
 
-- Operation can add currency.
-- Non-operation cannot add currency.
-- Fixed-rate currency is used by `mint_ticket_by_spl`.
+- Operation can configure USDT payment.
+- Non-operation cannot configure USDT payment.
+- Inactive USDT config rejects USDT minting.
 
-#### `withdraw_sol(amount)`
+#### `withdraw_usdt(amount)`
 
 Behavior:
 
 - Requires `Admin`.
-- Transfers SOL from program treasury PDA to configured treasury wallet.
+- Transfers USDT from treasury token account to configured treasury destination.
 
 Tests:
 
 - Admin can withdraw.
 - Non-admin cannot withdraw.
-- Cannot withdraw more than balance.
-
-#### `withdraw_spl(currency, amount)`
-
-Behavior:
-
-- Requires `Admin`.
-- Transfers SPL tokens from treasury token account to configured destination.
-
-Tests:
-
-- Admin can withdraw configured currency.
-- Non-admin cannot withdraw.
+- Cannot withdraw more than USDT treasury balance.
 
 ### Ticket Minting
 
@@ -837,40 +842,47 @@ Common mint rules:
 - Ticket metadata URI starts as `series.unreveal_token_uri`.
 - Create `TicketStatus` and `SeriesTicket` for every minted NFT.
 - Decrement `remaining_ticket_numbers`.
+- If `Series.reveal_mode == ImmediateOnMint`, automatically create a reveal request for the newly minted tickets after mint succeeds.
+- If `Series.reveal_mode == UserTriggered`, do not create a reveal request; the user calls `request_reveal` later.
+- `ImmediateOnMint` does not require goods arrived for reveal assignment; goods arrival still controls physical prize exchange readiness.
 
-#### `mint_ticket_by_sol(series_id, quantity)`
+#### `mint_ticket_by_doudo_points(series_id, quantity)`
 
 Behavior:
 
-- User pays SOL equivalent to series price.
-- SOL is retained by the program treasury PDA.
-- Uses fixed SOL pricing or oracle adapter according to config.
+- User pays by burning non-transferable DOUDO points.
+- Required amount is `series.price_in_usdt_base_units * quantity`, using the same 18-decimal base-unit convention as DOUDO points.
+- The points are burned from the user's Token-2022 account through the program.
+- No points are transferred to another wallet.
 
 Tests:
 
-- User can mint with enough SOL.
-- Insufficient SOL fails.
+- User can mint with enough DOUDO points.
+- Insufficient DOUDO points fails.
+- Direct point transfer remains impossible.
 - Refunded series fails.
 - Remaining quantity decreases.
 - TicketStatus and SeriesTicket are created.
 - Mint lock owner and expiry are set.
+- Immediate reveal mode creates a reveal request during mint.
+- User-triggered reveal mode does not create a reveal request during mint.
 
-#### `mint_ticket_by_spl(series_id, quantity, currency_index)`
+#### `mint_ticket_by_usdt(series_id, quantity)`
 
 Behavior:
 
-- User pays configured SPL token.
-- If `customized_rate_to_usdt_base_units` is nonzero, use fixed rate.
-- Otherwise read oracle adapter price.
-- Transfers payment tokens into treasury token account.
+- User pays configured USDT SPL token.
+- Required amount is `series.price_in_usdt_base_units * quantity`, adjusted to the configured USDT mint decimals.
+- Transfers USDT into the configured treasury token account.
 
 Tests:
 
-- User can mint with fixed-rate SPL currency.
-- Insufficient token balance fails.
+- User can mint with enough USDT.
+- Insufficient USDT balance fails.
 - Missing user token account fails.
-- Inactive currency fails.
+- Inactive USDT config fails.
 - Remaining quantity decreases.
+- Immediate reveal mode creates a reveal request during mint.
 
 #### `admin_mint_ticket(to, series_id, quantity)`
 
@@ -894,6 +906,7 @@ Tests:
 
 Behavior:
 
+- Requires `Series.reveal_mode == UserTriggered`.
 - Requires goods arrived.
 - Rejects refunded series.
 - Verifies every ticket is owned by signer.
@@ -905,6 +918,7 @@ Behavior:
 
 Tests:
 
+- Immediate-on-mint series rejects manual reveal requests.
 - Goods-not-arrived reveal fails.
 - Refunded reveal fails.
 - Non-owner reveal fails.
@@ -989,6 +1003,7 @@ Tests:
 
 Behavior:
 
+- Requires goods arrived so physical prize exchange cannot begin before operations marks the goods ready, even for `ImmediateOnMint` series where reveal assignment may happen earlier.
 - For each ticket:
   - verify signer owns ticket NFT.
   - require revealed.
@@ -1147,7 +1162,8 @@ Tests:
 
 Behavior:
 
-- Because Metaplex NFTs can be transferred outside this program, the program cannot automatically intercept every wallet transfer unless using programmable transfer rules. For the first implementation, membership benefits are based on `UserInfo`, and membership state must be synchronized through this instruction before the recipient receives membership benefits.
+- Membership NFTs are standard transferable Metaplex `NonFungible` NFTs. This is the common high-support path for Solana wallet and marketplace compatibility.
+- Because standard `NonFungible` NFTs can be transferred outside this program, the program cannot automatically intercept every wallet transfer. Membership benefits are based on `UserInfo`, and membership state must be synchronized through this instruction before the recipient receives membership benefits.
 - Verifies current NFT owner is `to`.
 - Moves membership state from `from` to `to`.
 - If `to` already has a lower-level membership, burns or deactivates the lower-level membership according to the Solidity behavior.
@@ -1163,7 +1179,7 @@ Tests:
 
 Open design note:
 
-- A stricter future version can use Programmable NFT transfer rules for membership NFTs so transfers must pass through program logic. This spec uses standard `NonFungible` NFTs first because wallet and marketplace support is broader.
+- A stricter future version can use Programmable NFT transfer rules for membership NFTs so transfers must pass through program logic. This spec intentionally does not use pNFT transfer restrictions in the first version because the product requirement is transferable membership NFTs and standard `NonFungible` support is broader.
 
 ## Event Design
 
@@ -1214,8 +1230,8 @@ Errors should cover the Solidity custom errors plus Solana-specific account and 
 - `NotSoldOutYet`
 - `AlreadyChoseWinner`
 - `SubPrizeQuantityNotEqual`
-- `InsufficientSolSent`
-- `InsufficientCurrencyBalance`
+- `InsufficientDoudoPoints`
+- `InsufficientUsdtBalance`
 - `NotEnoughTokensToReveal`
 - `NotTheTokenOwner`
 - `TokenAlreadyExchanged`
@@ -1233,6 +1249,7 @@ Errors should cover the Solidity custom errors plus Solana-specific account and 
 - `RandomnessWordCountMismatch`
 - `MintLockedByAnotherWallet`
 - `PrizeAccountingInvalid`
+- `InvalidRevealMode`
 - `UriTooLong`
 - `NameTooLong`
 - `InvalidVoucherType`
@@ -1254,6 +1271,7 @@ Errors should cover the Solidity custom errors plus Solana-specific account and 
 ### DOUDO Points Tests
 
 - Admin creates Token-2022 non-transferable DOUDO point mint.
+- DOUDO points mint uses 18 decimals.
 - Minter mints points to a user.
 - Non-minter cannot mint points.
 - User-to-user transfer fails at Token-2022 program level.
@@ -1267,7 +1285,9 @@ Errors should cover the Solidity custom errors plus Solana-specific account and 
 - Series counter increments.
 - Operation role updates series before goods arrived.
 - Operation role updates series after goods arrived.
-- Refunded series rejects ordinary update.
+- Operation role updates series after refund.
+- Create series supports `UserTriggered` reveal mode.
+- Create series supports `ImmediateOnMint` reveal mode.
 - Operation role marks goods arrived.
 - Goods arrived cannot be called twice.
 - Refunded series cannot be marked arrived.
@@ -1286,16 +1306,15 @@ Errors should cover the Solidity custom errors plus Solana-specific account and 
 
 ### Payment Tests
 
-- Operation adds a fixed-rate SPL currency.
-- Non-operation cannot add currency.
-- User mints ticket by SOL with enough payment.
-- User mint by SOL fails with insufficient payment.
-- User mints ticket by SPL fixed-rate currency.
-- User mint by SPL fails with insufficient token balance.
-- Inactive or missing currency fails.
-- Admin withdraws SOL.
-- Non-admin withdraw SOL fails.
-- Admin withdraws SPL payment tokens.
+- Operation configures USDT payment.
+- Non-operation cannot configure USDT payment.
+- User mints ticket by DOUDO points with enough balance.
+- User mint by DOUDO points fails with insufficient balance.
+- User mints ticket by USDT with enough balance.
+- User mint by USDT fails with insufficient token balance.
+- Inactive or missing USDT config fails.
+- Admin withdraws USDT.
+- Non-admin withdraw USDT fails.
 
 ### Mint Lock Tests
 
@@ -1309,6 +1328,9 @@ Errors should cover the Solidity custom errors plus Solana-specific account and 
 ### Ticket NFT Tests
 
 - Minted ticket is a formal Metaplex NFT.
+- Ticket NFT can transfer before reveal.
+- Ticket NFT can transfer after reveal.
+- Ticket NFT can transfer after exchange.
 - Ticket metadata starts at unrevealed URI.
 - TicketStatus is created with unrevealed and unexchanged status.
 - SeriesTicket maps series index to mint.
@@ -1318,6 +1340,11 @@ Errors should cover the Solidity custom errors plus Solana-specific account and 
 
 ### Reveal Tests
 
+- Immediate-on-mint series creates reveal request during DOUDO points mint.
+- Immediate-on-mint series creates reveal request during USDT mint.
+- Immediate-on-mint series can assign reveal before goods arrived.
+- Immediate-on-mint series rejects manual reveal request.
+- User-triggered series does not create reveal request during mint.
 - Reveal request fails before goods arrived.
 - Reveal request fails for refunded series.
 - Reveal request fails when signer does not own a ticket.
@@ -1345,6 +1372,7 @@ Errors should cover the Solidity custom errors plus Solana-specific account and 
 
 ### Exchange Tests
 
+- Exchange fails before goods arrived, including immediate-on-mint revealed tickets.
 - Exchange fails for non-owner.
 - Exchange fails for unrevealed ticket.
 - Exchange fails for already exchanged ticket.
@@ -1374,6 +1402,7 @@ Errors should cover the Solidity custom errors plus Solana-specific account and 
 - Invalid membership level fails.
 - Membership expiration burns/deactivates expired membership.
 - Membership state sync after NFT transfer updates recipient.
+- Membership NFT can transfer as a standard Metaplex NFT.
 - Higher-level received membership replaces lower-level existing membership.
 - Lower-level received membership is burned/deactivated according to current Solidity behavior.
 
@@ -1397,18 +1426,21 @@ Errors should cover the Solidity custom errors plus Solana-specific account and 
 - Keep all dynamically sized strings bounded.
 - Avoid unbounded vectors in account data; use indexed PDA accounts.
 - Use checked arithmetic for price, quantity, and reward calculations.
-- Store point amounts in base units. For DOUDO points, choose decimals intentionally; if the business treats points as integer units, use `decimals = 0`.
+- Store point amounts in base units. DOUDO points use 18 decimals for continuity with the current EVM contracts.
 - Formal NFT creation should set update authority to the program authority PDA so reveal/exchange metadata updates remain enforceable.
 - For DOUDO points, do not implement wallet-to-wallet transfer helper instructions.
 - For compliance posture, user-facing names and metadata should say `points`, `rewards`, or `credits`, not `coin`, `token investment`, or similar market language.
+- Ticket and membership NFTs use standard Metaplex `NonFungible` tokens and remain freely transferable in unrevealed, revealed, exchanged, and membership states.
+- The first release does not include SOL ticket payment. Supported ticket payment methods are DOUDO point burn and USDT SPL transfer.
+- Refunded series still allows metadata and series information edits for operational flexibility.
 
-## Open Questions Before Implementation
+## Resolved Implementation Decisions
 
-1. Should DOUDO points use `decimals = 0` to make them clearly integer platform points, or keep EVM-style `18` decimals for continuity with existing reward amounts?
-2. Should membership NFTs remain transferable with explicit `sync_membership_transfer`, or should membership use programmable NFT rules in the first version to force transfers through program logic?
-3. Should ticket NFTs be freely transferable before reveal/exchange, or should ticket transfers be restricted by programmable NFT rules in a later version?
-4. What exact SOL price oracle should production use for `mint_ticket_by_sol`, and should the first release support oracle pricing or fixed configured SOL pricing only?
-5. Should refunded series allow metadata correction after refund for indexer/display purposes, or should all updates be blocked after refund?
+1. DOUDO points use 18 decimals.
+2. Membership NFTs use standard transferable Metaplex `NonFungible`; membership benefits require ownership verification and state synchronization.
+3. Ticket NFTs are freely transferable in all states: unrevealed, revealed, and exchanged.
+4. Ticket payment methods are DOUDO points and USDT. SOL payment is removed from the first Solana design.
+5. Refunded series remain editable for metadata and display corrections.
 
 ## Acceptance Criteria
 
@@ -1416,7 +1448,10 @@ Errors should cover the Solidity custom errors plus Solana-specific account and 
 - DOUDO is redesigned as Token-2022 non-transferable points.
 - DOUDOCHAIN includes the new 10-minute mint lock.
 - DOUDOCHAIN allows post-goods-arrival series and metadata edits.
+- DOUDOCHAIN allows post-refund series and metadata edits.
+- DOUDOCHAIN supports both immediate-on-mint reveal and user-triggered reveal series modes.
 - DOUDOCHAIN post-arrival sub-prize edits are allowed without invalidating already revealed prize accounting.
 - Ticket, last prize, voucher, and membership assets are formal Metaplex NFTs.
+- Ticket and membership NFTs are transferable standard `NonFungible` assets.
 - Production randomness uses Switchboard; tests use deterministic mock randomness.
 - Tests are planned before implementation and cover both success paths and Solidity-equivalent failure paths.
