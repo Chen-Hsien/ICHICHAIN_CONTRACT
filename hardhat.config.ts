@@ -1,6 +1,7 @@
 import { HardhatUserConfig } from "hardhat/config";
 import "dotenv/config";
 import "@nomicfoundation/hardhat-toolbox";
+import "@openzeppelin/hardhat-upgrades";
 
 const accounts = (privateKey?: string) => {
   if (!privateKey) {
@@ -22,7 +23,7 @@ const config: HardhatUserConfig = {
         settings: {
           optimizer: {
             enabled: true,
-            runs: 200,
+            runs: 1,
           },
           viaIR: true,
         },
@@ -32,7 +33,7 @@ const config: HardhatUserConfig = {
         settings: {
           optimizer: {
             enabled: true,
-            runs: 200,
+            runs: 1,
           },
           viaIR: true,
         },
