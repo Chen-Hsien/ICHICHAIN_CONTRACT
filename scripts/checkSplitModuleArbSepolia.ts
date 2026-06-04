@@ -2,7 +2,7 @@ import { ethers } from "hardhat";
 
 const ADDRESSES = {
   points: process.env.DOUDO_POINTS_ADDRESS || "0xFFCD533609e0e9E810C4C5D8Cb7a69D7a537C17E",
-  router: process.env.DOUDO_VRF_ROUTER_ADDRESS || "0x9C81E6af84243a8bd7a2C7EdD4Ee77d12405Fb75",
+  router: process.env.DOUDO_VRF_ROUTER_ADDRESS || "0x5A59D45437559C7CE0A012630a456321180C21e1",
   core: process.env.DOUDOCHAIN_CORE_PROXY_ADDRESS || "0xf75395A8cd753f47135cfcaE00D2706252c3E0F5",
   bundle: process.env.DOUDO_BUNDLE_MODULE_PROXY_ADDRESS || "0x68cBA2b3c72Be39be748B06c1e6dDab2855E91b6",
   refund: process.env.DOUDO_REFUND_MODULE_PROXY_ADDRESS || "0x8ee19238DAa466B7792BE33569c6E4f6993CCf20",
@@ -47,13 +47,13 @@ async function main() {
   await requireTrue("router coordinator set", (await router.s_vrfCoordinator()) !== ethers.ZeroAddress);
   await requireTrue("router requester core", await router.isRequester(ADDRESSES.core));
   await requireTrue("router requester redraw", await router.isRequester(ADDRESSES.redraw));
+  await requireTrue("redraw router address", (await redraw.router()).toLowerCase() === ADDRESSES.router.toLowerCase());
 
   const moduleRole = await core.MODULE_ROLE();
   await requireTrue("core MODULE_ROLE bundle", await core.hasRole(moduleRole, ADDRESSES.bundle));
   await requireTrue("core MODULE_ROLE refund", await core.hasRole(moduleRole, ADDRESSES.refund));
   await requireTrue("core MODULE_ROLE redraw", await core.hasRole(moduleRole, ADDRESSES.redraw));
   await requireTrue("core MODULE_ROLE reward", await core.hasRole(moduleRole, ADDRESSES.reward));
-  await requireTrue("core VRF_ROUTER_ROLE router", await core.hasRole(await core.VRF_ROUTER_ROLE(), ADDRESSES.router));
 
   await requireTrue("points BURNER_ROLE core", await points.hasRole(await points.BURNER_ROLE(), ADDRESSES.core));
   await requireTrue("points BURNER_ROLE bundle", await points.hasRole(await points.BURNER_ROLE(), ADDRESSES.bundle));

@@ -20,7 +20,9 @@ interface IDoudoCore {
     function moduleMintUnrevealed(
         address to,
         uint256 seriesID,
-        uint256 quantity
+        uint256 quantity,
+        uint256 pointsPerTicket,
+        bool enforceWalletAndLock
     ) external returns (uint256 firstTokenId);
 
     function moduleMintRevealed(
@@ -37,11 +39,10 @@ interface IDoudoCore {
 
     function moduleBurnForRedraw(
         uint256 tokenID,
-        address owner,
-        bool returnMainPrize
+        address owner
     ) external returns (uint256 seriesID, uint256 prizeID);
 
-    function moduleDrawPrize(uint256 seriesID, uint256 randomWord) external returns (uint256 prizeID);
     function moduleSetSeriesRefund(uint256 seriesID, bool isRefund) external;
     function moduleUnlockSeriesFor(uint256 seriesID, address user, uint256 expires) external;
+    function pointsPaid(uint256 tokenID) external view returns (uint256);
 }

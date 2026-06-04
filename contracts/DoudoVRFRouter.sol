@@ -12,6 +12,7 @@ contract DoudoVRFRouter is VRFConsumerBaseV2Plus, IDoudoVRFRouter {
     bytes32 public keyHash;
     uint16 public requestConfirmations;
     uint32 public callbackGasLimit;
+    uint256 public pendingRequests;
 
     mapping(address => bool) public isRequester;
     mapping(uint256 => address) public requestCallbackTarget;
@@ -20,6 +21,7 @@ contract DoudoVRFRouter is VRFConsumerBaseV2Plus, IDoudoVRFRouter {
     error InvalidConfig();
     error NotRequester(address caller);
     error UnknownRequest(uint256 requestId);
+    error PendingRequests(uint256 pendingRequests);
 
     event RequesterUpdated(address indexed requester, bool allowed);
     event VrfConfigUpdated(
@@ -77,6 +79,9 @@ contract DoudoVRFRouter is VRFConsumerBaseV2Plus, IDoudoVRFRouter {
         uint16 requestConfirmations_
     ) external onlyOwner {
         if (vrfCoordinator == address(0) || callbackGasLimit_ == 0) revert InvalidConfig();
+        if (address(s_vrfCoordinator) != vrfCoordinator && pendingRequests != 0) {
+            revert PendingRequests(pendingRequests);
+        }
         s_vrfCoordinator = IVRFCoordinatorV2Plus(vrfCoordinator);
         subscriptionId = subscriptionId_;
         keyHash = keyHash_;
@@ -114,6 +119,7 @@ contract DoudoVRFRouter is VRFConsumerBaseV2Plus, IDoudoVRFRouter {
         );
         requestCallbackTarget[requestId] = callbackTarget;
         requestSender[requestId] = msg.sender;
+        pendingRequests += 1;
         emit VrfRandomWordsRequested(requestId, msg.sender, callbackTarget, numWords);
     }
 
@@ -124,6 +130,7 @@ contract DoudoVRFRouter is VRFConsumerBaseV2Plus, IDoudoVRFRouter {
         address callbackTarget = requestCallbackTarget[requestId];
         if (callbackTarget == address(0)) revert UnknownRequest(requestId);
         delete requestCallbackTarget[requestId];
+        pendingRequests -= 1;
         IDoudoVRFCallback(callbackTarget).fulfillRandomWordsFromRouter(requestId, randomWords);
         emit VrfRandomWordsFulfilled(requestId, callbackTarget);
     }

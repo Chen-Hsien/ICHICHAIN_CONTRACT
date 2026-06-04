@@ -32,6 +32,13 @@ contract DoudoRedrawModuleUpgradeable is
         bool consolation;
     }
 
+    struct SubPrize {
+        uint256 subPrizeID;
+        string prizeGroup;
+        string subPrizeName;
+        uint256 subPrizeRemainingQuantity;
+    }
+
     IDoudoCore public core;
     IDoudoVRFRouter public router;
     address public bundleModule;
@@ -46,9 +53,12 @@ contract DoudoRedrawModuleUpgradeable is
     error RedrawCountMismatch();
     error EmptyConsolationBalance();
     error MixedSeries();
+    error RedrawDisabled();
 
+    event RouterUpdated(address indexed router);
     event BundleModuleUpdated(address indexed bundleModule);
     event RedrawConfigUpdated(uint256 indexed seriesID, uint16 mainBurnCount, uint16 consolationBurnCount);
+    event RedrawEnabledUpdated(uint256 indexed seriesID, bool enabled);
     event RedrawRequested(uint256 indexed requestId, uint256 indexed seriesID, address indexed user, bool consolation);
     event RedrawFulfilled(
         uint256 indexed requestId,
@@ -57,7 +67,16 @@ contract DoudoRedrawModuleUpgradeable is
         uint256 tokenID,
         bool consolation
     );
+    event RedrawMinted(uint256 indexed seriesID, address indexed user, uint256 quantity, uint256 firstTokenID);
     event ConsolationDrawBalanceUpdated(uint256 indexed seriesID, address indexed user, uint256 balance);
+    event NewConsolationPrize(
+        uint256 indexed seriesID,
+        uint256 subPrizeID,
+        string prizeGroup,
+        string subPrizeName,
+        uint256 remainingQuantity
+    );
+    event UpdateConsolationPrize(uint256 indexed seriesID, uint256 subPrizeID, uint256 remainingQuantity);
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
@@ -76,6 +95,12 @@ contract DoudoRedrawModuleUpgradeable is
         _grantRole(OPERATION_ROLE, msg.sender);
     }
 
+    function setRouter(address routerAddress) external onlyRole(OPERATION_ROLE) {
+        if (routerAddress == address(0)) revert InvalidConfig();
+        router = IDoudoVRFRouter(routerAddress);
+        emit RouterUpdated(routerAddress);
+    }
+
     function setBundleModule(address bundleModule_) external onlyRole(OPERATION_ROLE) {
         bundleModule = bundleModule_;
         emit BundleModuleUpdated(bundleModule_);
@@ -90,7 +115,37 @@ contract DoudoRedrawModuleUpgradeable is
             mainBurnCount: mainBurnCount,
             consolationBurnCount: consolationBurnCount
         });
+        redrawEnabled[seriesID] = mainBurnCount != 0;
         emit RedrawConfigUpdated(seriesID, mainBurnCount, consolationBurnCount);
+        emit RedrawEnabledUpdated(seriesID, redrawEnabled[seriesID]);
+    }
+
+    function setRedrawEnabled(uint256 seriesID, bool enabled) external onlyRole(OPERATION_ROLE) {
+        redrawEnabled[seriesID] = enabled;
+        emit RedrawEnabledUpdated(seriesID, enabled);
+    }
+
+    function setConsolationPrizes(
+        uint256 seriesID,
+        SubPrize[] calldata prizes
+    ) external onlyRole(OPERATION_ROLE) {
+        if (prizes.length == 0) revert InvalidConfig();
+        delete consolationPrizes[seriesID];
+        for (uint256 i = 0; i < prizes.length; i++) {
+            if (prizes[i].subPrizeRemainingQuantity == 0) revert InvalidConfig();
+            consolationPrizes[seriesID].push(prizes[i]);
+            emit NewConsolationPrize(
+                seriesID,
+                prizes[i].subPrizeID,
+                prizes[i].prizeGroup,
+                prizes[i].subPrizeName,
+                prizes[i].subPrizeRemainingQuantity
+            );
+        }
+    }
+
+    function getConsolationPrizes(uint256 seriesID) external view returns (SubPrize[] memory) {
+        return consolationPrizes[seriesID];
     }
 
     function creditConsolationDraws(
@@ -105,15 +160,15 @@ contract DoudoRedrawModuleUpgradeable is
     }
 
     function redrawMain(uint256 seriesID, uint256[] calldata tokenIDs) external nonReentrant {
-        if (tokenIDs.length != redrawConfigs[seriesID].mainBurnCount) revert RedrawCountMismatch();
-        _burnInputs(seriesID, tokenIDs, true);
-        _request(seriesID, msg.sender, false);
-    }
-
-    function redrawConsolation(uint256 seriesID, uint256[] calldata tokenIDs) external nonReentrant {
-        if (tokenIDs.length != redrawConfigs[seriesID].consolationBurnCount) revert RedrawCountMismatch();
-        _burnInputs(seriesID, tokenIDs, false);
-        _request(seriesID, msg.sender, true);
+        if (!redrawEnabled[seriesID]) revert RedrawDisabled();
+        uint256 quantity = tokenIDs.length;
+        if (quantity == 0) revert InvalidConfig();
+        for (uint256 i = 0; i < quantity; i++) {
+            (uint256 burnedSeriesID,) = core.moduleBurnForRedraw(tokenIDs[i], msg.sender);
+            if (burnedSeriesID != seriesID) revert MixedSeries();
+        }
+        uint256 firstTokenID = core.moduleMintUnrevealed(msg.sender, seriesID, quantity, 0, false);
+        emit RedrawMinted(seriesID, msg.sender, quantity, firstTokenID);
     }
 
     function drawConsolation(uint256 seriesID) external nonReentrant {
@@ -127,7 +182,7 @@ contract DoudoRedrawModuleUpgradeable is
     function fulfillRandomWordsFromRouter(
         uint256 requestId,
         uint256[] calldata randomWords
-    ) external override {
+    ) external override nonReentrant {
         if (msg.sender != address(router)) revert OnlyRouter(msg.sender);
         if (randomWords.length == 0) revert InvalidConfig();
 
@@ -135,20 +190,9 @@ contract DoudoRedrawModuleUpgradeable is
         if (context.user == address(0)) revert InvalidConfig();
         delete requestContexts[requestId];
 
-        uint256 prizeID = core.moduleDrawPrize(context.seriesID, randomWords[0]);
+        uint256 prizeID = _drawConsolationPrize(context.seriesID, randomWords[0]);
         uint256 tokenID = core.moduleMintRevealed(context.user, context.seriesID, prizeID, 0);
         emit RedrawFulfilled(requestId, context.seriesID, context.user, tokenID, context.consolation);
-    }
-
-    function _burnInputs(
-        uint256 seriesID,
-        uint256[] calldata tokenIDs,
-        bool returnMainPrize
-    ) internal {
-        for (uint256 i = 0; i < tokenIDs.length; i++) {
-            (uint256 burnedSeriesID,) = core.moduleBurnForRedraw(tokenIDs[i], msg.sender, returnMainPrize);
-            if (burnedSeriesID != seriesID) revert MixedSeries();
-        }
     }
 
     function _request(uint256 seriesID, address user, bool consolation) internal returns (uint256 requestId) {
@@ -161,7 +205,31 @@ contract DoudoRedrawModuleUpgradeable is
         emit RedrawRequested(requestId, seriesID, user, consolation);
     }
 
+    function _drawConsolationPrize(uint256 seriesID, uint256 randomWord) internal returns (uint256 subPrizeID) {
+        SubPrize[] storage prizes = consolationPrizes[seriesID];
+        uint256 totalRemaining;
+        for (uint256 i = 0; i < prizes.length; i++) {
+            totalRemaining += prizes[i].subPrizeRemainingQuantity;
+        }
+        if (totalRemaining == 0) revert InvalidConfig();
+
+        uint256 cursor;
+        uint256 winningIndex = randomWord % totalRemaining;
+        for (uint256 i = 0; i < prizes.length; i++) {
+            cursor += prizes[i].subPrizeRemainingQuantity;
+            if (winningIndex < cursor) {
+                prizes[i].subPrizeRemainingQuantity -= 1;
+                emit UpdateConsolationPrize(seriesID, prizes[i].subPrizeID, prizes[i].subPrizeRemainingQuantity);
+                return prizes[i].subPrizeID;
+            }
+        }
+        revert InvalidConfig();
+    }
+
     function _authorizeUpgrade(address) internal override onlyRole(UPGRADER_ROLE) {}
 
-    uint256[45] private __gap;
+    mapping(uint256 => bool) public redrawEnabled;
+    mapping(uint256 => SubPrize[]) private consolationPrizes;
+
+    uint256[43] private __gap;
 }

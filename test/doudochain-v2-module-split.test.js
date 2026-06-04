@@ -113,7 +113,6 @@ async function deploySplitSuite() {
   await core.grantRole(await core.MODULE_ROLE(), await refund.getAddress());
   await core.grantRole(await core.MODULE_ROLE(), await redraw.getAddress());
   await core.grantRole(await core.MODULE_ROLE(), await reward.getAddress());
-  await core.grantRole(await core.VRF_ROUTER_ROLE(), await router.getAddress());
   await router.setRequester(await core.getAddress(), true);
   await router.setRequester(await redraw.getAddress(), true);
   await points.grantRole(await points.BURNER_ROLE(), await core.getAddress());
@@ -228,14 +227,14 @@ describe("DOUDOCHAIN V2 split module suite", function () {
 
     await expect(refund.connect(user).claimRefund([0, 1]))
       .to.emit(refund, "RefundClaimed")
-      .withArgs(0, user.address, [0, 1], ethers.parseEther("16"))
+      .withArgs(0, user.address, [0, 1], ethers.parseEther("20"))
       .and.to.emit(core, "UpdateTicketStatus");
 
     await expect(core.ownerOf(0)).to.be.reverted;
-    expect(await points.balanceOf(user.address)).to.equal(ethers.parseEther("996"));
+    expect(await points.balanceOf(user.address)).to.equal(ethers.parseEther("1000"));
   });
 
-  it("redraws a main prize through the redraw module and router", async function () {
+  it("redraws main prizes by burning revealed tickets and minting unrevealed replacements", async function () {
     const { user, points, vrf, router, core, redraw } = await deploySplitSuite();
     await createSeries(core);
     await issuePoints(points, user.address);
@@ -245,15 +244,16 @@ describe("DOUDOCHAIN V2 split module suite", function () {
     await redraw.setRedrawConfig(0, 2, 0);
 
     await expect(redraw.connect(user).redrawMain(0, [0, 1]))
-      .to.emit(redraw, "RedrawRequested")
-      .withArgs(2, 0, user.address, false);
-
-    await expect(vrf.fulfill(await router.getAddress(), 2, [888]))
-      .to.emit(redraw, "RedrawFulfilled")
-      .withArgs(2, 0, user.address, anyValue, false)
+      .to.emit(redraw, "RedrawMinted")
+      .withArgs(0, user.address, 2, 2)
       .and.to.emit(core, "NewTicketStatus");
 
-    expect(await core.balanceOf(user.address)).to.equal(1);
+    await expect(core.ownerOf(0)).to.be.reverted;
+    await expect(core.ownerOf(1)).to.be.reverted;
+    expect(await core.ownerOf(2)).to.equal(user.address);
+    expect(await core.ownerOf(3)).to.equal(user.address);
+    expect((await core.ticketStatusDetail(2)).tokenRevealed).to.equal(false);
+    expect(await core.balanceOf(user.address)).to.equal(2);
   });
 
   it("claims collection rewards through the collection reward module", async function () {

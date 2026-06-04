@@ -75,17 +75,18 @@ contract DoudoRefundModuleUpgradeable is
         uint256 expectedSeriesID;
         uint256 totalRefund;
         for (uint256 i = 0; i < tokenIDs.length; i++) {
+            uint256 paid = core.pointsPaid(tokenIDs[i]);
             (uint256 seriesID,,) = core.moduleBurnForRefund(tokenIDs[i], msg.sender);
             if (i == 0) {
                 expectedSeriesID = seriesID;
                 RefundConfig memory config = refundConfigs[seriesID];
-                if (!config.isRefund || config.refundPointsPerTicket == 0) revert RefundInactive();
-                totalRefund = config.refundPointsPerTicket;
+                if (!config.isRefund) revert RefundInactive();
             } else {
                 if (seriesID != expectedSeriesID) revert MixedSeries();
-                totalRefund += refundConfigs[seriesID].refundPointsPerTicket;
             }
+            totalRefund += paid;
         }
+        if (totalRefund == 0) revert RefundInactive();
 
         doudoPoints.mintWithReason(msg.sender, totalRefund, REFUND_POINTS);
         emit RefundClaimed(expectedSeriesID, msg.sender, tokenIDs, totalRefund);

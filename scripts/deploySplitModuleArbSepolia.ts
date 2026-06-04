@@ -171,7 +171,6 @@ async function main() {
   await grantIfNeeded(core, "MODULE_ROLE", refundDeployment.proxy);
   await grantIfNeeded(core, "MODULE_ROLE", redrawDeployment.proxy);
   await grantIfNeeded(core, "MODULE_ROLE", rewardDeployment.proxy);
-  await grantIfNeeded(core, "VRF_ROUTER_ROLE", routerAddress);
   await setRequesterIfNeeded(router, coreDeployment.proxy);
   await setRequesterIfNeeded(router, redrawDeployment.proxy);
 

@@ -126,7 +126,8 @@ contract DoudoBundleModuleUpgradeable is
             doudoPoints.burnFromWithReason(msg.sender, totalPrice, BUNDLE_MINT);
         }
 
-        firstTokenID = core.moduleMintUnrevealed(msg.sender, seriesID, ticketQuantity);
+        uint256 pointsPerTicket = config.ticketQuantity == 0 ? 0 : config.priceInPoints / config.ticketQuantity;
+        firstTokenID = core.moduleMintUnrevealed(msg.sender, seriesID, ticketQuantity, pointsPerTicket, true);
 
         uint256 rebate = config.rebatePoints * quantity;
         if (rebate != 0) {
