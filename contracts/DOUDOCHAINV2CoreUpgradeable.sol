@@ -796,7 +796,14 @@ contract DOUDOCHAINV2CoreUpgradeable is
     ) internal returns (uint256 tokenId) {
         Series storage series = seriesData[seriesID];
         if (!series.isGoodsArrived) revert GoodsNotArrived();
-        uint16 consumedLuckyNumber = _consumeLuckyNumber(seriesID, series.useLuckyNumber, luckyNumber);
+        // Reward / consolation mints have no ticket inventory and pass
+        // luckyNumber == 0: they do NOT occupy a lucky number (mirroring
+        // last-prize tokens), so they never collide with or exhaust the
+        // [1, totalTicketNumbers] pool and remain claimable after sellout.
+        // A non-zero luckyNumber is still validated and consumed when supplied.
+        uint16 consumedLuckyNumber = luckyNumber == 0
+            ? 0
+            : _consumeLuckyNumber(seriesID, series.useLuckyNumber, luckyNumber);
 
         tokenId = _nextTokenId();
         _safeMint(to, 1);

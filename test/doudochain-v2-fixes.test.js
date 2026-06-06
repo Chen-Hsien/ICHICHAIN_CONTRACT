@@ -471,4 +471,95 @@ describe("DOUDOCHAIN V2 fixes", function () {
     await expect(redraw.connect(user).setRouter(admin.address))
       .to.be.revertedWithCustomError(redraw, "MissingRole");
   });
+
+  it("collection NFT rewards mint with luckyNumber 0 even when the lucky-number series is sold out", async function () {
+    const { user, other, points, core, reward } = await deploySplitSuite();
+    await createSeries(core, { totalTicketNumbers: 2, useLuckyNumber: true, maxPerWallet: 0 });
+    await issuePoints(points, user.address);
+    // Sell out the series: both lucky numbers (1 and 2) get consumed.
+    await core.connect(user).mint(0, [1, 2]);
+    // Confirm sold out (no inventory left).
+    await expect(core.connect(user).mint(0, [1]))
+      .to.be.revertedWithCustomError(core, "NotEnoughNFTsRemaining");
+
+    // Stand in for the CollectionBook caller.
+    await reward.setCollectionBook(other.address);
+    await reward.setCollectionRewardConfig(1, {
+      rewardKind: 0, // NftPrize
+      pointsAmount: 0,
+      seriesID: 0,
+      prizeID: 2,
+      active: true,
+    });
+
+    const rewardTokenId = 2n; // tokens 0 and 1 were the sold-out mints
+    await expect(reward.connect(other).mintCollectionReward(user.address, 1))
+      .to.emit(reward, "CollectionRewardMinted")
+      .withArgs(1, user.address, 0, 1, rewardTokenId);
+
+    expect(await core.ownerOf(rewardTokenId)).to.equal(user.address);
+    const status = await core.ticketStatusDetail(rewardTokenId);
+    expect(status.tokenRevealed).to.equal(true);
+    expect(status.tokenRevealedPrize).to.equal(2);
+    // Rewards do not occupy a lucky number (mirrors last-prize tokens).
+    expect(status.luckyNumber).to.equal(0);
+  });
+
+  it("consolation draws mint with luckyNumber 0 for lucky-number series even after sellout", async function () {
+    const { user, points, vrf, router, core, bundle, redraw } = await deploySplitSuite();
+    await createSeries(core, { totalTicketNumbers: 2, useLuckyNumber: true, maxPerWallet: 0 });
+    await issuePoints(points, user.address);
+    await redraw.setConsolationPrizes(0, [{
+      subPrizeID: 9001,
+      prizeGroup: "Z",
+      subPrizeName: "Consolation",
+      subPrizeRemainingQuantity: 5,
+    }]);
+    await bundle.setSeriesBundles(0, [{
+      bundleID: 1,
+      ticketQuantity: 2,
+      priceInPoints: ethers.parseEther("2"),
+      rebatePoints: 0,
+      consolationDrawCredits: 1,
+      active: true,
+    }]);
+    // Bundle mint sells out the series and consumes lucky numbers 1 and 2.
+    await bundle.connect(user).mintBundle(0, 1, 1);
+    // Confirm sold out (no inventory left).
+    await expect(core.connect(user).mint(0, [1]))
+      .to.be.revertedWithCustomError(core, "NotEnoughNFTsRemaining");
+
+    await redraw.connect(user).drawConsolation(0);
+    await expect(vrf.fulfill(await router.getAddress(), 1, [42]))
+      .to.emit(redraw, "RedrawFulfilled")
+      .withArgs(1, 0, user.address, 2, true);
+
+    const status = await core.ticketStatusDetail(2);
+    expect(status.tokenRevealed).to.equal(true);
+    expect(status.tokenRevealedPrize).to.equal(9001);
+    expect(status.luckyNumber).to.equal(0);
+  });
+
+  it("collection NFT rewards still mint with luckyNumber 0 when the series does not use lucky numbers", async function () {
+    const { user, other, core, reward } = await deploySplitSuite();
+    await createSeries(core, { totalTicketNumbers: 6, useLuckyNumber: false, maxPerWallet: 0 });
+
+    await reward.setCollectionBook(other.address);
+    await reward.setCollectionRewardConfig(1, {
+      rewardKind: 0, // NftPrize
+      pointsAmount: 0,
+      seriesID: 0,
+      prizeID: 2,
+      active: true,
+    });
+
+    await expect(reward.connect(other).mintCollectionReward(user.address, 1))
+      .to.emit(reward, "CollectionRewardMinted")
+      .withArgs(1, user.address, 0, 1, 0n);
+
+    const status = await core.ticketStatusDetail(0);
+    expect(status.tokenRevealed).to.equal(true);
+    expect(status.tokenRevealedPrize).to.equal(2);
+    expect(status.luckyNumber).to.equal(0);
+  });
 });
