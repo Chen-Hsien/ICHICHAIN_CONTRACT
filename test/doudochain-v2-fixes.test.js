@@ -294,6 +294,44 @@ describe("DOUDOCHAIN V2 fixes", function () {
       .to.emit(core, "RevealDrawSent");
   });
 
+  it("mintAndReveal caps quantity at 10 and auto-requests reveal", async function () {
+    const suite = await deploySplitSuite();
+    const { user, points, vrf, router, core } = suite;
+    await createSeries(core, { totalTicketNumbers: 12, useLuckyNumber: false, maxPerWallet: 0 });
+    await issuePoints(points, user.address, ethers.parseEther("200"));
+
+    const eleven = Array.from({ length: 11 }, (_, i) => i + 1);
+    await expect(core.connect(user).mintAndReveal(0, eleven))
+      .to.be.revertedWithCustomError(core, "RevealBatchTooLarge");
+
+    const three = [1, 2, 3];
+    await expect(core.connect(user).mintAndReveal(0, three))
+      .to.emit(core, "RevealDrawSent");
+
+    expect(await core.ownerOf(0)).to.equal(user.address);
+    expect(await core.ownerOf(2)).to.equal(user.address);
+    expect((await core.ticketStatusDetail(0)).tokenRevealed).to.equal(false);
+
+    await vrf.fulfill(await router.getAddress(), 1, [999n]);
+    expect((await core.ticketStatusDetail(0)).tokenRevealed).to.equal(true);
+    expect((await core.ticketStatusDetail(1)).tokenRevealed).to.equal(true);
+    expect((await core.ticketStatusDetail(2)).tokenRevealed).to.equal(true);
+  });
+
+  it("mintAndReveal requires goods arrived even for pre-order series", async function () {
+    const suite = await deploySplitSuite();
+    const { user, points, core } = suite;
+    await createSeries(
+      core,
+      { totalTicketNumbers: 2, isPreOrder: true, useLuckyNumber: false, maxPerWallet: 0 },
+      false
+    );
+    await issuePoints(points, user.address);
+
+    await expect(core.connect(user).mintAndReveal(0, [1]))
+      .to.be.revertedWithCustomError(core, "GoodsNotArrived");
+  });
+
   it("chooses non-preorder last-prize winner synchronously from the last sold ticket", async function () {
     const { user, other, points, core } = await deploySplitSuite();
     await createSeries(core, { totalTicketNumbers: 2, useLuckyNumber: false, maxPerWallet: 0, isPreOrder: false });

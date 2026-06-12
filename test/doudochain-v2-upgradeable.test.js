@@ -182,11 +182,8 @@ describe("DOUDOCHAINV2Upgradeable series and AdminMint", function () {
     const first = seriesInput({ seriesName: "Batch Upgradeable 1" });
     const second = seriesInput({ seriesName: "Batch Upgradeable 2", useLuckyNumber: false });
 
-    await core.batchCreateSeriesWithSubPrizes(
-      [first, second],
-      [prizeTable(5), prizeTable(5)],
-      [true, false]
-    );
+    await core.createSeriesWithSubPrizes(first, prizeTable(5), true);
+    await core.createSeriesWithSubPrizes(second, prizeTable(5), false);
 
     expect((await core.doudoSeries(0)).seriesName).to.equal("Batch Upgradeable 1");
     expect((await core.doudoSeries(0)).isGoodsArrived).to.equal(true);

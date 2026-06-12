@@ -23,6 +23,7 @@ contract DOUDOCHAINV2CoreUpgradeable is
     bytes32 public constant MODULE_ROLE = keccak256("MODULE_ROLE");
     bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
     uint256 private constant MAX_REVEAL_BATCH = 20;
+    uint256 private constant MAX_MINT_AND_REVEAL = 10;
     uint256 private constant LAST_PRIZE_ID = 999;
 
     enum RequestKind {
@@ -232,21 +233,6 @@ contract DOUDOCHAINV2CoreUpgradeable is
         seriesID = _createSeriesWithSubPrizes(input, subPrizes, markGoodsArrived);
     }
 
-    function batchCreateSeriesWithSubPrizes(
-        SeriesInput[] calldata inputs,
-        SubPrize[][] calldata subPrizesList,
-        bool[] calldata markGoodsArrivedList
-    ) external onlyRole(OPERATION_ROLE) returns (uint256[] memory seriesIDs) {
-        if (inputs.length == 0 || inputs.length != subPrizesList.length || inputs.length != markGoodsArrivedList.length) {
-            revert InvalidSeriesInput();
-        }
-
-        seriesIDs = new uint256[](inputs.length);
-        for (uint256 i = 0; i < inputs.length; i++) {
-            seriesIDs[i] = _createSeriesWithSubPrizes(inputs[i], subPrizesList[i], markGoodsArrivedList[i]);
-        }
-    }
-
     function setSeriesMetadata(
         uint256 seriesID,
         string calldata exchangeTokenURI,
@@ -272,15 +258,21 @@ contract DOUDOCHAINV2CoreUpgradeable is
     }
 
     function mint(uint256 seriesID, uint16[] calldata luckyNumbers) external nonReentrant whenNotPaused {
-        Series storage series = seriesData[seriesID];
+        _paidMint(seriesID, msg.sender, luckyNumbers, false);
+    }
+
+    function mintAndReveal(uint256 seriesID, uint16[] calldata luckyNumbers) external nonReentrant whenNotPaused {
         uint256 quantity = luckyNumbers.length;
-        if (!series.isGoodsArrived && !series.isPreOrder) revert GoodsNotArrived();
-        if (series.isRefund) revert SeriesIsRefund();
-        if (quantity == 0 || quantity > series.remainingTicketNumbers) revert NotEnoughNFTsRemaining();
-        _checkAndRefreshMintLock(seriesID, msg.sender);
-        _checkWalletCap(seriesID, msg.sender, quantity);
-        doudoPoints.burnFromWithReason(msg.sender, quantity * series.priceInPoints, keccak256("LOTTERY_MINT"));
-        _mintTickets(seriesID, msg.sender, luckyNumbers, series.priceInPoints, true, false);
+        if (quantity > MAX_MINT_AND_REVEAL) revert RevealBatchTooLarge();
+        uint256 firstTokenId = _nextTokenId();
+        _paidMint(seriesID, msg.sender, luckyNumbers, true);
+        uint256[] memory tokenIDs = new uint256[](quantity);
+        unchecked {
+            for (uint256 i; i < quantity; ++i) {
+                tokenIDs[i] = firstTokenId + i;
+            }
+        }
+        _requestRevealRandomWords(seriesID, tokenIDs);
     }
 
     function adminMint(
@@ -595,6 +587,27 @@ contract DOUDOCHAINV2CoreUpgradeable is
         );
     }
 
+    function _paidMint(
+        uint256 seriesID,
+        address buyer,
+        uint16[] calldata luckyNumbers,
+        bool requireGoodsArrived
+    ) internal {
+        Series storage series = seriesData[seriesID];
+        uint256 quantity = luckyNumbers.length;
+        if (requireGoodsArrived) {
+            if (!series.isGoodsArrived) revert GoodsNotArrived();
+        } else if (!series.isGoodsArrived && !series.isPreOrder) {
+            revert GoodsNotArrived();
+        }
+        if (series.isRefund) revert SeriesIsRefund();
+        if (quantity == 0 || quantity > series.remainingTicketNumbers) revert NotEnoughNFTsRemaining();
+        _checkAndRefreshMintLock(seriesID, buyer);
+        _checkWalletCap(seriesID, buyer, quantity);
+        doudoPoints.burnFromWithReason(buyer, quantity * series.priceInPoints, keccak256("LOTTERY_MINT"));
+        _mintTickets(seriesID, buyer, luckyNumbers, series.priceInPoints, true, false);
+    }
+
     function _mintTickets(
         uint256 seriesID,
         address to,
@@ -634,7 +647,7 @@ contract DOUDOCHAINV2CoreUpgradeable is
 
     function _requestRevealRandomWords(
         uint256 seriesID,
-        uint256[] calldata tokenIDs
+        uint256[] memory tokenIDs
     ) internal returns (uint256 requestId) {
         requestId = _requestRandomWords(1);
         requestKind[requestId] = RequestKind.Reveal;
