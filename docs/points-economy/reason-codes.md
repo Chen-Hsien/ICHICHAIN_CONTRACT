@@ -5,6 +5,7 @@ Reason codes are emitted as `bytes32` values in `PointsMinted`, `PointsBurned`, 
 | Reason string | Direction | Use |
 | --- | --- | --- |
 | `PURCHASE` | Mint | Settled fiat purchase points. |
+| `VOUCHER_REDEEM` | Mint | DOUDOCOINNFT voucher redemption reward (incl. membership bonus). |
 | `LOTTERY_MINT` | Burn | Regular DOUDOCHAINV2 ticket mint. |
 | `LOTTERY_BUNDLE` | Burn | Bundle ticket mint. |
 | `BUNDLE_REBATE` | Mint | Bundle rebate points. |

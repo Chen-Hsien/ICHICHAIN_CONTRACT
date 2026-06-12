@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-// Compatible with OpenZeppelin Contracts ^5.0.0
+// Compatible with OpenZeppelin Contracts ^4.9.0
 pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
@@ -7,12 +7,7 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-
-// 首先，確保您的 rewardToken 合約有一個 mint 函數
-interface IDOUDOCOIN is IERC20 {
-    function mint(address to, uint256 amount) external returns (bool);
-}
+import "./interfaces/IDoudoPoints.sol";
 
 contract DOUDOCOINNFT is
     ERC721,
@@ -59,8 +54,8 @@ contract DOUDOCOINNFT is
     // Mapping of voucher type ID to VoucherType details
     mapping(uint256 => VoucherType) public voucherTypes;
 
-    // Token contract for rewards (ERC20)
-    IDOUDOCOIN public rewardToken;
+    // Soulbound DOUDO points token used for redemption rewards
+    IDoudoPoints public rewardToken;
 
     // List of membership levels and their thresholds
     MembershipLevel[] public membershipLevels;
@@ -69,6 +64,13 @@ contract DOUDOCOINNFT is
 
     // Roles
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
+
+    // Reason code emitted on DOUDO points minted from voucher redemption
+    bytes32 public constant VOUCHER_REDEEM = keccak256("VOUCHER_REDEEM");
+
+    // Membership NFT metadata base (Pinata dedicated gateway + IPFS directory CID)
+    string private constant MEMBERSHIP_METADATA_BASE =
+        "https://lime-basic-thrush-351.mypinata.cloud/ipfs/bafybeigarayofyyqxamwhx6mzy4cwxlw57sfrtfaz3iauxtfrdg7gymh6q/";
 
     event VoucherTypeCreated(
         uint256 voucherTypeId,
@@ -138,7 +140,7 @@ contract DOUDOCOINNFT is
         address defaultAdmin,
         address minter
     ) ERC721("DOUDOCOINNFT", "DOUDO") {
-        rewardToken = IDOUDOCOIN(rewardTokenAddress);
+        rewardToken = IDoudoPoints(rewardTokenAddress);
         _grantRole(DEFAULT_ADMIN_ROLE, defaultAdmin);
         _grantRole(MINTER_ROLE, minter);
 
@@ -148,7 +150,7 @@ contract DOUDOCOINNFT is
         _addMembershipLevel(
             "Common",
             1,
-            "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmTMMQCWK1vVXyo7NCZQawRY7wBQPrmbpgvyqehLxxKJAL/common.json",
+            string.concat(MEMBERSHIP_METADATA_BASE, "common.json"),
             0
         );
 
@@ -156,19 +158,19 @@ contract DOUDOCOINNFT is
         _addMembershipLevel(
             "Silver",
             15000 ether,
-            "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmTMMQCWK1vVXyo7NCZQawRY7wBQPrmbpgvyqehLxxKJAL/sliver.json",
+            string.concat(MEMBERSHIP_METADATA_BASE, "sliver.json"),
             100
         ); // 1% additional reward (100 basis points)
         _addMembershipLevel(
             "Gold",
             80000 ether,
-            "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmTMMQCWK1vVXyo7NCZQawRY7wBQPrmbpgvyqehLxxKJAL/gold.json",
+            string.concat(MEMBERSHIP_METADATA_BASE, "gold.json"),
             150
         ); // 1.5% additional reward (150 basis points)
         _addMembershipLevel(
             "Platinum",
             150000 ether,
-            "https://lime-basic-thrush-351.mypinata.cloud/ipfs/QmTMMQCWK1vVXyo7NCZQawRY7wBQPrmbpgvyqehLxxKJAL/Platinum.json",
+            string.concat(MEMBERSHIP_METADATA_BASE, "Platinum.json"),
             300
         ); // 3% additional reward (300 basis points)
     }
@@ -212,7 +214,7 @@ contract DOUDOCOINNFT is
         uint256 tokenId
     ) public view override returns (string memory) {
         if (isMembershipNFT[tokenId]) {
-            uint256 membershipLevel = userInfo[msg.sender].membershipLevel;
+            uint256 membershipLevel = userInfo[ownerOf(tokenId)].membershipLevel;
             return membershipLevels[membershipLevel].membershipTokenURI;
         }
         uint256 voucherTypeId = voucherTypeIds[tokenId];
@@ -437,9 +439,9 @@ contract DOUDOCOINNFT is
             additionalReward
         );
 
-        // Mint reward tokens directly to the user
+        // Mint reward points directly to the user (reason-coded for analytics)
         require(
-            rewardToken.mint(msg.sender, totalAmount),
+            rewardToken.mintWithReason(msg.sender, totalAmount, VOUCHER_REDEEM),
             "Token minting failed"
         );
 
@@ -542,23 +544,26 @@ contract DOUDOCOINNFT is
         );
     }
 
-    // Admin function to update both the threshold and tokenURI of an existing membership level
+    // Admin function to update threshold, tokenURI, and reward basis points of an existing membership level
     function updateMembershipLevel(
         uint256 levelIndex,
         uint256 newThreshold,
-        string memory newTokenURI
+        string memory newTokenURI,
+        uint256 newRewardBasisPoints
     ) external onlyRole(DEFAULT_ADMIN_ROLE) {
         require(
             levelIndex < membershipLevels.length,
             "Invalid membership level"
         );
+        require(newRewardBasisPoints <= 10000, "Invalid reward basis points");
         membershipLevels[levelIndex].threshold = newThreshold;
         membershipLevels[levelIndex].membershipTokenURI = newTokenURI;
+        membershipLevels[levelIndex].rewardBasisPoints = newRewardBasisPoints;
         emit MembershipLevelUpdated(
             levelIndex,
             newThreshold,
             newTokenURI,
-            membershipLevels[levelIndex].rewardBasisPoints
+            newRewardBasisPoints
         );
     }
 
@@ -590,7 +595,7 @@ contract DOUDOCOINNFT is
     function setRewardToken(
         address _rewardToken
     ) external onlyRole(DEFAULT_ADMIN_ROLE) {
-        rewardToken = IDOUDOCOIN(_rewardToken);
+        rewardToken = IDoudoPoints(_rewardToken);
     }
 
     // Function for subscription contract to mint multiple types of vouchers for users
