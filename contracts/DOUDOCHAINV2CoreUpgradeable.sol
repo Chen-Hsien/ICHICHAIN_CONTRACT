@@ -25,6 +25,7 @@ contract DOUDOCHAINV2CoreUpgradeable is
     uint256 private constant MAX_REVEAL_BATCH = 20;
     uint256 private constant MAX_MINT_AND_REVEAL = 10;
     uint256 private constant LAST_PRIZE_ID = 999;
+    uint256 private constant DEFAULT_EXCHANGE_DEADLINE_DAYS = 60;
 
     enum RequestKind {
         None,
@@ -79,6 +80,7 @@ contract DOUDOCHAINV2CoreUpgradeable is
         bool tokenExchange;
         bool tokenRevealed;
         uint16 luckyNumber;
+        uint64 tokenRevealTimestamp;
     }
 
     struct TokenRange {
@@ -485,6 +487,7 @@ contract DOUDOCHAINV2CoreUpgradeable is
             TicketStatus storage status = ticketStatusDetail[tokenID];
             if (!status.tokenRevealed) revert TokenNotRevealed();
             if (status.tokenExchange) revert TokenAlreadyExchanged();
+            _requireExchangeDeadlineOpen(status);
             status.tokenExchange = true;
             emit UpdateTicketStatus(tokenID, status.seriesID, status.tokenRevealedPrize, true, true);
         }
@@ -631,7 +634,8 @@ contract DOUDOCHAINV2CoreUpgradeable is
                 tokenRevealedPrize: 0,
                 tokenExchange: false,
                 tokenRevealed: false,
-                luckyNumber: luckyNumber
+                luckyNumber: luckyNumber,
+                tokenRevealTimestamp: 0
             });
             pointsPaid[tokenId] = paidPointsPerTicket;
             emit NewTicketStatus(tokenId, seriesID, 0, false, false, to, luckyNumber);
@@ -688,6 +692,7 @@ contract DOUDOCHAINV2CoreUpgradeable is
             );
             status.tokenRevealedPrize = prizeId;
             status.tokenRevealed = true;
+            status.tokenRevealTimestamp = uint64(block.timestamp);
             emit UpdateTicketStatus(tokenId, seriesID, prizeId, status.tokenExchange, true);
         }
 
@@ -825,7 +830,8 @@ contract DOUDOCHAINV2CoreUpgradeable is
             tokenRevealedPrize: subPrizeID,
             tokenExchange: false,
             tokenRevealed: true,
-            luckyNumber: consumedLuckyNumber
+            luckyNumber: consumedLuckyNumber,
+            tokenRevealTimestamp: uint64(block.timestamp)
         });
         totalMintedInSeries[seriesID] += 1;
         _recordSeriesRange(seriesID, tokenId, 1);
@@ -841,10 +847,19 @@ contract DOUDOCHAINV2CoreUpgradeable is
             tokenRevealedPrize: LAST_PRIZE_ID,
             tokenExchange: false,
             tokenRevealed: true,
-            luckyNumber: 0
+            luckyNumber: 0,
+            tokenRevealTimestamp: uint64(block.timestamp)
         });
         emit NewTicketStatus(tokenId, seriesID, LAST_PRIZE_ID, false, true, to, 0);
         emit UpdateTicketStatus(tokenId, seriesID, LAST_PRIZE_ID, false, true);
+    }
+
+    function _requireExchangeDeadlineOpen(TicketStatus storage status) internal view {
+        uint256 revealTimestamp = status.tokenRevealTimestamp;
+        if (revealTimestamp == 0) {
+            return;
+        }
+        if (block.timestamp > revealTimestamp + DEFAULT_EXCHANGE_DEADLINE_DAYS * 1 days) revert();
     }
 
     function _selectExistingTokenFromSeries(
@@ -914,13 +929,10 @@ contract DOUDOCHAINV2CoreUpgradeable is
         if (totalPrizeQuantity != input.totalTicketNumbers) revert SubprizeQuantityNotEqual();
     }
 
-    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721AUpgradeable) returns (bool) {
-        return ERC721AUpgradeable.supportsInterface(interfaceId);
-    }
-
     function _authorizeUpgrade(address) internal override onlyRole(UPGRADER_ROLE) {}
 
     mapping(uint256 => uint256) public seriesLockDuration;
+    mapping(uint256 => bytes32) public seriesMerchantRefs;
 
-    uint256[39] private __gap;
+    uint256[38] private __gap;
 }
