@@ -1,6 +1,6 @@
 # DOUDOCHAIN V2 Upgradeable Subgraph And Query Mapping
 
-Last updated: 2026-06-03
+Last updated: 2026-06-15
 
 Index proxy addresses for UUPS contracts. Index the non-proxy Router directly.
 
@@ -15,6 +15,7 @@ Index proxy addresses for UUPS contracts. Index the non-proxy Router directly.
 | `DoudoRedrawModuleUpgradeable` | `0xE75461828f41C890fbc811e7cABFe2143B3F4afE` | Redraw and consolation events |
 | `DoudoCollectionRewardModuleUpgradeable` | `0x680618a6933DD68fF84Ff9F64760120d27400B3C` | Book reward config/mint/unlock events |
 | `CollectionBookUpgradeable` | `0x4284be399cA9591fBd98248969fCcb969E21B2C6` | Book, slot, deposit, withdrawal, claim events |
+| `MerchantSeriesRegistry` | `0x03dBEE1f231A29b06032aa24D2CFb96a1321C1A6` | Merchant attribution link/relink events; start block `277513499` |
 
 ## Existing Query Compatibility
 
@@ -77,6 +78,58 @@ type SeriesUnlockedFor @entity(immutable: true) {
   transactionHash: Bytes!
 }
 ```
+
+## Merchant Attribution Schema Additions
+
+`MerchantSeriesRegistry` is a new attribution data source. The registry event
+patches merchant data onto the existing `NewSeries` entity after
+`Core.NewSeries` creates it in the same publish transaction.
+
+```graphql
+type NewSeries @entity(immutable: false) {
+  id: Bytes!
+  seriesContract: Bytes!
+  seriesID: BigInt!
+  merchantRef: Bytes
+  merchantLinkedAt: BigInt
+  merchantUpdatedAt: BigInt
+  merchantLinkOperator: Bytes
+  merchantLinkTransactionHash: Bytes
+  merchantRelinkCount: Int!
+}
+
+type SeriesMerchantCorrection @entity(immutable: true) {
+  id: Bytes!
+  series: NewSeries
+  seriesContract: Bytes!
+  seriesID: BigInt!
+  previousMerchantRef: Bytes!
+  newMerchantRef: Bytes!
+  operator: Bytes!
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+```
+
+Handlers:
+
+| Event | Handler behavior |
+| --- | --- |
+| `SeriesMerchantLinked(seriesContract, seriesID, merchantRef, operator)` | Load `NewSeries` by `seriesID`, set `merchantRef`, `merchantLinkedAt`, `merchantUpdatedAt`, `merchantLinkOperator`, and `merchantLinkTransactionHash`. |
+| `SeriesMerchantRelinked(seriesContract, seriesID, previousMerchantRef, newMerchantRef, operator)` | Update `NewSeries.merchantRef`, increment `merchantRelinkCount`, and create immutable `SeriesMerchantCorrection`. |
+
+Join and alert policy:
+
+- `MerchantSeriesPublisher.publishSeriesWithMerchant(...)` emits
+  `Core.NewSeries` first, then `Registry.SeriesMerchantLinked`, so the Registry
+  handler should find the `NewSeries` created earlier in the same transaction.
+- A `NewSeries` row with `merchantRef = null` means the series was likely
+  created outside the Publisher or the Registry source address was not yet
+  configured. Surface these rows for reconciliation.
+- The `MerchantSeriesRegistry` data source in
+  `/Users/angustsai/thegraph/doudochain_amoy/subgraph.yaml` indexes proxy
+  `0x03dBEE1f231A29b06032aa24D2CFb96a1321C1A6` from block `277513499`.
 
 Ticket entity change:
 
@@ -396,6 +449,30 @@ query getTicketWithLuckyNumber($tokenId: BigInt!) {
     tokenRevealed
     tokenOwner
     luckyNumber
+  }
+}
+```
+
+```graphql
+query getMerchantSeries($merchantRef: Bytes!) {
+  newSeries_collection(where: { merchantRef: $merchantRef }, orderBy: seriesID, orderDirection: desc) {
+    seriesID
+    seriesContract
+    seriesName
+    merchantRef
+    merchantLinkedAt
+    merchantRelinkCount
+  }
+}
+```
+
+```graphql
+query listUnattributedSeries {
+  newSeries_collection(where: { merchantRef: null }, orderBy: seriesID, orderDirection: desc) {
+    seriesID
+    seriesContract
+    seriesName
+    transactionHash
   }
 }
 ```

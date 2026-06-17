@@ -1,6 +1,6 @@
 # DOUDOCHAIN V2 Upgradeable Handoff
 
-Last updated: 2026-06-03
+Last updated: 2026-06-15
 
 This document is the current handoff for the upgraded Arbitrum Sepolia V2 split-module deployment. Use proxy addresses for app/subgraph calls and implementation addresses only for verification and upgrade records.
 
@@ -27,6 +27,8 @@ Proxy app addresses are unchanged by this upgrade. `DoudoVRFRouter` is non-proxy
 | `DoudoRedrawModuleUpgradeable` | `0xE75461828f41C890fbc811e7cABFe2143B3F4afE` | `0xaa02Ee36a3CC7cc66e69cD8b25Cba39071101B92` | Verified and proxy-linked |
 | `DoudoCollectionRewardModuleUpgradeable` | `0x680618a6933DD68fF84Ff9F64760120d27400B3C` | `0x2cE5a89cBA7F79a6de97E6d798522f66310a6d83` | Verified and proxy-linked |
 | `CollectionBookUpgradeable` | `0x4284be399cA9591fBd98248969fCcb969E21B2C6` | `0x8084993A227F9dc060407F568B95c5201b55259f` | Verified and proxy-linked |
+| `MerchantSeriesRegistry` | `0x03dBEE1f231A29b06032aa24D2CFb96a1321C1A6` | `0x59B2869C51cc555734845DF9eb3bDFb5Fc6f1E81` | Verified and proxy-linked |
+| `MerchantSeriesPublisher` | `0x259FB223A10D0116e5802d30FF5f441353C8972d` | Non-proxy | Verified |
 
 Explorer links:
 
@@ -42,6 +44,9 @@ Explorer links:
 - Redraw implementation: `https://sepolia.arbiscan.io/address/0xaa02Ee36a3CC7cc66e69cD8b25Cba39071101B92#code`
 - Collection reward proxy: `https://sepolia.arbiscan.io/address/0x680618a6933DD68fF84Ff9F64760120d27400B3C#code`
 - CollectionBook proxy: `https://sepolia.arbiscan.io/address/0x4284be399cA9591fBd98248969fCcb969E21B2C6#code`
+- MerchantSeriesRegistry proxy: `https://sepolia.arbiscan.io/address/0x03dBEE1f231A29b06032aa24D2CFb96a1321C1A6#code`
+- MerchantSeriesRegistry implementation: `https://sepolia.arbiscan.io/address/0x59B2869C51cc555734845DF9eb3bDFb5Fc6f1E81#code`
+- MerchantSeriesPublisher: `https://sepolia.arbiscan.io/address/0x259FB223A10D0116e5802d30FF5f441353C8972d#code`
 
 ## ABI Paths
 
@@ -57,6 +62,8 @@ Use implementation ABIs for proxy calls.
 | `DoudoRedrawModuleUpgradeable` | `/Users/angustsai/ICHICHAIN_CONTRACT/artifacts/contracts/modules/DoudoRedrawModuleUpgradeable.sol/DoudoRedrawModuleUpgradeable.json` |
 | `DoudoCollectionRewardModuleUpgradeable` | `/Users/angustsai/ICHICHAIN_CONTRACT/artifacts/contracts/modules/DoudoCollectionRewardModuleUpgradeable.sol/DoudoCollectionRewardModuleUpgradeable.json` |
 | `CollectionBookUpgradeable` | `/Users/angustsai/ICHICHAIN_CONTRACT/artifacts/contracts/CollectionBookUpgradeable.sol/CollectionBookUpgradeable.json` |
+| `MerchantSeriesRegistry` | `/Users/angustsai/ICHICHAIN_CONTRACT/artifacts/contracts/MerchantSeriesRegistry.sol/MerchantSeriesRegistry.json` |
+| `MerchantSeriesPublisher` | `/Users/angustsai/ICHICHAIN_CONTRACT/artifacts/contracts/MerchantSeriesPublisher.sol/MerchantSeriesPublisher.json` |
 
 ## Chainlink VRF
 
@@ -104,6 +111,7 @@ Index these addresses. For UUPS contracts, index the proxy address.
 | Redraw Module | `0xE75461828f41C890fbc811e7cABFe2143B3F4afE` | Redraw config, synchronous redraw mints, consolation requests |
 | Collection Reward Module | `0x680618a6933DD68fF84Ff9F64760120d27400B3C` | Collection reward config, reward mints, unlock events |
 | CollectionBook | `0x4284be399cA9591fBd98248969fCcb969E21B2C6` | Book definitions, deposits, withdrawals, claims |
+| MerchantSeriesRegistry | `0x03dBEE1f231A29b06032aa24D2CFb96a1321C1A6` | Merchant attribution link/relink events; start block `277513499` |
 
 Core keeps the legacy-compatible event names: `NewSeries`, `NewSubPrize`, `NewTicketStatus`, `RevealDrawSent`, `RevealDrawFulfilled`, `UpdatePrize`, `UpdateTicketStatus`, `UpdateSeriesInformation`, `UpdateSeriesRemainingTicketNumbers`, `LastPrizeDraw`, `LastPrizeWinner`, `UpdateSeriesLastPrizeOwner`, and `AdminMinted`. `NewTicketStatus` now includes `uint16 luckyNumber` as the seventh parameter.
 
@@ -128,6 +136,9 @@ See `/Users/angustsai/ICHICHAIN_CONTRACT/docs/subgraph-v2-upgradeable-query-mapp
 | Redraw | bundle module | `0x68cBA2b3c72Be39be748B06c1e6dDab2855E91b6` |
 | CollectionReward | collection book | `0x4284be399cA9591fBd98248969fCcb969E21B2C6` |
 | CollectionBook | reward target | `0x680618a6933DD68fF84Ff9F64760120d27400B3C` |
+| Core | `OPERATION_ROLE` | MerchantSeriesPublisher `0x259FB223A10D0116e5802d30FF5f441353C8972d` |
+| MerchantSeriesRegistry | `LINKER_ROLE` | MerchantSeriesPublisher `0x259FB223A10D0116e5802d30FF5f441353C8972d` |
+| MerchantSeriesPublisher | `PUBLISHER_OPERATION_ROLE` | Backend/admin operator wallet `0x226f0197D502e7AC87d1A76D6526945DFa9E4209` |
 
 Core no longer uses a separate `VRF_ROUTER_ROLE`; fulfillment is guarded by `msg.sender == vrfRouter`.
 
@@ -217,6 +228,15 @@ withdrawDeposited(uint256 bookId, address sourceContract, uint256[] tokenIds)
 claimBook(uint256 bookId)
 ```
 
+Merchant attribution:
+
+```solidity
+publishSeriesWithMerchant(address core, SeriesInput input, SubPrize[] subPrizes, bool markGoodsArrived, bytes32 merchantRef)
+linkSeries(address seriesContract, uint256 seriesID, bytes32 merchantRef)
+relinkSeries(address seriesContract, uint256 seriesID, bytes32 newMerchantRef)
+merchantOf(address seriesContract, uint256 seriesID)
+```
+
 ## Event Signatures For Subgraph
 
 Core:
@@ -238,6 +258,13 @@ AdminMinted(address,address,uint256,uint256)
 VrfRouterUpdated(address,address)
 MintLockUpdated(uint256,address,uint256)
 SeriesUnlockedFor(uint256,address,uint256)
+```
+
+Merchant registry:
+
+```solidity
+SeriesMerchantLinked(address,uint256,bytes32,address)
+SeriesMerchantRelinked(address,uint256,bytes32,bytes32,address)
 ```
 
 Router and modules:
@@ -300,6 +327,20 @@ Verification script:
 ```bash
 npx hardhat run scripts/verifySplitModuleArbSepolia.ts --network arbitrumSepolia
 ```
+
+Merchant attribution deploy + role wiring:
+
+```bash
+npx hardhat run scripts/deployMerchantAttributionArbSepolia.ts --network arbitrumSepolia
+```
+
+After deployment:
+
+1. Deploy the updated subgraph from
+   `/Users/angustsai/thegraph/doudochain_amoy`.
+2. After a Publisher publish succeeds and indexes, revoke Core
+   `OPERATION_ROLE` from direct human/backend publish wallets so series creation
+   must go through the Publisher.
 
 ## Verification Snapshot
 
