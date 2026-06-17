@@ -1,6 +1,8 @@
 const { expect } = require("chai");
 const { ethers, upgrades } = require("hardhat");
 
+const MERCHANT_A = ethers.keccak256(ethers.toUtf8Bytes("merchant-A"));
+
 function prizeTable(total = 6) {
   return [
     { subPrizeID: 1, prizeGroup: "A", subPrizeName: "A1", subPrizeRemainingQuantity: 2 },
@@ -124,6 +126,39 @@ async function revealTickets({ user, core, vrf, router }, seriesID, tokenIDs, ra
 }
 
 describe("DOUDOCHAIN V2 fixes", function () {
+  it("keeps merchant attribution outside Core and links through the registry", async function () {
+    const { admin, core } = await deploySplitSuite();
+    const input = seriesInput({ seriesName: "Merchant Series" });
+
+    const Registry = await ethers.getContractFactory(
+      "contracts/MerchantSeriesRegistry.sol:MerchantSeriesRegistry"
+    );
+    const registry = await upgrades.deployProxy(Registry, [admin.address], {
+      initializer: "initialize",
+      kind: "uups",
+    });
+    await registry.waitForDeployment();
+
+    const Publisher = await ethers.getContractFactory(
+      "contracts/MerchantSeriesPublisher.sol:MerchantSeriesPublisher"
+    );
+    const publisher = await Publisher.deploy(admin.address, await registry.getAddress());
+    await publisher.waitForDeployment();
+
+    await core.grantRole(await core.OPERATION_ROLE(), await publisher.getAddress());
+    await registry.grantRole(await registry.LINKER_ROLE(), await publisher.getAddress());
+
+    await publisher.publishSeriesWithMerchant(
+      await core.getAddress(),
+      input,
+      prizeTable(input.totalTicketNumbers),
+      true,
+      MERCHANT_A
+    );
+
+    expect(await registry.merchantOf(await core.getAddress(), 0)).to.equal(MERCHANT_A);
+  });
+
   it("bundle mint respects refund state", async function () {
     const { user, points, core, bundle, refund } = await deploySplitSuite();
     await createSeries(core, { useLuckyNumber: false, maxPerWallet: 0 });

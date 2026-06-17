@@ -932,7 +932,6 @@ contract DOUDOCHAINV2CoreUpgradeable is
     function _authorizeUpgrade(address) internal override onlyRole(UPGRADER_ROLE) {}
 
     mapping(uint256 => uint256) public seriesLockDuration;
-    mapping(uint256 => bytes32) public seriesMerchantRefs;
 
-    uint256[38] private __gap;
+    uint256[39] private __gap;
 }
