@@ -23,9 +23,8 @@ contract DOUDOCHAINV2CoreUpgradeable is
     bytes32 public constant MODULE_ROLE = keccak256("MODULE_ROLE");
     bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
     uint256 private constant MAX_REVEAL_BATCH = 20;
-    uint256 private constant MAX_MINT_AND_REVEAL = 10;
     uint256 private constant LAST_PRIZE_ID = 999;
-    uint256 private constant DEFAULT_EXCHANGE_DEADLINE_DAYS = 60;
+    uint256 private constant MAX_MINT_LOCK_DURATION = 600;
 
     enum RequestKind {
         None,
@@ -53,6 +52,8 @@ contract DOUDOCHAINV2CoreUpgradeable is
         bool isPreOrder;
         bool useLuckyNumber;
         uint256 maxPerWallet;
+        uint8 packingType;
+        uint8 sourceType;
     }
 
     struct Series {
@@ -72,6 +73,7 @@ contract DOUDOCHAINV2CoreUpgradeable is
         bool isPreOrder;
         bool useLuckyNumber;
         uint256 maxPerWallet;
+        uint8 seriesSourceTag;
     }
 
     struct TicketStatus {
@@ -112,7 +114,6 @@ contract DOUDOCHAINV2CoreUpgradeable is
     uint256 private seriesCounter;
 
     error InvalidConfig();
-    error OnlyVrfRouter(address caller, address expectedRouter);
     error EmptySubPrizes();
     error SubprizeQuantityNotEqual();
     error InvalidSeriesInput();
@@ -184,7 +185,6 @@ contract DOUDOCHAINV2CoreUpgradeable is
         uint256 indexed seriesID,
         uint256 quantity
     );
-    event VrfRouterUpdated(address indexed vrfRouter, address indexed operator);
     event RevealDrawSent(uint256 requestId, uint256[] tokenIDs);
     event RevealDrawFulfilled(uint256 requestId, uint256 seriesID, uint256[] randomWords);
     event UpdatePrize(uint256 indexed seriesID, uint256 subPrizeID, uint256 subPrizeRemainingQuantity);
@@ -220,7 +220,7 @@ contract DOUDOCHAINV2CoreUpgradeable is
 
         doudoPoints = IDoudoPoints(doudoPointsAddress);
         vrfRouter = vrfRouter_;
-        defaultLockDuration = 900;
+        defaultLockDuration = MAX_MINT_LOCK_DURATION;
 
         _grantRole(UPGRADER_ROLE, msg.sender);
         _grantRole(OPERATION_ROLE, msg.sender);
@@ -263,20 +263,6 @@ contract DOUDOCHAINV2CoreUpgradeable is
         _paidMint(seriesID, msg.sender, luckyNumbers, false);
     }
 
-    function mintAndReveal(uint256 seriesID, uint16[] calldata luckyNumbers) external nonReentrant whenNotPaused {
-        uint256 quantity = luckyNumbers.length;
-        if (quantity > MAX_MINT_AND_REVEAL) revert RevealBatchTooLarge();
-        uint256 firstTokenId = _nextTokenId();
-        _paidMint(seriesID, msg.sender, luckyNumbers, true);
-        uint256[] memory tokenIDs = new uint256[](quantity);
-        unchecked {
-            for (uint256 i; i < quantity; ++i) {
-                tokenIDs[i] = firstTokenId + i;
-            }
-        }
-        _requestRevealRandomWords(seriesID, tokenIDs);
-    }
-
     function adminMint(
         address to,
         uint256 seriesID,
@@ -294,14 +280,13 @@ contract DOUDOCHAINV2CoreUpgradeable is
     function setVrfRouter(address vrfRouter_) external onlyRole(OPERATION_ROLE) {
         if (vrfRouter_ == address(0)) revert InvalidConfig();
         vrfRouter = vrfRouter_;
-        emit VrfRouterUpdated(vrfRouter_, msg.sender);
     }
 
     function reveal(uint256 seriesID, uint256[] calldata tokenIDs) external whenNotPaused {
         if (tokenIDs.length == 0) revert InvalidSeriesInput();
         if (tokenIDs.length > MAX_REVEAL_BATCH) revert RevealBatchTooLarge();
         if (!seriesData[seriesID].isGoodsArrived) revert GoodsNotArrived();
-        _validateRevealTokens(seriesID, tokenIDs, msg.sender);
+        _validateRevealTokens(seriesID, tokenIDs);
         _requestRevealRandomWords(seriesID, tokenIDs);
     }
 
@@ -309,7 +294,7 @@ contract DOUDOCHAINV2CoreUpgradeable is
         uint256 requestId,
         uint256[] calldata randomWords
     ) external override nonReentrant {
-        if (msg.sender != vrfRouter) revert OnlyVrfRouter(msg.sender, vrfRouter);
+        if (msg.sender != vrfRouter) revert InvalidConfig();
         if (randomWords.length == 0) revert InvalidConfig();
 
         RequestKind kind = requestKind[requestId];
@@ -353,26 +338,38 @@ contract DOUDOCHAINV2CoreUpgradeable is
     function moduleMintUnrevealed(
         address to,
         uint256 seriesID,
-        uint256 quantity,
+        uint16[] calldata luckyNumbers,
         uint256 pointsPerTicket,
         bool enforceWalletAndLock
     ) external onlyRole(MODULE_ROLE) nonReentrant whenNotPaused returns (uint256 firstTokenId) {
         Series storage series = seriesData[seriesID];
         if (series.isRefund) revert SeriesIsRefund();
+        uint256 quantity = luckyNumbers.length;
         if (quantity == 0 || quantity > series.remainingTicketNumbers) revert NotEnoughNFTsRemaining();
         if (enforceWalletAndLock) {
             if (!series.isGoodsArrived && !series.isPreOrder) revert GoodsNotArrived();
             _checkAndRefreshMintLock(seriesID, to);
             _checkWalletCap(seriesID, to, quantity);
         }
-        uint16[] memory luckyNumbers = new uint16[](quantity);
-        if (series.useLuckyNumber) {
-            for (uint256 i = 0; i < quantity; i++) {
-                luckyNumbers[i] = _assignNextLuckyNumber(seriesID);
+        bool autoAssignLuckyNumbers = !enforceWalletAndLock;
+        uint16[] memory resolvedLuckyNumbers = luckyNumbers;
+        for (uint256 i = 0; i < quantity; i++) {
+            if (series.useLuckyNumber && autoAssignLuckyNumbers) {
+                if (resolvedLuckyNumbers[i] != 0) revert InvalidConfig();
+                resolvedLuckyNumbers[i] = _assignNextLuckyNumber(seriesID);
+            } else if (!series.useLuckyNumber && resolvedLuckyNumbers[i] != 0) {
+                revert InvalidConfig();
             }
         }
         firstTokenId = _nextTokenId();
-        _mintTickets(seriesID, to, luckyNumbers, pointsPerTicket, enforceWalletAndLock, true);
+        _mintTickets(
+            seriesID,
+            to,
+            resolvedLuckyNumbers,
+            pointsPerTicket,
+            enforceWalletAndLock,
+            autoAssignLuckyNumbers
+        );
     }
 
     function moduleMintRevealed(
@@ -514,6 +511,14 @@ contract DOUDOCHAINV2CoreUpgradeable is
         _unpause();
     }
 
+    function seriesMintConfig(
+        uint256 seriesID
+    ) external view returns (uint256 priceInPoints, bool useLuckyNumber) {
+        Series storage series = seriesData[seriesID];
+        if (series.totalTicketNumbers == 0) revert InvalidSeriesInput();
+        return (series.priceInPoints, series.useLuckyNumber);
+    }
+
     function _createSeriesWithSubPrizes(
         SeriesInput calldata input,
         SubPrize[] calldata subPrizes,
@@ -537,6 +542,7 @@ contract DOUDOCHAINV2CoreUpgradeable is
         series.isPreOrder = input.isPreOrder;
         series.useLuckyNumber = input.useLuckyNumber;
         series.maxPerWallet = input.maxPerWallet;
+        series.seriesSourceTag = (input.packingType << 4) | input.sourceType;
 
         for (uint256 i = 0; i < subPrizes.length; i++) {
             seriesSubPrizes[seriesID].push(subPrizes[i]);
@@ -762,6 +768,9 @@ contract DOUDOCHAINV2CoreUpgradeable is
         if (duration == 0) {
             duration = defaultLockDuration;
         }
+        if (duration > MAX_MINT_LOCK_DURATION) {
+            duration = MAX_MINT_LOCK_DURATION;
+        }
         mintLockOwner[seriesID] = user;
         mintLockUntil[seriesID] = block.timestamp + duration;
         emit MintLockUpdated(seriesID, user, mintLockUntil[seriesID]);
@@ -795,11 +804,14 @@ contract DOUDOCHAINV2CoreUpgradeable is
 
     function _validateRevealTokens(
         uint256 seriesID,
-        uint256[] calldata tokenIDs,
-        address user
+        uint256[] calldata tokenIDs
     ) internal view {
+        address user = msg.sender;
+        bool moduleCaller = hasRole(MODULE_ROLE, user);
         for (uint256 i = 0; i < tokenIDs.length; i++) {
-            if (ownerOf(tokenIDs[i]) != user) revert NotTheTokenOwner();
+            if (!moduleCaller) {
+                if (ownerOf(tokenIDs[i]) != user) revert NotTheTokenOwner();
+            }
             TicketStatus storage status = ticketStatusDetail[tokenIDs[i]];
             if (status.seriesID != seriesID) revert InvalidSeriesInput();
             if (status.tokenRevealed) revert TokenAlreadyRevealed();
@@ -859,7 +871,7 @@ contract DOUDOCHAINV2CoreUpgradeable is
         if (revealTimestamp == 0) {
             return;
         }
-        if (block.timestamp > revealTimestamp + DEFAULT_EXCHANGE_DEADLINE_DAYS * 1 days) revert();
+        if (block.timestamp > revealTimestamp + 60 days) revert();
     }
 
     function _selectExistingTokenFromSeries(
@@ -912,6 +924,7 @@ contract DOUDOCHAINV2CoreUpgradeable is
         SubPrize[] calldata subPrizes
     ) internal pure {
         if (input.totalTicketNumbers == 0 || input.priceInPoints == 0) revert InvalidSeriesInput();
+        if (input.useLuckyNumber && input.totalTicketNumbers > type(uint16).max) revert InvalidSeriesInput();
         if (
             bytes(input.seriesName).length == 0 ||
             bytes(input.unrevealTokenURI).length == 0 ||

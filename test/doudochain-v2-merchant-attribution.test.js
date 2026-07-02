@@ -26,6 +26,8 @@ function seriesInput(overrides = {}) {
     isPreOrder: false,
     useLuckyNumber: false,
     maxPerWallet: 0,
+    packingType: 1,
+    sourceType: 1,
     ...overrides,
   };
 }
@@ -74,7 +76,11 @@ async function deployFullSuite() {
   const Publisher = await ethers.getContractFactory(
     "contracts/MerchantSeriesPublisher.sol:MerchantSeriesPublisher"
   );
-  const publisher = await Publisher.deploy(admin.address, await registry.getAddress());
+  const publisher = await upgrades.deployProxy(
+    Publisher,
+    [admin.address, await registry.getAddress()],
+    { initializer: "initialize", kind: "uups" }
+  );
   await publisher.waitForDeployment();
 
   await core.grantRole(await core.OPERATION_ROLE(), await publisher.getAddress());
@@ -94,18 +100,26 @@ describe("Merchant publish - atomic flow", function () {
     expect(await registry.merchantOf(coreAddr, 0)).to.equal(MERCHANT_A);
   });
 
-  it("emits NewSeries (Core) and SeriesMerchantLinked (Registry) in the same tx", async function () {
+  it("emits NewSeries, SeriesMerchantLinked, and SeriesSourceTagged in the same tx", async function () {
     const { operator, core, registry, publisher } = await deployFullSuite();
     const coreAddr = await core.getAddress();
     const publisherAddr = await publisher.getAddress();
     await expect(
       publisher
         .connect(operator)
-        .publishSeriesWithMerchant(coreAddr, seriesInput(), prizeTable(), false, MERCHANT_A)
+        .publishSeriesWithMerchant(
+          coreAddr,
+          seriesInput({ packingType: 2, sourceType: 1 }),
+          prizeTable(),
+          false,
+          MERCHANT_A
+        )
     )
       .to.emit(core, "NewSeries")
       .and.to.emit(registry, "SeriesMerchantLinked")
-      .withArgs(coreAddr, 0, MERCHANT_A, publisherAddr);
+      .withArgs(coreAddr, 0, MERCHANT_A, publisherAddr)
+      .and.to.emit(publisher, "SeriesSourceTagged")
+      .withArgs(coreAddr, 0, 2, 1);
   });
 
   it("reverts atomically - a failed link does not advance the series counter", async function () {
@@ -143,7 +157,7 @@ describe("Publisher access control", function () {
       publisher
         .connect(human)
         .publishSeriesWithMerchant(await core.getAddress(), seriesInput(), prizeTable(), false, MERCHANT_A)
-    ).to.be.revertedWith(/is missing role/);
+    ).to.be.revertedWithCustomError(publisher, "MissingRole");
   });
 
   it("rejects a direct createSeries from a wallet without OPERATION_ROLE", async function () {
@@ -209,5 +223,14 @@ describe("MerchantSeriesRegistry rules", function () {
     await expect(
       registry.connect(human).upgradeToAndCall(human.address, "0x")
     ).to.be.revertedWithCustomError(registry, "MissingRole");
+  });
+});
+
+describe("MerchantSeriesPublisher upgradeability", function () {
+  it("allows only UPGRADER_ROLE to authorize an upgrade", async function () {
+    const { human, publisher } = await deployFullSuite();
+    await expect(
+      publisher.connect(human).upgradeToAndCall(human.address, "0x")
+    ).to.be.revertedWithCustomError(publisher, "MissingRole");
   });
 });

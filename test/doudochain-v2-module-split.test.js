@@ -2,6 +2,8 @@ const { expect } = require("chai");
 const { ethers, upgrades } = require("hardhat");
 const { anyValue } = require("@nomicfoundation/hardhat-chai-matchers/withArgs");
 
+const zeroLuckyNumbers = (quantity) => Array(quantity).fill(0);
+
 function prizeTable(total = 6) {
   return [
     { subPrizeID: 1, prizeGroup: "A", subPrizeName: "A1", subPrizeRemainingQuantity: 10 },
@@ -25,6 +27,8 @@ function seriesInput(overrides = {}) {
     isPreOrder: false,
     useLuckyNumber: false,
     maxPerWallet: 0,
+    packingType: 1,
+    sourceType: 1,
     ...overrides,
   };
 }
@@ -192,29 +196,137 @@ describe("DOUDOCHAIN V2 split module suite", function () {
     expect(firstTicket.luckyNumber).to.be.greaterThan(0);
   });
 
-  it("mints bundles through the bundle module while Core emits canonical ticket events", async function () {
+  it("mints tickets through the bundle module while Core emits canonical ticket events", async function () {
     const { user, points, core, bundle } = await deploySplitSuite();
     await createSeries(core);
     await issuePoints(points, user.address);
 
-    await bundle.setSeriesBundles(0, [
-      {
-        bundleID: 1,
-        ticketQuantity: 3,
-        priceInPoints: ethers.parseEther("25"),
-        rebatePoints: ethers.parseEther("2"),
-        consolationDrawCredits: 1,
-        active: true,
-      },
-    ]);
-
-    await expect(bundle.connect(user).mintBundle(0, 1, 1))
-      .to.emit(bundle, "BundleMinted")
-      .withArgs(0, 1, user.address, 1, anyValue)
+    await expect(bundle.connect(user).mintTickets(0, zeroLuckyNumbers(3), false))
+      .to.emit(bundle, "TicketPurchaseMinted")
+      .withArgs(0, user.address, 3, ethers.parseEther("30"), false, anyValue)
       .and.to.emit(core, "NewTicketStatus");
 
     expect(await core.balanceOf(user.address)).to.equal(3);
-    expect(await points.balanceOf(user.address)).to.equal(ethers.parseEther("977"));
+    expect(await points.balanceOf(user.address)).to.equal(ethers.parseEther("970"));
+  });
+
+  it("mints tickets and immediately requests reveal through Core", async function () {
+    const { user, other, points, vrf, router, core, bundle } = await deploySplitSuite();
+    await createSeries(core, { useLuckyNumber: true });
+    await issuePoints(points, user.address);
+
+    await expect(bundle.connect(user).mintTickets(0, [1, 2, 3], true))
+      .to.emit(core, "RevealDrawSent")
+      .withArgs(1, [0, 1, 2])
+      .and.to.emit(router, "VrfRandomWordsRequested")
+      .withArgs(1, await core.getAddress(), await core.getAddress(), 1)
+      .and.to.emit(bundle, "TicketPurchaseMinted")
+      .withArgs(0, user.address, 3, ethers.parseEther("30"), true, 0);
+
+    await expect(core.connect(other).reveal(0, [0]))
+      .to.be.revertedWithCustomError(core, "NotTheTokenOwner");
+
+    await vrf.fulfill(await router.getAddress(), 1, [123456]);
+
+    for (const tokenID of [0, 1, 2]) {
+      const status = await core.ticketStatusDetail(tokenID);
+      expect(status.tokenRevealed).to.equal(true);
+      expect(status.luckyNumber).to.be.greaterThan(0);
+      expect(await core.ownerOf(tokenID)).to.equal(user.address);
+    }
+    expect(await points.balanceOf(user.address)).to.equal(ethers.parseEther("970"));
+
+    await expect(bundle.connect(user).mintTickets(0, Array.from({ length: 12 }, (_, i) => i + 4), true))
+      .to.be.revertedWithCustomError(bundle, "RevealBatchTooLarge");
+  });
+
+  it("applies floor-tier rebates through the shared ticket purchase flow", async function () {
+    const { user, points, vrf, router, core, bundle } = await deploySplitSuite();
+    await createSeries(core);
+    await issuePoints(points, user.address, ethers.parseEther("2000"));
+
+    await bundle.setSeriesRebateTiers(0, [
+      { minimumTicketQuantity: 3, rebatePoints: ethers.parseEther("100") },
+      { minimumTicketQuantity: 5, rebatePoints: ethers.parseEther("300") },
+      { minimumTicketQuantity: 10, rebatePoints: ethers.parseEther("500") },
+    ]);
+
+    expect(await bundle.seriesRebateTierCount(0)).to.equal(3);
+
+    await bundle.connect(user).mintTickets(0, zeroLuckyNumbers(2), false);
+    expect(await points.balanceOf(user.address)).to.equal(ethers.parseEther("1980"));
+
+    await expect(bundle.connect(user).mintTickets(0, zeroLuckyNumbers(3), false))
+      .to.emit(bundle, "TicketPurchaseRebatePaid")
+      .withArgs(0, user.address, 3, ethers.parseEther("100"));
+    expect(await points.balanceOf(user.address)).to.equal(ethers.parseEther("2050"));
+
+    await expect(bundle.connect(user).mintTickets(0, zeroLuckyNumbers(6), false))
+      .to.emit(bundle, "TicketPurchaseRebatePaid")
+      .withArgs(0, user.address, 6, ethers.parseEther("300"));
+    expect(await points.balanceOf(user.address)).to.equal(ethers.parseEther("2290"));
+
+    await expect(bundle.connect(user).mintTickets(0, zeroLuckyNumbers(8), true))
+      .to.emit(bundle, "TicketPurchaseRebatePaid")
+      .withArgs(0, user.address, 8, ethers.parseEther("300"))
+      .and.to.emit(core, "RevealDrawSent")
+      .withArgs(1, [11, 12, 13, 14, 15, 16, 17, 18]);
+    expect(await points.balanceOf(user.address)).to.equal(ethers.parseEther("2510"));
+
+    await vrf.fulfill(await router.getAddress(), 1, [987654]);
+    expect((await core.ticketStatusDetail(11)).tokenRevealed).to.equal(true);
+
+    await expect(bundle.connect(user).mintTickets(0, zeroLuckyNumbers(10), true))
+      .to.emit(bundle, "TicketPurchaseRebatePaid")
+      .withArgs(0, user.address, 10, ethers.parseEther("500"))
+      .and.to.emit(core, "RevealDrawSent")
+      .withArgs(2, [19, 20, 21, 22, 23, 24, 25, 26, 27, 28]);
+    expect(await points.balanceOf(user.address)).to.equal(ethers.parseEther("2910"));
+
+    await vrf.fulfill(await router.getAddress(), 2, [1234567]);
+    expect((await core.ticketStatusDetail(19)).tokenRevealed).to.equal(true);
+
+    await bundle.setSeriesRebateTiers(0, [
+      { minimumTicketQuantity: 3, rebatePoints: ethers.parseEther("100") },
+    ]);
+    await expect(bundle.connect(user).mintTickets(0, zeroLuckyNumbers(9), false))
+      .to.emit(bundle, "TicketPurchaseRebatePaid")
+      .withArgs(0, user.address, 9, ethers.parseEther("100"));
+    expect(await points.balanceOf(user.address)).to.equal(ethers.parseEther("2920"));
+  });
+
+  it("does not pay ticket purchase rebates when no floor tiers are configured", async function () {
+    const { user, points, core, bundle } = await deploySplitSuite();
+    await createSeries(core);
+    await issuePoints(points, user.address);
+
+    expect(await bundle.seriesRebateTierCount(0)).to.equal(0);
+    await expect(bundle.connect(user).mintTickets(0, zeroLuckyNumbers(4), false))
+      .to.not.emit(bundle, "TicketPurchaseRebatePaid");
+    expect(await points.balanceOf(user.address)).to.equal(ethers.parseEther("960"));
+
+    await bundle.setSeriesRebateTiers(0, [
+      { minimumTicketQuantity: 3, rebatePoints: ethers.parseEther("100") },
+    ]);
+    await expect(bundle.connect(user).mintTickets(0, zeroLuckyNumbers(4), false))
+      .to.emit(bundle, "TicketPurchaseRebatePaid")
+      .withArgs(0, user.address, 4, ethers.parseEther("100"));
+    expect(await points.balanceOf(user.address)).to.equal(ethers.parseEther("1020"));
+
+    await bundle.setSeriesRebateTiers(0, []);
+    expect(await bundle.seriesRebateTierCount(0)).to.equal(0);
+    await expect(bundle.connect(user).mintTickets(0, zeroLuckyNumbers(4), false))
+      .to.not.emit(bundle, "TicketPurchaseRebatePaid");
+    expect(await points.balanceOf(user.address)).to.equal(ethers.parseEther("980"));
+  });
+
+  it("rejects invalid ticket quantity purchases", async function () {
+    const { user, core, bundle } = await deploySplitSuite();
+
+    await expect(bundle.connect(user).mintTickets(0, [], false))
+      .to.be.revertedWithCustomError(bundle, "InvalidConfig");
+    await expect(bundle.connect(user).mintTickets(999, [0], false))
+      .to.be.revertedWithCustomError(core, "InvalidSeriesInput");
   });
 
   it("claims refunds through the refund module and burns tickets through Core", async function () {
@@ -254,6 +366,42 @@ describe("DOUDOCHAIN V2 split module suite", function () {
     expect(await core.ownerOf(3)).to.equal(user.address);
     expect((await core.ticketStatusDetail(2)).tokenRevealed).to.equal(false);
     expect(await core.balanceOf(user.address)).to.equal(2);
+  });
+
+  it("redraws main prizes by burning the configured count and minting the configured count", async function () {
+    const { user, points, vrf, router, core, redraw } = await deploySplitSuite();
+    await createSeries(core, { useLuckyNumber: false, maxPerWallet: 0 });
+    await issuePoints(points, user.address);
+    await core.connect(user).mint(0, [0, 0, 0]);
+    await core.connect(user).reveal(0, [0, 1]);
+    await vrf.fulfill(await router.getAddress(), 1, [777]);
+
+    await redraw.setRedrawMainConfig(0, 2, 1);
+
+    await expect(redraw.connect(user).redrawMain(0, [0, 1]))
+      .to.emit(redraw, "RedrawMinted")
+      .withArgs(0, user.address, 1, 3);
+
+    await expect(core.ownerOf(0)).to.be.reverted;
+    await expect(core.ownerOf(1)).to.be.reverted;
+    expect(await core.ownerOf(2)).to.equal(user.address);
+    expect(await core.ownerOf(3)).to.equal(user.address);
+    expect((await core.ticketStatusDetail(3)).tokenRevealed).to.equal(false);
+    expect(await core.balanceOf(user.address)).to.equal(2);
+  });
+
+  it("rejects main redraws that do not burn the configured count", async function () {
+    const { user, points, vrf, router, core, redraw } = await deploySplitSuite();
+    await createSeries(core, { useLuckyNumber: false, maxPerWallet: 0 });
+    await issuePoints(points, user.address);
+    await core.connect(user).mint(0, [0, 0]);
+    await core.connect(user).reveal(0, [0, 1]);
+    await vrf.fulfill(await router.getAddress(), 1, [777]);
+
+    await redraw.setRedrawMainConfig(0, 2, 1);
+
+    await expect(redraw.connect(user).redrawMain(0, [0]))
+      .to.be.revertedWithCustomError(redraw, "RedrawCountMismatch");
   });
 
   it("claims collection rewards through the collection reward module", async function () {

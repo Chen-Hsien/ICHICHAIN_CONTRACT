@@ -22,6 +22,8 @@ function seriesInput(overrides = {}) {
     isPreOrder: false,
     useLuckyNumber: true,
     maxPerWallet: 3,
+    packingType: 1,
+    sourceType: 1,
     ...overrides,
   };
 }
@@ -62,6 +64,8 @@ describe("DOUDOCHAINV2 core", function () {
     expect(series.remainingTicketNumbers).to.equal(10);
     expect(series.priceInPoints).to.equal(ethers.parseEther("3"));
     expect(series.isGoodsArrived).to.equal(true);
+    expect(series.packingType).to.equal(1);
+    expect(series.sourceType).to.equal(1);
   });
 
   it("batch creates multiple series and keeps metadata editable after arrival", async function () {
@@ -125,6 +129,12 @@ describe("DOUDOCHAINV2 core", function () {
 
     expect(await points.balanceOf(other.address)).to.equal(ethers.parseEther("100"));
     expect(await core.hasRole(await core.OPERATION_ROLE(), admin.address)).to.equal(true);
+  });
+
+  it("uses a 10 minute default mint lock duration", async function () {
+    const { core } = await deployCore();
+
+    expect(await core.defaultLockDuration()).to.equal(600);
   });
 
   it("mints bundles atomically with point rebate and consolation entries", async function () {

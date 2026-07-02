@@ -2,7 +2,10 @@ import { ethers } from "hardhat";
 
 const ADDRESSES = {
   points: process.env.DOUDO_POINTS_ADDRESS || "0xFFCD533609e0e9E810C4C5D8Cb7a69D7a537C17E",
-  router: process.env.DOUDO_VRF_ROUTER_ADDRESS || "0x5A59D45437559C7CE0A012630a456321180C21e1",
+  coreRouter: process.env.DOUDO_VRF_ROUTER_ADDRESS || "0x48A1205c9b6BF1Da1a3D1bE651A9e237AC349Eb5",
+  redrawRouter:
+    process.env.DOUDO_REDRAW_VRF_ROUTER_ADDRESS ||
+    "0x5A59D45437559C7CE0A012630a456321180C21e1",
   core: process.env.DOUDOCHAIN_CORE_PROXY_ADDRESS || "0xf75395A8cd753f47135cfcaE00D2706252c3E0F5",
   bundle: process.env.DOUDO_BUNDLE_MODULE_PROXY_ADDRESS || "0x68cBA2b3c72Be39be748B06c1e6dDab2855E91b6",
   refund: process.env.DOUDO_REFUND_MODULE_PROXY_ADDRESS || "0x8ee19238DAa466B7792BE33569c6E4f6993CCf20",
@@ -20,7 +23,14 @@ async function requireTrue(label: string, value: boolean) {
 
 async function main() {
   const points = await ethers.getContractAt("contracts/DDOUDOCOIN.sol:DOUDOCOIN", ADDRESSES.points);
-  const router = await ethers.getContractAt("contracts/DoudoVRFRouter.sol:DoudoVRFRouter", ADDRESSES.router);
+  const coreRouter = await ethers.getContractAt(
+    "contracts/DoudoVRFRouter.sol:DoudoVRFRouter",
+    ADDRESSES.coreRouter
+  );
+  const redrawRouter = await ethers.getContractAt(
+    "contracts/DoudoVRFRouter.sol:DoudoVRFRouter",
+    ADDRESSES.redrawRouter
+  );
   const core = await ethers.getContractAt(
     "contracts/DOUDOCHAINV2CoreUpgradeable.sol:DOUDOCHAINV2CoreUpgradeable",
     ADDRESSES.core
@@ -43,11 +53,27 @@ async function main() {
   );
 
   await requireTrue("core points address", (await core.doudoPoints()).toLowerCase() === ADDRESSES.points.toLowerCase());
-  await requireTrue("core router address", (await core.vrfRouter()).toLowerCase() === ADDRESSES.router.toLowerCase());
-  await requireTrue("router coordinator set", (await router.s_vrfCoordinator()) !== ethers.ZeroAddress);
-  await requireTrue("router requester core", await router.isRequester(ADDRESSES.core));
-  await requireTrue("router requester redraw", await router.isRequester(ADDRESSES.redraw));
-  await requireTrue("redraw router address", (await redraw.router()).toLowerCase() === ADDRESSES.router.toLowerCase());
+  await requireTrue(
+    "core router address",
+    (await core.vrfRouter()).toLowerCase() === ADDRESSES.coreRouter.toLowerCase()
+  );
+  await requireTrue(
+    "core router coordinator set",
+    (await coreRouter.s_vrfCoordinator()) !== ethers.ZeroAddress
+  );
+  await requireTrue("core router requester core", await coreRouter.isRequester(ADDRESSES.core));
+  await requireTrue(
+    "redraw router address",
+    (await redraw.router()).toLowerCase() === ADDRESSES.redrawRouter.toLowerCase()
+  );
+  await requireTrue(
+    "redraw router coordinator set",
+    (await redrawRouter.s_vrfCoordinator()) !== ethers.ZeroAddress
+  );
+  await requireTrue(
+    "redraw router requester redraw",
+    await redrawRouter.isRequester(ADDRESSES.redraw)
+  );
 
   const moduleRole = await core.MODULE_ROLE();
   await requireTrue("core MODULE_ROLE bundle", await core.hasRole(moduleRole, ADDRESSES.bundle));

@@ -58,6 +58,7 @@ contract DoudoRedrawModuleUpgradeable is
     event RouterUpdated(address indexed router);
     event BundleModuleUpdated(address indexed bundleModule);
     event RedrawConfigUpdated(uint256 indexed seriesID, uint16 mainBurnCount, uint16 consolationBurnCount);
+    event RedrawMainConfigUpdated(uint256 indexed seriesID, uint16 mainBurnCount, uint16 mainMintCount);
     event RedrawEnabledUpdated(uint256 indexed seriesID, bool enabled);
     event RedrawRequested(uint256 indexed requestId, uint256 indexed seriesID, address indexed user, bool consolation);
     event RedrawFulfilled(
@@ -111,13 +112,17 @@ contract DoudoRedrawModuleUpgradeable is
         uint16 mainBurnCount,
         uint16 consolationBurnCount
     ) external onlyRole(OPERATION_ROLE) {
-        redrawConfigs[seriesID] = RedrawConfig({
-            mainBurnCount: mainBurnCount,
-            consolationBurnCount: consolationBurnCount
-        });
-        redrawEnabled[seriesID] = mainBurnCount != 0;
-        emit RedrawConfigUpdated(seriesID, mainBurnCount, consolationBurnCount);
-        emit RedrawEnabledUpdated(seriesID, redrawEnabled[seriesID]);
+        _setRedrawConfig(seriesID, mainBurnCount, mainBurnCount, consolationBurnCount);
+    }
+
+    function setRedrawMainConfig(
+        uint256 seriesID,
+        uint16 mainBurnCount,
+        uint16 mainMintCount
+    ) external onlyRole(OPERATION_ROLE) {
+        if (mainBurnCount == 0 || mainMintCount == 0) revert InvalidConfig();
+        RedrawConfig memory config = redrawConfigs[seriesID];
+        _setRedrawConfig(seriesID, mainBurnCount, mainMintCount, config.consolationBurnCount);
     }
 
     function setRedrawEnabled(uint256 seriesID, bool enabled) external onlyRole(OPERATION_ROLE) {
@@ -160,15 +165,28 @@ contract DoudoRedrawModuleUpgradeable is
     }
 
     function redrawMain(uint256 seriesID, uint256[] calldata tokenIDs) external nonReentrant {
-        if (!redrawEnabled[seriesID]) revert RedrawDisabled();
-        uint256 quantity = tokenIDs.length;
-        if (quantity == 0) revert InvalidConfig();
-        for (uint256 i = 0; i < quantity; i++) {
+        RedrawConfig memory config = redrawConfigs[seriesID];
+        uint16 mainMintCount = redrawMainMintCounts[seriesID];
+        if (mainMintCount == 0) {
+            mainMintCount = config.mainBurnCount;
+        }
+        uint256 burnQuantity = tokenIDs.length;
+        if (burnQuantity == 0) revert InvalidConfig();
+        if (!redrawEnabled[seriesID] || config.mainBurnCount == 0 || mainMintCount == 0) revert RedrawDisabled();
+        if (burnQuantity != config.mainBurnCount) revert RedrawCountMismatch();
+        for (uint256 i = 0; i < burnQuantity; i++) {
             (uint256 burnedSeriesID,) = core.moduleBurnForRedraw(tokenIDs[i], msg.sender);
             if (burnedSeriesID != seriesID) revert MixedSeries();
         }
-        uint256 firstTokenID = core.moduleMintUnrevealed(msg.sender, seriesID, quantity, 0, false);
-        emit RedrawMinted(seriesID, msg.sender, quantity, firstTokenID);
+        uint16[] memory autoAssignedLuckyNumbers = new uint16[](mainMintCount);
+        uint256 firstTokenID = core.moduleMintUnrevealed(
+            msg.sender,
+            seriesID,
+            autoAssignedLuckyNumbers,
+            0,
+            false
+        );
+        emit RedrawMinted(seriesID, msg.sender, mainMintCount, firstTokenID);
     }
 
     function drawConsolation(uint256 seriesID) external nonReentrant {
@@ -226,10 +244,28 @@ contract DoudoRedrawModuleUpgradeable is
         revert InvalidConfig();
     }
 
+    function _setRedrawConfig(
+        uint256 seriesID,
+        uint16 mainBurnCount,
+        uint16 mainMintCount,
+        uint16 consolationBurnCount
+    ) internal {
+        redrawConfigs[seriesID] = RedrawConfig({
+            mainBurnCount: mainBurnCount,
+            consolationBurnCount: consolationBurnCount
+        });
+        redrawMainMintCounts[seriesID] = mainMintCount;
+        redrawEnabled[seriesID] = mainBurnCount != 0 && mainMintCount != 0;
+        emit RedrawConfigUpdated(seriesID, mainBurnCount, consolationBurnCount);
+        emit RedrawMainConfigUpdated(seriesID, mainBurnCount, mainMintCount);
+        emit RedrawEnabledUpdated(seriesID, redrawEnabled[seriesID]);
+    }
+
     function _authorizeUpgrade(address) internal override onlyRole(UPGRADER_ROLE) {}
 
     mapping(uint256 => bool) public redrawEnabled;
     mapping(uint256 => SubPrize[]) private consolationPrizes;
+    mapping(uint256 => uint16) public redrawMainMintCounts;
 
-    uint256[43] private __gap;
+    uint256[42] private __gap;
 }

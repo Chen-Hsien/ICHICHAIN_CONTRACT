@@ -35,15 +35,18 @@ mintTickets(
 
 ### Core
 
-新增唯讀 getter：
+新增合併唯讀 getter，避免 Core runtime bytecode 超過 EVM 上限：
 
 ```solidity
-seriesUsesLuckyNumber(uint256 seriesID) external view returns (bool)
+seriesMintConfig(uint256 seriesID)
+    external
+    view
+    returns (uint256 priceInPoints, bool useLuckyNumber)
 ```
 
 getter 必須在 series 不存在時 revert，避免把不存在的 series 誤判成非選號系列。
 
-新增供 Bundle 使用的 module mint 方法，接收完整 `uint16[] luckyNumbers`。此方法沿用 Core 既有的：
+既有 `moduleMintUnrevealed` 改為接收完整 `uint16[] luckyNumbers`，供 Bundle 與 Redraw 共用。此方法沿用 Core 既有的：
 
 - series 存在與庫存檢查。
 - goods arrived / pre-order 規則。
@@ -54,7 +57,7 @@ getter 必須在 series 不存在時 revert，避免把不存在的 series 誤�
 
 選號系列拒絕 `0`、超出 `[1, totalTicketNumbers]` 或已使用的號碼。非選號系列只接受 `0`；Core 寫入的 `TicketStatus.luckyNumber` 為 `0`。
 
-Redraw 現有依 quantity 自動配號的 module mint 保留，不改變其對既有流程的語意。Core 原本的直接 `mint(seriesID, luckyNumbers)` 暫時保留，但 frontend/backend 不使用，且直接呼叫不會取得 Bundle rebate。
+Redraw 依 quantity 建立同長度的 zero array，Core 在 Redraw 路徑仍自動配號，不改變既有語意。Core 原本的直接 `mint(seriesID, luckyNumbers)` 暫時保留，但 frontend/backend 不使用，且直接呼叫不會取得 Bundle rebate。
 
 ### Bundle
 
@@ -74,10 +77,11 @@ Bundle 以 `luckyNumbers.length` 產生 `ticketQuantity`，並依序執行：
 
 ### Upgrade 安全
 
-- Core 與 Bundle storage layout 不新增或重排狀態欄位。
+- Core、Bundle 與 Redraw storage layout 不新增或重排狀態欄位。
 - `mintTickets(uint256,uint256,bool)` 會被新簽名取代，屬 ABI breaking change。
-- Core 與 Bundle 必須在同一維護窗口升級，consumer ABI 也必須同步。
+- Core、Bundle 與 Redraw 必須在同一維護窗口升級；升級前先 pause 三個 proxy，全部完成後才恢復服務。
 - upgrade 前後都要執行 OpenZeppelin storage validation 與 wiring 檢查。
+- Core deployed runtime 為 24,573 bytes，只比 24,576-byte 上限少 3 bytes；後續不可直接增加 Core 邏輯，應優先移往 module。
 
 ## Backend 設計
 
@@ -95,7 +99,7 @@ Backend 仍可在內部資料與 response 中保留推導後的 `ticketQuantity`
 useLuckyNumber: boolean
 ```
 
-Backend 透過 Core `seriesUsesLuckyNumber(seriesID)` 取得 canonical mode。這可正確支援升級前已建立的 series，不依賴新 subgraph event 或資料回填。
+Backend 透過 Core `seriesMintConfig(seriesID)` 取得 canonical mode。這可正確支援升級前已建立的 series，不依賴新 subgraph event 或資料回填。
 
 既有 `unavailableLuckyNumbers`、`availableLuckyNumbers` 與 mint lock 資料繼續由 availability response 提供。
 

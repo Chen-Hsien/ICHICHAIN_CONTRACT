@@ -1,8 +1,8 @@
 import { ethers, upgrades, run } from "hardhat";
 
 // Focused, single-proxy upgrade for the split Core implementation only.
-// This does NOT redeploy the VRF router or re-wire/re-grant anything — the
-// lucky-number reward fix is a pure Core logic change with no storage change.
+// This does NOT redeploy the VRF router or re-wire/re-grant anything. The Core
+// storage change is append-only: TicketStatus now records reveal timestamps.
 const DEFAULTS = {
   core: "0xf75395A8cd753f47135cfcaE00D2706252c3E0F5",
 };

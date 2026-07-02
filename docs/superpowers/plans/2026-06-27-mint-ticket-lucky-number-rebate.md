@@ -1,5 +1,7 @@
 # Mint Ticket Lucky Number Rebate Implementation Plan
 
+> 實作備註：Core bytecode 空間不足以新增兩個 selector，因此最終採用合併 getter `seriesMintConfig`，並將既有 `moduleMintUnrevealed` 改為陣列輸入，由 Bundle 與 Redraw 共用。正式升級必須包含 Core、Bundle、Redraw 三個 proxy。
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** 讓 Bundle 單一 `mintTickets` 入口以 `uint16[] luckyNumbers` 同時支援選號、非選號數量購買、立即開獎與 floor rebate，並恢復可在手機安全操作的選號 UI。
@@ -25,7 +27,7 @@ Contract repo `/Users/angustsai/ICHICHAIN_CONTRACT`:
 Backend repo `/Users/angustsai/doudochain-backend`:
 
 - Modify `packages/contracts/src/index.ts`: `mintTickets(uint256,uint16[],bool)` registry。
-- Create `apps/api/src/chain/doudo-series-chain.service.ts`: canonical `seriesUsesLuckyNumber` read。
+- Create `apps/api/src/chain/doudo-series-chain.service.ts`: canonical `seriesMintConfig` read。
 - Modify `apps/api/src/chain/index.ts` and API module wiring: export/inject service。
 - Modify `apps/api/src/index.ts`: availability response 新增 mode。
 - Modify `apps/api/src/user-transaction/dto.ts`: reservation/intent 接收 lucky-number array。
@@ -62,13 +64,13 @@ Subgraph repo `/Users/angustsai/thegraph/doudochain_amoy`:
 Add tests proving the getter, selected module mint, mode validation, and uint16 limit:
 
 ```js
-expect(await core.seriesUsesLuckyNumber(0)).to.equal(true);
-await core.moduleMintUnrevealedWithLuckyNumbers(user.address, 0, [7, 9], price, true);
+expect((await core.seriesMintConfig(0))[1]).to.equal(true);
+await core.moduleMintUnrevealed(user.address, 0, [7, 9], price, true);
 expect((await core.ticketStatusDetail(0)).luckyNumber).to.equal(7);
 expect((await core.ticketStatusDetail(1)).luckyNumber).to.equal(9);
 
 await expect(
-  core.moduleMintUnrevealedWithLuckyNumbers(user.address, 0, [0], price, true),
+  core.moduleMintUnrevealed(user.address, 0, [0], price, true),
 ).to.be.revertedWithCustomError(core, "LuckyNumberOutOfRange");
 ```
 
@@ -82,20 +84,20 @@ Run:
 npx hardhat test test/doudochain-v2-core.test.js --grep "selected-number module"
 ```
 
-Expected: FAIL because `seriesUsesLuckyNumber` and `moduleMintUnrevealedWithLuckyNumbers` do not exist.
+Expected: FAIL because `seriesMintConfig` and the array-based `moduleMintUnrevealed` do not exist.
 
 - [ ] **Step 3: Implement minimal Core API**
 
 Add:
 
 ```solidity
-function seriesUsesLuckyNumber(uint256 seriesID) external view returns (bool) {
+function seriesMintConfig(uint256 seriesID) external view returns (uint256, bool) {
     Series storage series = seriesData[seriesID];
     if (series.totalTicketNumbers == 0) revert InvalidSeriesInput();
-    return series.useLuckyNumber;
+    return (series.priceInPoints, series.useLuckyNumber);
 }
 
-function moduleMintUnrevealedWithLuckyNumbers(
+function moduleMintUnrevealed(
     address to,
     uint256 seriesID,
     uint16[] calldata luckyNumbers,
@@ -109,7 +111,7 @@ function moduleMintUnrevealedWithLuckyNumbers(
 
 Add a custom error for a non-lucky series receiving non-zero values. In `_validateSeriesInput`, reject `useLuckyNumber && totalTicketNumbers > type(uint16).max`.
 
-Update `IDoudoCore` with both the getter and selected-number module method. Keep existing quantity-based `moduleMintUnrevealed` for Redraw.
+Update `IDoudoCore` with the combined getter and array-based module method. Redraw converts quantity to a same-length zero array; Core retains automatic assignment on the Redraw path.
 
 - [ ] **Step 4: Run Core tests and verify GREEN**
 
@@ -177,7 +179,7 @@ function mintTickets(
 ) external nonReentrant returns (uint256 firstTokenID);
 ```
 
-Inside, set `uint256 ticketQuantity = luckyNumbers.length`, validate mode through Core, burn points, call `moduleMintUnrevealedWithLuckyNumbers`, optionally reveal, then call `_rebateFor(seriesID, ticketQuantity)` once. Keep existing event signatures.
+Inside, set `uint256 ticketQuantity = luckyNumbers.length`, validate mode through Core, burn points, call the array-based `moduleMintUnrevealed`, optionally reveal, then call `_rebateFor(seriesID, ticketQuantity)` once. Keep existing event signatures.
 
 - [ ] **Step 4: Run Bundle and full contract tests**
 
@@ -255,7 +257,7 @@ Inject a fake Viem client and assert:
 ```ts
 await expect(service.usesLuckyNumbers({ seriesId: '7' })).resolves.toBe(true);
 expect(readContract).toHaveBeenCalledWith(expect.objectContaining({
-  functionName: 'seriesUsesLuckyNumber',
+  functionName: 'seriesMintConfig',
   args: [7n],
 }));
 ```
@@ -498,5 +500,4 @@ Check desktop plus a mobile viewport around 390x844, page identity, no framework
 
 - [ ] **Step 5: Update handoff and commit sync changes**
 
-Document the new ABI signature, storage validation command, test results, and the need to upgrade Core + Bundle together. Commit only files belonging to this feature; do not stage unrelated worktree changes.
-
+Document the new ABI signature, storage validation command, test results, and the need to pause and upgrade Core + Bundle + Redraw together. Commit only files belonging to this feature; do not stage unrelated worktree changes.

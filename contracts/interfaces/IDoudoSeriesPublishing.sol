@@ -5,6 +5,18 @@ pragma solidity ^0.8.20;
 /// used by MerchantSeriesPublisher to publish without importing the full Core.
 /// Struct field order/types mirror the deployed Core so calldata encoding matches.
 interface IDoudoSeriesPublishing {
+    enum PackingType {
+        Unknown,
+        Assorted,
+        OriginalCase
+    }
+
+    enum SourceType {
+        Unknown,
+        Japan,
+        Distributor
+    }
+
     struct SubPrize {
         uint256 subPrizeID;
         string prizeGroup;
@@ -25,6 +37,8 @@ interface IDoudoSeriesPublishing {
         bool isPreOrder;
         bool useLuckyNumber;
         uint256 maxPerWallet;
+        uint8 packingType;
+        uint8 sourceType;
     }
 
     function createSeriesWithSubPrizes(

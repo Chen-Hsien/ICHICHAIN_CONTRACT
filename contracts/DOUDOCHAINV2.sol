@@ -21,12 +21,25 @@ contract DOUDOCHAINV2 is
     bytes32 public constant COLLECTION_BOOK_ROLE = keccak256("COLLECTION_BOOK_ROLE");
     uint256 private constant MAX_REVEAL_BATCH = 20;
     uint256 private constant LAST_PRIZE_ID = 999;
+    uint256 private constant MAX_MINT_LOCK_DURATION = 600;
 
     IDoudoPoints public immutable doudoPoints;
     uint256 public immutable subscriptionId;
     bytes32 public immutable keyHash;
     uint16 public requestConfirmations;
     uint32 public callbackGasLimit = 2_500_000;
+
+    enum PackingType {
+        Unknown,
+        Assorted,
+        OriginalCase
+    }
+
+    enum SourceType {
+        Unknown,
+        Japan,
+        Distributor
+    }
 
     struct SubPrize {
         uint256 subPrizeID;
@@ -48,6 +61,8 @@ contract DOUDOCHAINV2 is
         bool isPreOrder;
         bool useLuckyNumber;
         uint256 maxPerWallet;
+        PackingType packingType;
+        SourceType sourceType;
     }
 
     struct Series {
@@ -67,6 +82,8 @@ contract DOUDOCHAINV2 is
         bool isPreOrder;
         bool useLuckyNumber;
         uint256 maxPerWallet;
+        PackingType packingType;
+        SourceType sourceType;
     }
 
     struct TicketStatus {
@@ -127,7 +144,7 @@ contract DOUDOCHAINV2 is
     mapping(uint256 => bool) public lastPrizeRequestPending;
 
     uint256 private seriesCounter;
-    uint256 public defaultLockDuration = 900;
+    uint256 public defaultLockDuration = MAX_MINT_LOCK_DURATION;
 
     error EmptySubPrizes();
     error SubprizeQuantityNotEqual();
@@ -277,7 +294,9 @@ contract DOUDOCHAINV2 is
             bool isRefund,
             bool isPreOrder,
             bool useLuckyNumber,
-            uint256 maxPerWallet
+            uint256 maxPerWallet,
+            PackingType packingType,
+            SourceType sourceType
         )
     {
         Series storage series = seriesData[seriesID];
@@ -293,7 +312,9 @@ contract DOUDOCHAINV2 is
             series.isRefund,
             series.isPreOrder,
             series.useLuckyNumber,
-            series.maxPerWallet
+            series.maxPerWallet,
+            series.packingType,
+            series.sourceType
         );
     }
 
@@ -551,6 +572,8 @@ contract DOUDOCHAINV2 is
         series.isPreOrder = input.isPreOrder;
         series.useLuckyNumber = input.useLuckyNumber;
         series.maxPerWallet = input.maxPerWallet;
+        series.packingType = input.packingType;
+        series.sourceType = input.sourceType;
 
         for (uint256 i = 0; i < subPrizes.length; i++) {
             seriesSubPrizes[seriesID].push(subPrizes[i]);
@@ -633,8 +656,12 @@ contract DOUDOCHAINV2 is
         if (block.timestamp < mintLockUntil[seriesID] && mintLockOwner[seriesID] != user) {
             revert SeriesReserved();
         }
+        uint256 duration = defaultLockDuration;
+        if (duration > MAX_MINT_LOCK_DURATION) {
+            duration = MAX_MINT_LOCK_DURATION;
+        }
         mintLockOwner[seriesID] = user;
-        mintLockUntil[seriesID] = block.timestamp + defaultLockDuration;
+        mintLockUntil[seriesID] = block.timestamp + duration;
         emit MintLockUpdated(seriesID, user, mintLockUntil[seriesID]);
     }
 

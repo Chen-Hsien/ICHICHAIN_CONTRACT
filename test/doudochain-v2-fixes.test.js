@@ -3,6 +3,8 @@ const { ethers, upgrades } = require("hardhat");
 
 const MERCHANT_A = ethers.keccak256(ethers.toUtf8Bytes("merchant-A"));
 
+const zeroLuckyNumbers = (quantity) => Array(quantity).fill(0);
+
 function prizeTable(total = 6) {
   return [
     { subPrizeID: 1, prizeGroup: "A", subPrizeName: "A1", subPrizeRemainingQuantity: 2 },
@@ -24,6 +26,8 @@ function seriesInput(overrides = {}) {
     isPreOrder: false,
     useLuckyNumber: false,
     maxPerWallet: 0,
+    packingType: 1,
+    sourceType: 1,
     ...overrides,
   };
 }
@@ -125,6 +129,20 @@ async function revealTickets({ user, core, vrf, router }, seriesID, tokenIDs, ra
   await vrf.fulfill(await router.getAddress(), 1, [randomWord]);
 }
 
+function mintLockUntilFrom(receipt, core) {
+  for (const log of receipt.logs) {
+    try {
+      const parsed = core.interface.parseLog(log);
+      if (parsed?.name === "MintLockUpdated") {
+        return parsed.args.until;
+      }
+    } catch (_) {
+      // Ignore logs from other contracts in the same transaction.
+    }
+  }
+  throw new Error("MintLockUpdated event not found");
+}
+
 describe("DOUDOCHAIN V2 fixes", function () {
   it("keeps merchant attribution outside Core and links through the registry", async function () {
     const { admin, core } = await deploySplitSuite();
@@ -142,7 +160,11 @@ describe("DOUDOCHAIN V2 fixes", function () {
     const Publisher = await ethers.getContractFactory(
       "contracts/MerchantSeriesPublisher.sol:MerchantSeriesPublisher"
     );
-    const publisher = await Publisher.deploy(admin.address, await registry.getAddress());
+    const publisher = await upgrades.deployProxy(
+      Publisher,
+      [admin.address, await registry.getAddress()],
+      { initializer: "initialize", kind: "uups" }
+    );
     await publisher.waitForDeployment();
 
     await core.grantRole(await core.OPERATION_ROLE(), await publisher.getAddress());
@@ -163,43 +185,90 @@ describe("DOUDOCHAIN V2 fixes", function () {
     const { user, points, core, bundle, refund } = await deploySplitSuite();
     await createSeries(core, { useLuckyNumber: false, maxPerWallet: 0 });
     await issuePoints(points, user.address);
-    await bundle.setSeriesBundles(0, [{
-      bundleID: 1,
-      ticketQuantity: 2,
-      priceInPoints: ethers.parseEther("10"),
-      rebatePoints: 0,
-      consolationDrawCredits: 0,
-      active: true,
-    }]);
 
     await refund.setSeriesRefund(0, true, 0);
 
-    await expect(bundle.connect(user).mintBundle(0, 1, 1))
+    await expect(bundle.connect(user).mintTickets(0, zeroLuckyNumbers(2), false))
       .to.be.revertedWithCustomError(core, "SeriesIsRefund");
   });
 
-  it("bundle mint enforces wallet cap, auto-assigns lucky numbers, and records pointsPaid", async function () {
+  it("bundle mint enforces wallet cap, preserves lucky numbers, and records pointsPaid", async function () {
     const { user, points, core, bundle } = await deploySplitSuite();
     await createSeries(core, { totalTicketNumbers: 4, useLuckyNumber: true, maxPerWallet: 2 });
     await issuePoints(points, user.address);
-    await bundle.setSeriesBundles(0, [{
-      bundleID: 1,
-      ticketQuantity: 2,
-      priceInPoints: ethers.parseEther("10"),
-      rebatePoints: 0,
-      consolationDrawCredits: 0,
-      active: true,
-    }]);
 
-    await bundle.connect(user).mintBundle(0, 1, 1);
+    await bundle.connect(user).mintTickets(0, [1, 2], false);
 
     expect((await core.ticketStatusDetail(0)).luckyNumber).to.equal(1);
     expect((await core.ticketStatusDetail(1)).luckyNumber).to.equal(2);
-    expect(await core.pointsPaid(0)).to.equal(ethers.parseEther("5"));
-    expect(await core.pointsPaid(1)).to.equal(ethers.parseEther("5"));
+    expect(await core.pointsPaid(0)).to.equal(ethers.parseEther("1"));
+    expect(await core.pointsPaid(1)).to.equal(ethers.parseEther("1"));
 
-    await expect(bundle.connect(user).mintBundle(0, 1, 1))
+    await expect(bundle.connect(user).mintTickets(0, [3, 4], false))
       .to.be.revertedWithCustomError(core, "WalletCapExceeded");
+  });
+
+  it("bundle mint preserves selected lucky numbers and exposes the series mode", async function () {
+    const { user, points, core, bundle } = await deploySplitSuite();
+    await createSeries(core, {
+      totalTicketNumbers: 10,
+      useLuckyNumber: true,
+      maxPerWallet: 0,
+    });
+    await issuePoints(points, user.address);
+
+    const [, useLuckyNumber] = await core.seriesMintConfig(0);
+    expect(useLuckyNumber).to.equal(true);
+    await bundle.connect(user).mintTickets(0, [4, 8, 9], false);
+
+    expect((await core.ticketStatusDetail(0)).luckyNumber).to.equal(4);
+    expect((await core.ticketStatusDetail(1)).luckyNumber).to.equal(8);
+    expect((await core.ticketStatusDetail(2)).luckyNumber).to.equal(9);
+  });
+
+  it("rejects lucky-number inputs that do not match the series mode", async function () {
+    const luckySuite = await deploySplitSuite();
+    await createSeries(luckySuite.core, {
+      totalTicketNumbers: 10,
+      useLuckyNumber: true,
+      maxPerWallet: 0,
+    });
+    await issuePoints(luckySuite.points, luckySuite.user.address);
+
+    await expect(luckySuite.bundle.connect(luckySuite.user).mintTickets(0, [0], false))
+      .to.be.revertedWithCustomError(luckySuite.bundle, "InvalidConfig");
+    await expect(luckySuite.bundle.connect(luckySuite.user).mintTickets(0, [11], false))
+      .to.be.revertedWithCustomError(luckySuite.core, "LuckyNumberOutOfRange");
+    await expect(luckySuite.bundle.connect(luckySuite.user).mintTickets(0, [4, 4], false))
+      .to.be.revertedWithCustomError(luckySuite.core, "LuckyNumberTaken");
+
+    const nonLuckySuite = await deploySplitSuite();
+    await createSeries(nonLuckySuite.core, {
+      totalTicketNumbers: 4,
+      useLuckyNumber: false,
+      maxPerWallet: 0,
+    });
+    await issuePoints(nonLuckySuite.points, nonLuckySuite.user.address);
+
+    await nonLuckySuite.bundle
+      .connect(nonLuckySuite.user)
+      .mintTickets(0, zeroLuckyNumbers(2), false);
+    expect((await nonLuckySuite.core.ticketStatusDetail(0)).luckyNumber).to.equal(0);
+    await expect(nonLuckySuite.bundle.connect(nonLuckySuite.user).mintTickets(0, [1], false))
+      .to.be.revertedWithCustomError(nonLuckySuite.bundle, "InvalidConfig");
+  });
+
+  it("rejects lucky-number series larger than uint16", async function () {
+    const { core } = await deploySplitSuite();
+    const totalTicketNumbers = 65_536;
+
+    await expect(
+      core.createSeriesWithSubPrizes(
+        seriesInput({ totalTicketNumbers, useLuckyNumber: true }),
+        prizeTable(totalTicketNumbers),
+        true
+      )
+    ).to.be.revertedWithCustomError(core, "InvalidSeriesInput");
   });
 
   it("redrawMain burns N revealed tickets and mints N unrevealed tickets from remaining", async function () {
@@ -211,7 +280,7 @@ describe("DOUDOCHAIN V2 fixes", function () {
     await revealTickets(suite, 0, [0, 1], 777n);
     const beforeBalance = await core.balanceOf(user.address);
 
-    await redraw.setRedrawEnabled(0, true);
+    await redraw.setRedrawMainConfig(0, 2, 2);
     await expect(redraw.connect(user).redrawMain(0, [0, 1]))
       .to.emit(redraw, "RedrawMinted")
       .withArgs(0, user.address, 2, 3);
@@ -232,13 +301,13 @@ describe("DOUDOCHAIN V2 fixes", function () {
     await core.connect(user).mint(0, [0, 0]);
     await revealTickets(suite, 0, [0], 123n);
 
-    await redraw.setRedrawEnabled(0, true);
+    await redraw.setRedrawMainConfig(0, 1, 1);
     await expect(redraw.connect(user).redrawMain(0, [0]))
       .to.be.revertedWithCustomError(core, "NotEnoughNFTsRemaining");
   });
 
-  it("consolation draws use a separate pool and mint revealed rewards after sellout", async function () {
-    const { user, points, vrf, router, core, bundle, redraw } = await deploySplitSuite();
+  it("ticket quantity mints do not grant consolation draw credits without a separate redraw credit", async function () {
+    const { user, points, core, bundle, redraw } = await deploySplitSuite();
     await createSeries(core, { totalTicketNumbers: 2, useLuckyNumber: false, maxPerWallet: 0 });
     await issuePoints(points, user.address);
     await redraw.setConsolationPrizes(0, [{
@@ -247,27 +316,12 @@ describe("DOUDOCHAIN V2 fixes", function () {
       subPrizeName: "Consolation",
       subPrizeRemainingQuantity: 5,
     }]);
-    await bundle.setSeriesBundles(0, [{
-      bundleID: 1,
-      ticketQuantity: 2,
-      priceInPoints: ethers.parseEther("2"),
-      rebatePoints: 0,
-      consolationDrawCredits: 1,
-      active: true,
-    }]);
-    await bundle.connect(user).mintBundle(0, 1, 1);
+    await bundle.connect(user).mintTickets(0, zeroLuckyNumbers(2), false);
     await expect(core.connect(user).mint(0, [0]))
       .to.be.revertedWithCustomError(core, "NotEnoughNFTsRemaining");
 
-    await redraw.connect(user).drawConsolation(0);
-    await expect(vrf.fulfill(await router.getAddress(), 1, [42]))
-      .to.emit(redraw, "RedrawFulfilled")
-      .withArgs(1, 0, user.address, 2, true);
-
-    expect(await core.ownerOf(2)).to.equal(user.address);
-    const reward = await core.ticketStatusDetail(2);
-    expect(reward.tokenRevealed).to.equal(true);
-    expect(reward.tokenRevealedPrize).to.equal(9001);
+    await expect(redraw.connect(user).drawConsolation(0))
+      .to.be.revertedWithCustomError(redraw, "EmptyConsolationBalance");
     await expect(core.connect(user).mint(0, [0]))
       .to.be.revertedWithCustomError(core, "NotEnoughNFTsRemaining");
   });
@@ -292,25 +346,39 @@ describe("DOUDOCHAIN V2 fixes", function () {
       .to.be.revertedWithCustomError(core, "TokenAlreadyExchanged");
   });
 
+  it("blocks exchange after 60 days from reveal", async function () {
+    const suite = await deploySplitSuite();
+    const { user, points, core } = suite;
+    await createSeries(core, { totalTicketNumbers: 3, useLuckyNumber: false, maxPerWallet: 0 });
+    await issuePoints(points, user.address);
+    await core.connect(user).mint(0, [0, 0]);
+    await revealTickets(suite, 0, [0, 1], 1n);
+    const prizeID = (await core.ticketStatusDetail(0)).tokenRevealedPrize;
+
+    await ethers.provider.send("evm_increaseTime", [60 * 24 * 60 * 60 - 1]);
+    await ethers.provider.send("evm_mine", []);
+
+    await expect(core.connect(user).exchangePrize([0]))
+      .to.emit(core, "UpdateTicketStatus")
+      .withArgs(0, 0, prizeID, true, true);
+
+    await ethers.provider.send("evm_increaseTime", [2]);
+    await ethers.provider.send("evm_mine", []);
+
+    await expect(core.connect(user).exchangePrize([1])).to.be.reverted;
+  });
+
   it("refunds the actual pointsPaid for paid and bundle tickets", async function () {
     const { user, points, core, bundle, refund } = await deploySplitSuite();
     await createSeries(core, { totalTicketNumbers: 3, priceInPoints: ethers.parseEther("7"), useLuckyNumber: false, maxPerWallet: 0 });
     await issuePoints(points, user.address);
     await core.connect(user).mint(0, [0]);
-    await bundle.setSeriesBundles(0, [{
-      bundleID: 1,
-      ticketQuantity: 2,
-      priceInPoints: ethers.parseEther("10"),
-      rebatePoints: 0,
-      consolationDrawCredits: 0,
-      active: true,
-    }]);
-    await bundle.connect(user).mintBundle(0, 1, 1);
+    await bundle.connect(user).mintTickets(0, zeroLuckyNumbers(2), false);
 
     await refund.setSeriesRefund(0, true, ethers.parseEther("1"));
     await expect(refund.connect(user).claimRefund([0, 1, 2]))
       .to.emit(refund, "RefundClaimed")
-      .withArgs(0, user.address, [0, 1, 2], ethers.parseEther("17"));
+      .withArgs(0, user.address, [0, 1, 2], ethers.parseEther("21"));
     expect(await points.balanceOf(user.address)).to.equal(ethers.parseEther("100"));
   });
 
@@ -329,18 +397,16 @@ describe("DOUDOCHAIN V2 fixes", function () {
       .to.emit(core, "RevealDrawSent");
   });
 
-  it("mintAndReveal caps quantity at 10 and auto-requests reveal", async function () {
+  it("mintTickets caps immediate reveal quantity at 10 and auto-requests reveal", async function () {
     const suite = await deploySplitSuite();
-    const { user, points, vrf, router, core } = suite;
+    const { user, points, vrf, router, core, bundle } = suite;
     await createSeries(core, { totalTicketNumbers: 12, useLuckyNumber: false, maxPerWallet: 0 });
     await issuePoints(points, user.address, ethers.parseEther("200"));
 
-    const eleven = Array.from({ length: 11 }, (_, i) => i + 1);
-    await expect(core.connect(user).mintAndReveal(0, eleven))
-      .to.be.revertedWithCustomError(core, "RevealBatchTooLarge");
+    await expect(bundle.connect(user).mintTickets(0, zeroLuckyNumbers(11), true))
+      .to.be.revertedWithCustomError(bundle, "RevealBatchTooLarge");
 
-    const three = [1, 2, 3];
-    await expect(core.connect(user).mintAndReveal(0, three))
+    await expect(bundle.connect(user).mintTickets(0, zeroLuckyNumbers(3), true))
       .to.emit(core, "RevealDrawSent");
 
     expect(await core.ownerOf(0)).to.equal(user.address);
@@ -353,9 +419,9 @@ describe("DOUDOCHAIN V2 fixes", function () {
     expect((await core.ticketStatusDetail(2)).tokenRevealed).to.equal(true);
   });
 
-  it("mintAndReveal requires goods arrived even for pre-order series", async function () {
+  it("mintTickets requires goods arrived when immediate reveal is requested for pre-order series", async function () {
     const suite = await deploySplitSuite();
-    const { user, points, core } = suite;
+    const { user, points, core, bundle } = suite;
     await createSeries(
       core,
       { totalTicketNumbers: 2, isPreOrder: true, useLuckyNumber: false, maxPerWallet: 0 },
@@ -363,7 +429,7 @@ describe("DOUDOCHAIN V2 fixes", function () {
     );
     await issuePoints(points, user.address);
 
-    await expect(core.connect(user).mintAndReveal(0, [1]))
+    await expect(bundle.connect(user).mintTickets(0, [0], true))
       .to.be.revertedWithCustomError(core, "GoodsNotArrived");
   });
 
@@ -400,6 +466,26 @@ describe("DOUDOCHAIN V2 fixes", function () {
     await core.connect(user).mint(0, [0]);
     await expect(core.connect(user).mint(0, [0]))
       .to.be.revertedWithCustomError(core, "WalletCapExceeded");
+  });
+
+  it("caps refreshed mint locks at 10 minutes from each mint block", async function () {
+    const { user, points, core } = await deploySplitSuite();
+    await createSeries(core, { totalTicketNumbers: 5, useLuckyNumber: false, maxPerWallet: 0 });
+    await issuePoints(points, user.address);
+    await core.setSeriesLockDuration(0, 1200);
+
+    const firstTx = await core.connect(user).mint(0, [0]);
+    const firstReceipt = await firstTx.wait();
+    const firstBlock = await ethers.provider.getBlock(firstReceipt.blockNumber);
+    expect(mintLockUntilFrom(firstReceipt, core)).to.equal(firstBlock.timestamp + 600);
+
+    await ethers.provider.send("evm_increaseTime", [100]);
+    await ethers.provider.send("evm_mine", []);
+
+    const secondTx = await core.connect(user).mint(0, [0]);
+    const secondReceipt = await secondTx.wait();
+    const secondBlock = await ethers.provider.getBlock(secondReceipt.blockNumber);
+    expect(mintLockUntilFrom(secondReceipt, core)).to.equal(secondBlock.timestamp + 600);
   });
 
   it("blocks router coordinator changes while VRF requests are pending", async function () {
@@ -588,29 +674,14 @@ describe("DOUDOCHAIN V2 fixes", function () {
       subPrizeName: "Consolation",
       subPrizeRemainingQuantity: 5,
     }]);
-    await bundle.setSeriesBundles(0, [{
-      bundleID: 1,
-      ticketQuantity: 2,
-      priceInPoints: ethers.parseEther("2"),
-      rebatePoints: 0,
-      consolationDrawCredits: 1,
-      active: true,
-    }]);
     // Bundle mint sells out the series and consumes lucky numbers 1 and 2.
-    await bundle.connect(user).mintBundle(0, 1, 1);
+    await bundle.connect(user).mintTickets(0, [1, 2], false);
     // Confirm sold out (no inventory left).
     await expect(core.connect(user).mint(0, [1]))
       .to.be.revertedWithCustomError(core, "NotEnoughNFTsRemaining");
 
-    await redraw.connect(user).drawConsolation(0);
-    await expect(vrf.fulfill(await router.getAddress(), 1, [42]))
-      .to.emit(redraw, "RedrawFulfilled")
-      .withArgs(1, 0, user.address, 2, true);
-
-    const status = await core.ticketStatusDetail(2);
-    expect(status.tokenRevealed).to.equal(true);
-    expect(status.tokenRevealedPrize).to.equal(9001);
-    expect(status.luckyNumber).to.equal(0);
+    await expect(redraw.connect(user).drawConsolation(0))
+      .to.be.revertedWithCustomError(redraw, "EmptyConsolationBalance");
   });
 
   it("collection NFT rewards still mint with luckyNumber 0 when the series does not use lucky numbers", async function () {

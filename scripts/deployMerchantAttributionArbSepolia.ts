@@ -46,10 +46,13 @@ async function main() {
   console.log("MerchantSeriesRegistry proxy:", registryAddr);
 
   const Publisher = await ethers.getContractFactory(PUBLISHER_FQN);
-  const publisher = await Publisher.deploy(admin, registryAddr);
+  const publisher = await upgrades.deployProxy(Publisher, [admin, registryAddr], {
+    initializer: "initialize",
+    kind: "uups",
+  });
   await publisher.waitForDeployment();
   const publisherAddr = await publisher.getAddress();
-  console.log("MerchantSeriesPublisher:", publisherAddr);
+  console.log("MerchantSeriesPublisher proxy:", publisherAddr);
 
   const core = await ethers.getContractAt(CORE_FQN, coreProxy);
   const OPERATION_ROLE = await core.OPERATION_ROLE();
@@ -76,7 +79,9 @@ async function main() {
   const registryImpl = await upgrades.erc1967.getImplementationAddress(registryAddr);
   console.log("Registry implementation:", registryImpl);
   await verify(registryImpl, REGISTRY_FQN);
-  await verify(publisherAddr, PUBLISHER_FQN, [admin, registryAddr]);
+  const publisherImpl = await upgrades.erc1967.getImplementationAddress(publisherAddr);
+  console.log("Publisher implementation:", publisherImpl);
+  await verify(publisherImpl, PUBLISHER_FQN);
 
   console.log("");
   console.log("NEXT OPS STEP (manual, after confirming a Publisher publish works):");

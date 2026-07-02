@@ -6,7 +6,6 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "../access/MinimalAccessControlUpgradeable.sol";
 import "../interfaces/IDoudoCore.sol";
 import "../interfaces/IDoudoPoints.sol";
-import "../interfaces/IDoudoRedrawCredits.sol";
 import "../security/LightweightGuardsUpgradeable.sol";
 
 contract DoudoBundleModuleUpgradeable is
@@ -19,15 +18,7 @@ contract DoudoBundleModuleUpgradeable is
     bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
     bytes32 private constant BUNDLE_MINT = keccak256("BUNDLE_MINT");
     bytes32 private constant BUNDLE_REBATE = keccak256("BUNDLE_REBATE");
-
-    struct BundleInput {
-        uint256 bundleID;
-        uint256 ticketQuantity;
-        uint256 priceInPoints;
-        uint256 rebatePoints;
-        uint256 consolationDrawCredits;
-        bool active;
-    }
+    uint256 private constant MAX_BUNDLE_MINT_AND_REVEAL = 10;
 
     struct BundleConfig {
         uint256 ticketQuantity;
@@ -37,31 +28,47 @@ contract DoudoBundleModuleUpgradeable is
         bool active;
     }
 
+    struct RebateTierInput {
+        uint256 minimumTicketQuantity;
+        uint256 rebatePoints;
+    }
+
+    struct RebateTier {
+        uint256 minimumTicketQuantity;
+        uint256 rebatePoints;
+    }
+
     IDoudoCore public core;
     IDoudoPoints public doudoPoints;
     address public redrawModule;
 
-    mapping(uint256 => mapping(uint256 => BundleConfig)) public seriesBundles;
+    mapping(uint256 => mapping(uint256 => BundleConfig)) private seriesBundles;
+    mapping(uint256 => RebateTier[]) public seriesRebateTiers;
 
     error InvalidConfig();
-    error InactiveBundle();
+    error RevealBatchTooLarge();
 
     event RedrawModuleUpdated(address indexed redrawModule);
-    event BundleConfigured(
+    event TicketPurchaseMinted(
         uint256 indexed seriesID,
-        uint256 indexed bundleID,
+        address indexed buyer,
         uint256 ticketQuantity,
         uint256 priceInPoints,
-        uint256 rebatePoints,
-        uint256 consolationDrawCredits,
-        bool active
-    );
-    event BundleMinted(
-        uint256 indexed seriesID,
-        uint256 indexed bundleID,
-        address indexed buyer,
-        uint256 quantity,
+        bool revealImmediately,
         uint256 firstTokenID
+    );
+    event BundleRebateTierConfigured(
+        uint256 indexed seriesID,
+        uint256 indexed tierIndex,
+        uint256 minimumTicketQuantity,
+        uint256 rebatePoints
+    );
+    event BundleRebateTiersCleared(uint256 indexed seriesID);
+    event TicketPurchaseRebatePaid(
+        uint256 indexed seriesID,
+        address indexed buyer,
+        uint256 ticketQuantity,
+        uint256 rebatePoints
     );
 
     /// @custom:oz-upgrades-unsafe-allow constructor
@@ -86,63 +93,118 @@ contract DoudoBundleModuleUpgradeable is
         emit RedrawModuleUpdated(redrawModule_);
     }
 
-    function setSeriesBundles(
+    function setSeriesRebateTiers(
         uint256 seriesID,
-        BundleInput[] calldata bundles
+        RebateTierInput[] calldata tiers
     ) external onlyRole(OPERATION_ROLE) {
-        if (bundles.length == 0) revert InvalidConfig();
-        for (uint256 i = 0; i < bundles.length; i++) {
-            if (bundles[i].bundleID == 0 || bundles[i].ticketQuantity == 0) revert InvalidConfig();
-            seriesBundles[seriesID][bundles[i].bundleID] = BundleConfig({
-                ticketQuantity: bundles[i].ticketQuantity,
-                priceInPoints: bundles[i].priceInPoints,
-                rebatePoints: bundles[i].rebatePoints,
-                consolationDrawCredits: bundles[i].consolationDrawCredits,
-                active: bundles[i].active
-            });
-            emit BundleConfigured(
+        delete seriesRebateTiers[seriesID];
+        emit BundleRebateTiersCleared(seriesID);
+
+        uint256 previousMinimum;
+        for (uint256 i = 0; i < tiers.length; i++) {
+            uint256 minimumTicketQuantity = tiers[i].minimumTicketQuantity;
+            if (minimumTicketQuantity == 0 || minimumTicketQuantity <= previousMinimum) revert InvalidConfig();
+            seriesRebateTiers[seriesID].push(
+                RebateTier({
+                    minimumTicketQuantity: minimumTicketQuantity,
+                    rebatePoints: tiers[i].rebatePoints
+                })
+            );
+            previousMinimum = minimumTicketQuantity;
+            emit BundleRebateTierConfigured(
                 seriesID,
-                bundles[i].bundleID,
-                bundles[i].ticketQuantity,
-                bundles[i].priceInPoints,
-                bundles[i].rebatePoints,
-                bundles[i].consolationDrawCredits,
-                bundles[i].active
+                i,
+                minimumTicketQuantity,
+                tiers[i].rebatePoints
             );
         }
     }
 
-    function mintBundle(
-        uint256 seriesID,
-        uint256 bundleID,
-        uint256 quantity
-    ) external nonReentrant returns (uint256 firstTokenID) {
-        BundleConfig memory config = seriesBundles[seriesID][bundleID];
-        if (!config.active || quantity == 0) revert InactiveBundle();
+    function seriesRebateTierCount(uint256 seriesID) external view returns (uint256) {
+        return seriesRebateTiers[seriesID].length;
+    }
 
-        uint256 ticketQuantity = config.ticketQuantity * quantity;
-        uint256 totalPrice = config.priceInPoints * quantity;
-        if (totalPrice != 0) {
-            doudoPoints.burnFromWithReason(msg.sender, totalPrice, BUNDLE_MINT);
+    function mintTickets(
+        uint256 seriesID,
+        uint16[] calldata luckyNumbers,
+        bool revealImmediately
+    ) external nonReentrant returns (uint256 firstTokenID) {
+        firstTokenID = _mintTickets(seriesID, luckyNumbers, revealImmediately);
+    }
+
+    function _mintTickets(
+        uint256 seriesID,
+        uint16[] calldata luckyNumbers,
+        bool revealImmediately
+    ) internal returns (uint256 firstTokenID) {
+        uint256 ticketQuantity = luckyNumbers.length;
+        if (ticketQuantity == 0) revert InvalidConfig();
+        if (revealImmediately && ticketQuantity > MAX_BUNDLE_MINT_AND_REVEAL) {
+            revert RevealBatchTooLarge();
         }
 
-        uint256 pointsPerTicket = config.ticketQuantity == 0 ? 0 : config.priceInPoints / config.ticketQuantity;
-        firstTokenID = core.moduleMintUnrevealed(msg.sender, seriesID, ticketQuantity, pointsPerTicket, true);
+        (uint256 pointsPerTicket, bool useLuckyNumber) = core.seriesMintConfig(seriesID);
+        for (uint256 i = 0; i < ticketQuantity; i++) {
+            if (useLuckyNumber ? luckyNumbers[i] == 0 : luckyNumbers[i] != 0) {
+                revert InvalidConfig();
+            }
+        }
 
-        uint256 rebate = config.rebatePoints * quantity;
+        if (pointsPerTicket == 0) revert InvalidConfig();
+        uint256 priceInPoints = pointsPerTicket * ticketQuantity;
+
+        doudoPoints.burnFromWithReason(msg.sender, priceInPoints, BUNDLE_MINT);
+        firstTokenID = core.moduleMintUnrevealed(
+            msg.sender,
+            seriesID,
+            luckyNumbers,
+            pointsPerTicket,
+            true
+        );
+
+        if (revealImmediately) {
+            uint256[] memory tokenIDs = new uint256[](ticketQuantity);
+            unchecked {
+                for (uint256 i; i < ticketQuantity; ++i) {
+                    tokenIDs[i] = firstTokenID + i;
+                }
+            }
+            core.reveal(seriesID, tokenIDs);
+        }
+
+        uint256 rebate = _rebateFor(seriesID, ticketQuantity);
         if (rebate != 0) {
             doudoPoints.mintWithReason(msg.sender, rebate, BUNDLE_REBATE);
+            emit TicketPurchaseRebatePaid(seriesID, msg.sender, ticketQuantity, rebate);
         }
 
-        uint256 credits = config.consolationDrawCredits * quantity;
-        if (credits != 0 && redrawModule != address(0)) {
-            IDoudoRedrawCredits(redrawModule).creditConsolationDraws(seriesID, msg.sender, credits);
-        }
+        emit TicketPurchaseMinted(
+            seriesID,
+            msg.sender,
+            ticketQuantity,
+            priceInPoints,
+            revealImmediately,
+            firstTokenID
+        );
+    }
 
-        emit BundleMinted(seriesID, bundleID, msg.sender, quantity, firstTokenID);
+    function _rebateFor(
+        uint256 seriesID,
+        uint256 ticketQuantity
+    ) internal view returns (uint256) {
+        RebateTier[] storage tiers = seriesRebateTiers[seriesID];
+        uint256 length = tiers.length;
+
+        uint256 rebate;
+        for (uint256 i = 0; i < length; i++) {
+            RebateTier storage tier = tiers[i];
+            if (ticketQuantity < tier.minimumTicketQuantity) break;
+            rebate = tier.rebatePoints;
+        }
+        return rebate;
     }
 
     function _authorizeUpgrade(address) internal override onlyRole(UPGRADER_ROLE) {}
 
-    uint256[45] private __gap;
+    uint256[44] private __gap;
 }

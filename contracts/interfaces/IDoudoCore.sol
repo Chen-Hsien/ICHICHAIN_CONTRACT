@@ -20,10 +20,14 @@ interface IDoudoCore {
     function moduleMintUnrevealed(
         address to,
         uint256 seriesID,
-        uint256 quantity,
+        uint16[] calldata luckyNumbers,
         uint256 pointsPerTicket,
         bool enforceWalletAndLock
     ) external returns (uint256 firstTokenId);
+
+    function seriesMintConfig(
+        uint256 seriesID
+    ) external view returns (uint256 priceInPoints, bool useLuckyNumber);
 
     function moduleMintRevealed(
         address to,
@@ -31,6 +35,8 @@ interface IDoudoCore {
         uint256 prizeID,
         uint16 luckyNumber
     ) external returns (uint256 tokenId);
+
+    function reveal(uint256 seriesID, uint256[] calldata tokenIDs) external;
 
     function moduleBurnForRefund(
         uint256 tokenID,

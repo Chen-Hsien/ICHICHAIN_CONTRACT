@@ -11,7 +11,7 @@ Last updated: 2026-06-17
 | `DOUDOCHAINV2CoreUpgradeable` | `0xf75395A8cd753f47135cfcaE00D2706252c3E0F5` | Existing Core proxy |
 | `MerchantSeriesRegistry` | `0x03dBEE1f231A29b06032aa24D2CFb96a1321C1A6` | UUPS proxy, index this address in The Graph |
 | `MerchantSeriesRegistry` implementation | `0x59B2869C51cc555734845DF9eb3bDFb5Fc6f1E81` | Verification / upgrade record only |
-| `MerchantSeriesPublisher` | `0x259FB223A10D0116e5802d30FF5f441353C8972d` | Non-proxy publish entry point |
+| `MerchantSeriesPublisher` | `0xB0EC5ca70a9AeCaeb260FdCDF238a64Ad37F5515` | UUPS proxy publish entry point |
 
 The Graph indexes `MerchantSeriesRegistry` from block `277513499`.
 
@@ -33,7 +33,7 @@ Recommended backend config additions in `packages/config/src/index.ts`:
 contracts: {
   DOUDO_CORE: '0xf75395A8cd753f47135cfcaE00D2706252c3E0F5',
   DOUDO_MERCHANT_REGISTRY: '0x03dBEE1f231A29b06032aa24D2CFb96a1321C1A6',
-  DOUDO_MERCHANT_PUBLISHER: '0x259FB223A10D0116e5802d30FF5f441353C8972d',
+  DOUDO_MERCHANT_PUBLISHER: '0xB0EC5ca70a9AeCaeb260FdCDF238a64Ad37F5515',
 }
 ```
 
@@ -216,8 +216,8 @@ Current deployed wiring:
 
 | Permission | Holder |
 | --- | --- |
-| Core `OPERATION_ROLE` | `MerchantSeriesPublisher` `0x259FB223A10D0116e5802d30FF5f441353C8972d` |
-| Registry `LINKER_ROLE` | `MerchantSeriesPublisher` `0x259FB223A10D0116e5802d30FF5f441353C8972d` |
+| Core `OPERATION_ROLE` | `MerchantSeriesPublisher` `0xB0EC5ca70a9AeCaeb260FdCDF238a64Ad37F5515` |
+| Registry `LINKER_ROLE` | `MerchantSeriesPublisher` `0xB0EC5ca70a9AeCaeb260FdCDF238a64Ad37F5515` |
 | Publisher `PUBLISHER_OPERATION_ROLE` | Ops wallet `0x226f0197D502e7AC87d1A76D6526945DFa9E4209` |
 
 The backend signer that publishes merchant series must hold `PUBLISHER_OPERATION_ROLE`, or route through the current ops wallet flow.
