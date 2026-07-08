@@ -53,14 +53,23 @@ async function deploySplitSuite() {
   );
   await router.waitForDeployment();
 
-  const Core = await ethers.getContractFactory(
-    "contracts/DOUDOCHAINV2CoreUpgradeable.sol:DOUDOCHAINV2CoreUpgradeable"
-  );
+  const Core = await linkedCoreFactory();
   const core = await upgrades.deployProxy(Core, [await points.getAddress(), await router.getAddress()], {
     initializer: "initialize",
     kind: "uups",
+    unsafeAllowLinkedLibraries: true,
   });
   await core.waitForDeployment();
+
+  const SeriesOps = await ethers.getContractFactory(
+    "contracts/modules/DoudoSeriesOpsModuleUpgradeable.sol:DoudoSeriesOpsModuleUpgradeable"
+  );
+  const seriesOps = await upgrades.deployProxy(SeriesOps, [await core.getAddress()], {
+    initializer: "initialize",
+    kind: "uups",
+  });
+  await seriesOps.waitForDeployment();
+  await core.setSeriesOpsModule(await seriesOps.getAddress());
 
   const Bundle = await ethers.getContractFactory(
     "contracts/modules/DoudoBundleModuleUpgradeable.sol:DoudoBundleModuleUpgradeable"
@@ -112,12 +121,36 @@ async function deploySplitSuite() {
   await bundle.setRedrawModule(await redraw.getAddress());
   await redraw.setBundleModule(await bundle.getAddress());
 
-  return { admin, user, other, receiver, points, vrf, router, core, bundle, refund, redraw, reward };
+  return { admin, user, other, receiver, points, vrf, router, core, seriesOps, bundle, refund, redraw, reward };
 }
 
-async function createSeries(core, overrides = {}, markGoodsArrived = true) {
+async function linkedCoreFactory() {
+  const PrizeDrawLib = await ethers.getContractFactory(
+    "contracts/helpers/DoudoPrizeDrawLib.sol:DoudoPrizeDrawLib"
+  );
+  const prizeDrawLib = await PrizeDrawLib.deploy();
+  await prizeDrawLib.waitForDeployment();
+
+  const TokenURILib = await ethers.getContractFactory(
+    "contracts/helpers/DoudoTokenURILib.sol:DoudoTokenURILib"
+  );
+  const tokenURILib = await TokenURILib.deploy();
+  await tokenURILib.waitForDeployment();
+
+  return ethers.getContractFactory(
+    "contracts/DOUDOCHAINV2CoreUpgradeable.sol:DOUDOCHAINV2CoreUpgradeable",
+    {
+      libraries: {
+        DoudoPrizeDrawLib: await prizeDrawLib.getAddress(),
+        DoudoTokenURILib: await tokenURILib.getAddress(),
+      },
+    }
+  );
+}
+
+async function createSeries(core, overrides = {}, revealEnabled = true) {
   const input = seriesInput(overrides);
-  await core.createSeriesWithSubPrizes(input, prizeTable(input.totalTicketNumbers), markGoodsArrived);
+  await core.createSeriesWithSubPrizes(input, prizeTable(input.totalTicketNumbers), revealEnabled);
 }
 
 async function issuePoints(points, to, amount = ethers.parseEther("100")) {
@@ -129,10 +162,10 @@ async function revealTickets({ user, core, vrf, router }, seriesID, tokenIDs, ra
   await vrf.fulfill(await router.getAddress(), 1, [randomWord]);
 }
 
-function mintLockUntilFrom(receipt, core) {
+function mintLockUntilFrom(receipt, contract) {
   for (const log of receipt.logs) {
     try {
-      const parsed = core.interface.parseLog(log);
+      const parsed = contract.interface.parseLog(log);
       if (parsed?.name === "MintLockUpdated") {
         return parsed.args.until;
       }
@@ -141,6 +174,21 @@ function mintLockUntilFrom(receipt, core) {
     }
   }
   throw new Error("MintLockUpdated event not found");
+}
+
+function revealDrawSentEvents(receipt, core) {
+  const events = [];
+  for (const log of receipt.logs) {
+    try {
+      const parsed = core.interface.parseLog(log);
+      if (parsed?.name === "RevealDrawSent") {
+        events.push(parsed);
+      }
+    } catch (_) {
+      // Ignore logs from other contracts in the same transaction.
+    }
+  }
+  return events;
 }
 
 describe("DOUDOCHAIN V2 fixes", function () {
@@ -193,7 +241,7 @@ describe("DOUDOCHAIN V2 fixes", function () {
   });
 
   it("bundle mint enforces wallet cap, preserves lucky numbers, and records pointsPaid", async function () {
-    const { user, points, core, bundle } = await deploySplitSuite();
+    const { user, points, core, seriesOps, bundle } = await deploySplitSuite();
     await createSeries(core, { totalTicketNumbers: 4, useLuckyNumber: true, maxPerWallet: 2 });
     await issuePoints(points, user.address);
 
@@ -205,7 +253,7 @@ describe("DOUDOCHAIN V2 fixes", function () {
     expect(await core.pointsPaid(1)).to.equal(ethers.parseEther("1"));
 
     await expect(bundle.connect(user).mintTickets(0, [3, 4], false))
-      .to.be.revertedWithCustomError(core, "WalletCapExceeded");
+      .to.be.revertedWithCustomError(seriesOps, "WalletCapExceeded");
   });
 
   it("bundle mint preserves selected lucky numbers and exposes the series mode", async function () {
@@ -271,10 +319,10 @@ describe("DOUDOCHAIN V2 fixes", function () {
     ).to.be.revertedWithCustomError(core, "InvalidSeriesInput");
   });
 
-  it("redrawMain burns N revealed tickets and mints N unrevealed tickets from remaining", async function () {
+  it("redrawMain burns N revealed tickets, mints replacements, and requests reveal", async function () {
     const suite = await deploySplitSuite();
-    const { user, points, core, redraw } = suite;
-    await createSeries(core, { totalTicketNumbers: 5, useLuckyNumber: false, maxPerWallet: 0 });
+    const { user, points, core, redraw, vrf, router } = suite;
+    await createSeries(core, { totalTicketNumbers: 6, useLuckyNumber: false, maxPerWallet: 0 });
     await issuePoints(points, user.address);
     await core.connect(user).mint(0, [0, 0, 0]);
     await revealTickets(suite, 0, [0, 1], 777n);
@@ -283,7 +331,9 @@ describe("DOUDOCHAIN V2 fixes", function () {
     await redraw.setRedrawMainConfig(0, 2, 2);
     await expect(redraw.connect(user).redrawMain(0, [0, 1]))
       .to.emit(redraw, "RedrawMinted")
-      .withArgs(0, user.address, 2, 3);
+      .withArgs(0, user.address, 2, 3)
+      .and.to.emit(core, "RevealDrawSent")
+      .withArgs(2, [3, 4]);
 
     expect(await core.balanceOf(user.address)).to.equal(beforeBalance);
     await expect(core.ownerOf(0)).to.be.reverted;
@@ -291,6 +341,12 @@ describe("DOUDOCHAIN V2 fixes", function () {
     expect(await core.ownerOf(3)).to.equal(user.address);
     expect(await core.ownerOf(4)).to.equal(user.address);
     expect((await core.ticketStatusDetail(3)).tokenRevealed).to.equal(false);
+    await expect(core.connect(user).reveal(0, [3]))
+      .to.be.revertedWithCustomError(core, "TokenRevealPending");
+
+    await vrf.fulfill(await router.getAddress(), 2, [888n]);
+    expect((await core.ticketStatusDetail(3)).tokenRevealed).to.equal(true);
+    expect((await core.ticketStatusDetail(4)).tokenRevealed).to.equal(true);
   });
 
   it("redrawMain reverts when remaining inventory is less than burn count", async function () {
@@ -304,6 +360,95 @@ describe("DOUDOCHAIN V2 fixes", function () {
     await redraw.setRedrawMainConfig(0, 1, 1);
     await expect(redraw.connect(user).redrawMain(0, [0]))
       .to.be.revertedWithCustomError(core, "NotEnoughNFTsRemaining");
+  });
+
+  it("redrawMain splits automatic reveal requests above Core's reveal batch limit", async function () {
+    const suite = await deploySplitSuite();
+    const { user, points, core, redraw } = suite;
+    await createSeries(core, { totalTicketNumbers: 42, useLuckyNumber: false, maxPerWallet: 0 });
+    await issuePoints(points, user.address, ethers.parseEther("1000"));
+    await core.connect(user).mint(0, zeroLuckyNumbers(21));
+    await core.connect(user).reveal(0, Array.from({ length: 20 }, (_, i) => i));
+    await suite.vrf.fulfill(await suite.router.getAddress(), 1, [777n]);
+    await core.connect(user).reveal(0, [20]);
+    await suite.vrf.fulfill(await suite.router.getAddress(), 2, [778n]);
+    await redraw.setRedrawMainConfig(0, 21, 21);
+
+    const redrawTx = await redraw.connect(user).redrawMain(
+      0,
+      Array.from({ length: 21 }, (_, i) => i)
+    );
+    const redrawReceipt = await redrawTx.wait();
+    const revealEvents = revealDrawSentEvents(redrawReceipt, core);
+
+    expect(revealEvents).to.have.lengthOf(2);
+    expect(revealEvents[0].args.tokenIDs).to.deep.equal(Array.from({ length: 20 }, (_, i) => BigInt(21 + i)));
+    expect(revealEvents[1].args.tokenIDs).to.deep.equal([41n]);
+  });
+
+  it("redrawMain respects another wallet's active series reservation", async function () {
+    const suite = await deploySplitSuite();
+    const { user, other, points, core, seriesOps, redraw } = suite;
+    await createSeries(core, { totalTicketNumbers: 5, useLuckyNumber: false, maxPerWallet: 0 });
+    await issuePoints(points, user.address);
+    await issuePoints(points, other.address);
+
+    await core.connect(other).mint(0, [0]);
+    await revealTickets({ ...suite, user: other }, 0, [0], 777n);
+    await redraw.setRedrawMainConfig(0, 1, 1);
+
+    await ethers.provider.send("evm_increaseTime", [601]);
+    await ethers.provider.send("evm_mine", []);
+    await core.connect(user).mint(0, [0]);
+
+    await expect(redraw.connect(other).redrawMain(0, [0]))
+      .to.be.revertedWithCustomError(seriesOps, "SeriesReserved");
+    expect(await core.ownerOf(0)).to.equal(other.address);
+  });
+
+  it("redrawMain success reserves the series for the redraw wallet for five minutes", async function () {
+    const suite = await deploySplitSuite();
+    const { user, other, points, core, seriesOps, redraw } = suite;
+    await createSeries(core, { totalTicketNumbers: 4, useLuckyNumber: false, maxPerWallet: 0 });
+    await issuePoints(points, user.address);
+    await issuePoints(points, other.address);
+
+    await core.connect(other).mint(0, [0]);
+    await revealTickets({ ...suite, user: other }, 0, [0], 777n);
+    await redraw.setRedrawMainConfig(0, 1, 1);
+    await ethers.provider.send("evm_increaseTime", [601]);
+    await ethers.provider.send("evm_mine", []);
+
+    const redrawTx = await redraw.connect(other).redrawMain(0, [0]);
+    const redrawReceipt = await redrawTx.wait();
+    const redrawBlock = await ethers.provider.getBlock(redrawReceipt.blockNumber);
+    expect(mintLockUntilFrom(redrawReceipt, seriesOps)).to.equal(redrawBlock.timestamp + 300);
+
+    await expect(core.connect(user).mint(0, [0]))
+      .to.be.revertedWithCustomError(seriesOps, "SeriesReserved");
+
+    await ethers.provider.send("evm_increaseTime", [301]);
+    await ethers.provider.send("evm_mine", []);
+    await core.connect(user).mint(0, [0]);
+    expect(await core.ownerOf(2)).to.equal(user.address);
+  });
+
+  it("redrawMain preserves a longer active reservation for the same wallet", async function () {
+    const suite = await deploySplitSuite();
+    const { other, points, core, seriesOps, redraw } = suite;
+    await createSeries(core, { totalTicketNumbers: 4, useLuckyNumber: false, maxPerWallet: 0 });
+    await issuePoints(points, other.address);
+
+    const mintTx = await core.connect(other).mint(0, [0]);
+    const mintReceipt = await mintTx.wait();
+    const originalLockUntil = mintLockUntilFrom(mintReceipt, seriesOps);
+    await revealTickets({ ...suite, user: other }, 0, [0], 777n);
+    await redraw.setRedrawMainConfig(0, 1, 1);
+
+    const redrawTx = await redraw.connect(other).redrawMain(0, [0]);
+    const redrawReceipt = await redrawTx.wait();
+
+    expect(mintLockUntilFrom(redrawReceipt, seriesOps)).to.equal(originalLockUntil);
   });
 
   it("ticket quantity mints do not grant consolation draw credits without a separate redraw credit", async function () {
@@ -328,7 +473,7 @@ describe("DOUDOCHAIN V2 fixes", function () {
 
   it("restores reveal/exchange-aware tokenURI and exchangePrize", async function () {
     const suite = await deploySplitSuite();
-    const { user, points, core } = suite;
+    const { user, points, core, seriesOps } = suite;
     await createSeries(core, { totalTicketNumbers: 2, useLuckyNumber: false, maxPerWallet: 0 });
     await issuePoints(points, user.address);
     await core.connect(user).mint(0, [0]);
@@ -382,9 +527,55 @@ describe("DOUDOCHAIN V2 fixes", function () {
     expect(await points.balanceOf(user.address)).to.equal(ethers.parseEther("100"));
   });
 
-  it("allows pre-order minting but gates reveal until goods arrive", async function () {
+  it("refunds only net paid points for bundle tickets that received rebates", async function () {
+    const { user, points, core, bundle, refund } = await deploySplitSuite();
+    await createSeries(core, {
+      totalTicketNumbers: 3,
+      priceInPoints: ethers.parseEther("7"),
+      useLuckyNumber: false,
+      maxPerWallet: 0,
+    });
+    await issuePoints(points, user.address);
+    await bundle.setSeriesRebateTiers(0, [
+      { minimumTicketQuantity: 3, rebatePoints: ethers.parseEther("6") },
+    ]);
+
+    await bundle.connect(user).mintTickets(0, zeroLuckyNumbers(3), false);
+    expect(await points.balanceOf(user.address)).to.equal(ethers.parseEther("85"));
+
+    await refund.setSeriesRefund(0, true, ethers.parseEther("1"));
+    await expect(refund.connect(user).claimRefund([0, 1, 2]))
+      .to.emit(refund, "RefundClaimed")
+      .withArgs(0, user.address, [0, 1, 2], ethers.parseEther("15"));
+    expect(await points.balanceOf(user.address)).to.equal(ethers.parseEther("100"));
+  });
+
+  it("keeps estimated delivery time independent from the initial reveal switch", async function () {
+    const { core } = await deploySplitSuite();
+
+    const tx = await core.createSeriesWithSubPrizes(
+      seriesInput({ estimateDeliverTime: 1880000000 }),
+      prizeTable(6),
+      true
+    );
+    const receipt = await tx.wait();
+    const newSeries = receipt.logs
+      .map((log) => {
+        try {
+          return core.interface.parseLog(log);
+        } catch (_) {
+          return null;
+        }
+      })
+      .find((event) => event?.name === "NewSeries");
+
+    expect(newSeries.args.estimateDeliverTime).to.equal(1880000000);
+    expect(newSeries.args.exchangeExpireTime).to.equal(1880000000 + 60 * 24 * 60 * 60);
+  });
+
+  it("allows pre-order minting but gates reveal with the series reveal switch", async function () {
     const suite = await deploySplitSuite();
-    const { user, points, core } = suite;
+    const { user, points, core, seriesOps } = suite;
     await createSeries(core, { totalTicketNumbers: 2, isPreOrder: true, useLuckyNumber: false, maxPerWallet: 0 }, false);
     await issuePoints(points, user.address);
 
@@ -394,7 +585,30 @@ describe("DOUDOCHAIN V2 fixes", function () {
 
     await core.setGoodsArrived(0);
     await expect(core.connect(user).reveal(0, [0]))
+      .to.be.revertedWithCustomError(core, "GoodsNotArrived");
+
+    await seriesOps.setSeriesRevealEnabled(0, true);
+    await expect(core.connect(user).reveal(0, [0]))
       .to.emit(core, "RevealDrawSent");
+  });
+
+  it("allows non-preorder ticket minting without requiring goods arrived", async function () {
+    const { user, points, core, bundle } = await deploySplitSuite();
+    await createSeries(
+      core,
+      {
+        totalTicketNumbers: 2,
+        estimateDeliverTime: 1880000000,
+        isPreOrder: false,
+        useLuckyNumber: false,
+        maxPerWallet: 0,
+      },
+      true
+    );
+    await issuePoints(points, user.address);
+
+    await expect(bundle.connect(user).mintTickets(0, [0], false))
+      .to.emit(core, "NewTicketStatus");
   });
 
   it("mintTickets caps immediate reveal quantity at 10 and auto-requests reveal", async function () {
@@ -419,6 +633,26 @@ describe("DOUDOCHAIN V2 fixes", function () {
     expect((await core.ticketStatusDetail(2)).tokenRevealed).to.equal(true);
   });
 
+  it("blocks duplicate reveal requests while a token has pending VRF", async function () {
+    const suite = await deploySplitSuite();
+    const { user, points, vrf, router, core } = suite;
+    await createSeries(core, { totalTicketNumbers: 2, useLuckyNumber: false, maxPerWallet: 0 });
+    await issuePoints(points, user.address);
+    await core.connect(user).mint(0, [0]);
+
+    await expect(core.connect(user).reveal(0, [0]))
+      .to.emit(core, "RevealDrawSent")
+      .withArgs(1, [0]);
+
+    await expect(core.connect(user).reveal(0, [0])).to.be.reverted;
+    await expect(core.connect(user).reveal(0, [0, 0])).to.be.reverted;
+
+    await vrf.fulfill(await router.getAddress(), 1, [999n]);
+    expect((await core.ticketStatusDetail(0)).tokenRevealed).to.equal(true);
+    await expect(core.connect(user).reveal(0, [0]))
+      .to.be.revertedWithCustomError(core, "TokenAlreadyRevealed");
+  });
+
   it("mintTickets requires goods arrived when immediate reveal is requested for pre-order series", async function () {
     const suite = await deploySplitSuite();
     const { user, points, core, bundle } = suite;
@@ -441,43 +675,142 @@ describe("DOUDOCHAIN V2 fixes", function () {
     await core.connect(user).mint(0, [0]);
     await ethers.provider.send("evm_increaseTime", [901]);
     await ethers.provider.send("evm_mine", []);
-    await core.connect(other).mint(0, [0]);
-
-    await core.chooseLastPrizeWinner(0, 1);
+    await expect(core.connect(other).mint(0, [0]))
+      .to.emit(core, "LastPrizeWinner")
+      .withArgs(0, [1]);
     expect(await core.ownerOf(2)).to.equal(other.address);
     expect((await core.ticketStatusDetail(2)).tokenRevealedPrize).to.equal(999);
   });
 
-  it("supports adjustable mint locks and maxPerWallet updates", async function () {
+  it("automatically assigns non-preorder last-prize winner when the final ticket sells", async function () {
     const { user, other, points, core } = await deploySplitSuite();
+    await createSeries(core, { totalTicketNumbers: 2, useLuckyNumber: false, maxPerWallet: 0, isPreOrder: false });
+    await issuePoints(points, user.address);
+    await issuePoints(points, other.address);
+    await core.connect(user).mint(0, [0]);
+    await ethers.provider.send("evm_increaseTime", [901]);
+    await ethers.provider.send("evm_mine", []);
+
+    await expect(core.connect(other).mint(0, [0]))
+      .to.emit(core, "LastPrizeWinner")
+      .withArgs(0, [1])
+      .and.to.emit(core, "UpdateSeriesLastPrizeOwner")
+      .withArgs(0, [other.address]);
+
+    expect(await core.ownerOf(2)).to.equal(other.address);
+    expect((await core.ticketStatusDetail(2)).tokenRevealedPrize).to.equal(999);
+  });
+
+  it("uses configured non-preorder last-prize quantity when the final ticket sells", async function () {
+    const { user, other, points, core } = await deploySplitSuite();
+    await createSeries(core, { totalTicketNumbers: 2, useLuckyNumber: false, maxPerWallet: 0, isPreOrder: false });
+    await issuePoints(points, user.address);
+    await issuePoints(points, other.address);
+    await core.setSeriesLastPrizeQuantity(0, 2);
+    await core.connect(user).mint(0, [0]);
+    await ethers.provider.send("evm_increaseTime", [901]);
+    await ethers.provider.send("evm_mine", []);
+
+    await expect(core.connect(other).mint(0, [0]))
+      .to.emit(core, "LastPrizeWinner")
+      .withArgs(0, [1, 1])
+      .and.to.emit(core, "UpdateSeriesLastPrizeOwner")
+      .withArgs(0, [other.address, other.address]);
+
+    expect(await core.ownerOf(2)).to.equal(other.address);
+    expect(await core.ownerOf(3)).to.equal(other.address);
+    expect((await core.ticketStatusDetail(2)).tokenRevealedPrize).to.equal(999);
+    expect((await core.ticketStatusDetail(3)).tokenRevealedPrize).to.equal(999);
+  });
+
+  it("automatically requests preorder last-prize draw when the final ticket sells", async function () {
+    const { user, points, vrf, router, core } = await deploySplitSuite();
+    await createSeries(core, { totalTicketNumbers: 2, useLuckyNumber: false, maxPerWallet: 0, isPreOrder: true }, false);
+    await issuePoints(points, user.address);
+
+    await core.connect(user).mint(0, [0]);
+    await expect(core.connect(user).mint(0, [0]))
+      .to.emit(router, "VrfRandomWordsRequested")
+      .withArgs(1, await core.getAddress(), await core.getAddress(), 1);
+
+    expect(await router.pendingRequests()).to.equal(1);
+    await expect(vrf.fulfill(await router.getAddress(), 1, [0]))
+      .to.emit(core, "LastPrizeWinner")
+      .withArgs(1, [0]);
+
+    expect(await core.ownerOf(2)).to.equal(user.address);
+    expect((await core.ticketStatusDetail(2)).tokenRevealedPrize).to.equal(999);
+  });
+
+  it("uses configured preorder last-prize quantity for the automatic VRF draw", async function () {
+    const { user, other, points, vrf, router, core } = await deploySplitSuite();
+    await createSeries(core, { totalTicketNumbers: 3, useLuckyNumber: false, maxPerWallet: 0, isPreOrder: true }, false);
+    await issuePoints(points, user.address);
+    await issuePoints(points, other.address);
+    await core.setSeriesLastPrizeQuantity(0, 2);
+
+    await core.connect(user).mint(0, [0]);
+    await ethers.provider.send("evm_increaseTime", [901]);
+    await ethers.provider.send("evm_mine", []);
+    await core.connect(other).mint(0, [0]);
+    await ethers.provider.send("evm_increaseTime", [901]);
+    await ethers.provider.send("evm_mine", []);
+    await expect(core.connect(user).mint(0, [0]))
+      .to.emit(router, "VrfRandomWordsRequested")
+      .withArgs(1, await core.getAddress(), await core.getAddress(), 2);
+
+    await expect(vrf.fulfill(await router.getAddress(), 1, [0, 1]))
+      .to.emit(core, "LastPrizeWinner")
+      .withArgs(1, [0, 1])
+      .and.to.emit(core, "UpdateSeriesLastPrizeOwner")
+      .withArgs(0, [user.address, other.address]);
+
+    expect(await core.ownerOf(3)).to.equal(user.address);
+    expect(await core.ownerOf(4)).to.equal(other.address);
+    expect((await core.ticketStatusDetail(3)).tokenRevealedPrize).to.equal(999);
+    expect((await core.ticketStatusDetail(4)).tokenRevealedPrize).to.equal(999);
+  });
+
+  it("emits zero request id for synchronous non-preorder last-prize events", async function () {
+    const { user, other, points, core } = await deploySplitSuite();
+    await createSeries(core, { totalTicketNumbers: 2, useLuckyNumber: false, maxPerWallet: 0, isPreOrder: false });
+    await createSeries(core, { totalTicketNumbers: 2, useLuckyNumber: false, maxPerWallet: 0, isPreOrder: false });
+    await issuePoints(points, other.address);
+    await expect(core.connect(other).mint(1, [0, 0]))
+      .to.emit(core, "LastPrizeWinner")
+      .withArgs(0, [1]);
+  });
+
+  it("supports adjustable mint locks and maxPerWallet updates", async function () {
+    const { user, other, points, core, seriesOps } = await deploySplitSuite();
     await createSeries(core, { totalTicketNumbers: 5, useLuckyNumber: false, maxPerWallet: 0 });
     await issuePoints(points, user.address);
     await issuePoints(points, other.address);
-    await core.setDefaultLockDuration(60);
-    await core.setSeriesMaxPerWallet(0, 2);
+    await seriesOps.setDefaultLockDuration(60);
+    await seriesOps.setSeriesMaxPerWallet(0, 2);
 
     await core.connect(user).mint(0, [0]);
     await expect(core.connect(other).mint(0, [0]))
-      .to.be.revertedWithCustomError(core, "SeriesReserved");
+      .to.be.revertedWithCustomError(seriesOps, "SeriesReserved");
     await ethers.provider.send("evm_increaseTime", [61]);
     await ethers.provider.send("evm_mine", []);
     await core.connect(other).mint(0, [0]);
-    await core.clearMintLock(0);
+    await seriesOps.clearMintLock(0);
     await core.connect(user).mint(0, [0]);
     await expect(core.connect(user).mint(0, [0]))
-      .to.be.revertedWithCustomError(core, "WalletCapExceeded");
+      .to.be.revertedWithCustomError(seriesOps, "WalletCapExceeded");
   });
 
   it("caps refreshed mint locks at 10 minutes from each mint block", async function () {
-    const { user, points, core } = await deploySplitSuite();
+    const { user, points, core, seriesOps } = await deploySplitSuite();
     await createSeries(core, { totalTicketNumbers: 5, useLuckyNumber: false, maxPerWallet: 0 });
     await issuePoints(points, user.address);
-    await core.setSeriesLockDuration(0, 1200);
+    await seriesOps.setSeriesLockDuration(0, 1200);
 
     const firstTx = await core.connect(user).mint(0, [0]);
     const firstReceipt = await firstTx.wait();
     const firstBlock = await ethers.provider.getBlock(firstReceipt.blockNumber);
-    expect(mintLockUntilFrom(firstReceipt, core)).to.equal(firstBlock.timestamp + 600);
+    expect(mintLockUntilFrom(firstReceipt, seriesOps)).to.equal(firstBlock.timestamp + 600);
 
     await ethers.provider.send("evm_increaseTime", [100]);
     await ethers.provider.send("evm_mine", []);
@@ -485,7 +818,24 @@ describe("DOUDOCHAIN V2 fixes", function () {
     const secondTx = await core.connect(user).mint(0, [0]);
     const secondReceipt = await secondTx.wait();
     const secondBlock = await ethers.provider.getBlock(secondReceipt.blockNumber);
-    expect(mintLockUntilFrom(secondReceipt, core)).to.equal(secondBlock.timestamp + 600);
+    expect(mintLockUntilFrom(secondReceipt, seriesOps)).to.equal(secondBlock.timestamp + 600);
+  });
+
+  it("advances the lucky-number cursor as numbers are consumed and auto-assigned", async function () {
+    const suite = await deploySplitSuite();
+    const { user, points, core, redraw } = suite;
+    await createSeries(core, { totalTicketNumbers: 5, useLuckyNumber: true, maxPerWallet: 0 });
+    await issuePoints(points, user.address);
+    await core.connect(user).mint(0, [1, 2]);
+    await revealTickets(suite, 0, [0], 777n);
+
+    await redraw.setRedrawMainConfig(0, 1, 1);
+    await redraw.connect(user).redrawMain(0, [0]);
+
+    expect((await core.ticketStatusDetail(2)).luckyNumber).to.equal(3);
+    await suite.vrf.fulfill(await suite.router.getAddress(), 2, [778n]);
+    await redraw.connect(user).redrawMain(0, [2]);
+    expect((await core.ticketStatusDetail(3)).luckyNumber).to.equal(4);
   });
 
   it("blocks router coordinator changes while VRF requests are pending", async function () {
@@ -500,11 +850,13 @@ describe("DOUDOCHAIN V2 fixes", function () {
     await router.setRequester(admin.address, true);
     await router.requestRandomWords(await callback.getAddress(), 1);
     expect(await router.pendingRequests()).to.equal(1);
+    expect(await router.requestSender(1)).to.equal(admin.address);
     await expect(router.setVrfConfig(await nextVrf.getAddress(), 123n, ethers.ZeroHash, 2_500_000, 0))
       .to.be.revertedWithCustomError(router, "PendingRequests");
 
     await vrf.fulfill(await router.getAddress(), 1, [9]);
     expect(await router.pendingRequests()).to.equal(0);
+    expect(await router.requestSender(1)).to.equal(ethers.ZeroAddress);
     expect(await callback.lastRandomWord()).to.equal(9);
     await router.setVrfConfig(await nextVrf.getAddress(), 123n, ethers.ZeroHash, 2_500_000, 0);
   });
@@ -540,11 +892,23 @@ describe("DOUDOCHAIN V2 fixes", function () {
     expect(await oldCore.mintedPerWallet(0, user.address)).to.equal(1);
     expect(await oldCore.luckyNumberUsed(0, 7)).to.equal(true);
 
-    const Core = await ethers.getContractFactory(
-      "contracts/DOUDOCHAINV2CoreUpgradeable.sol:DOUDOCHAINV2CoreUpgradeable"
-    );
-    const core = await upgrades.upgradeProxy(await oldCore.getAddress(), Core);
+    const Core = await linkedCoreFactory();
+    const core = await upgrades.upgradeProxy(await oldCore.getAddress(), Core, {
+      unsafeAllowLinkedLibraries: true,
+    });
     await core.waitForDeployment();
+
+    const SeriesOps = await ethers.getContractFactory(
+      "contracts/modules/DoudoSeriesOpsModuleUpgradeable.sol:DoudoSeriesOpsModuleUpgradeable"
+    );
+    const seriesOps = await upgrades.deployProxy(SeriesOps, [await core.getAddress()], {
+      initializer: "initialize",
+      kind: "uups",
+    });
+    await seriesOps.waitForDeployment();
+    await core.setSeriesOpsModule(await seriesOps.getAddress());
+    await seriesOps.seedSeriesConfig(0, 2, true);
+    await seriesOps.seedMintedCount(0, user.address, 1);
 
     expect(await core.ownerOf(0)).to.equal(user.address);
     const seededStatus = await core.ticketStatusDetail(0);
@@ -553,15 +917,15 @@ describe("DOUDOCHAIN V2 fixes", function () {
     expect(await core.pointsPaid(0)).to.equal(ethers.parseEther("1"));
     expect(await core.tokenURI(0)).to.equal("ipfs://old-unreveal");
 
-    expect(await core.seriesLockDuration(0)).to.equal(0);
-    await core.setSeriesLockDuration(0, 30);
-    expect(await core.seriesLockDuration(0)).to.equal(30);
+    expect(await seriesOps.seriesLockDuration(0)).to.equal(0);
+    await seriesOps.setSeriesLockDuration(0, 30);
+    expect(await seriesOps.seriesLockDuration(0)).to.equal(30);
 
     await core.connect(user).mint(0, [8]);
     expect(await core.ownerOf(1)).to.equal(user.address);
     expect((await core.ticketStatusDetail(1)).luckyNumber).to.equal(8);
     await expect(core.connect(user).mint(0, [9]))
-      .to.be.revertedWithCustomError(core, "WalletCapExceeded");
+      .to.be.revertedWithCustomError(seriesOps, "WalletCapExceeded");
     await expect(core.adminMint(user.address, 0, [7]))
       .to.be.revertedWithCustomError(core, "LuckyNumberTaken");
   });
@@ -651,7 +1015,7 @@ describe("DOUDOCHAIN V2 fixes", function () {
       active: true,
     });
 
-    const rewardTokenId = 2n; // tokens 0 and 1 were the sold-out mints
+    const rewardTokenId = 3n; // tokens 0 and 1 were sold, token 2 is the automatic last-prize token
     await expect(reward.connect(other).mintCollectionReward(user.address, 1))
       .to.emit(reward, "CollectionRewardMinted")
       .withArgs(1, user.address, 0, 1, rewardTokenId);

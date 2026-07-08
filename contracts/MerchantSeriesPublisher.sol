@@ -53,13 +53,13 @@ contract MerchantSeriesPublisher is
         address core,
         IDoudoSeriesPublishing.SeriesInput calldata input,
         IDoudoSeriesPublishing.SubPrize[] calldata subPrizes,
-        bool markGoodsArrived,
+        bool revealEnabled,
         bytes32 merchantRef
     ) external onlyRole(PUBLISHER_OPERATION_ROLE) returns (uint256 seriesID) {
         seriesID = IDoudoSeriesPublishing(core).createSeriesWithSubPrizes(
             input,
             subPrizes,
-            markGoodsArrived
+            revealEnabled
         );
         registry.linkSeries(core, seriesID, merchantRef);
         emit SeriesPublished(core, seriesID, merchantRef, msg.sender);

@@ -76,7 +76,7 @@ contract DoudoRefundModuleUpgradeable is
         uint256 totalRefund;
         for (uint256 i = 0; i < tokenIDs.length; i++) {
             uint256 paid = core.pointsPaid(tokenIDs[i]);
-            (uint256 seriesID,,) = core.moduleBurnForRefund(tokenIDs[i], msg.sender);
+            uint256 seriesID = core.moduleBurnForRefund(tokenIDs[i], msg.sender);
             if (i == 0) {
                 expectedSeriesID = seriesID;
                 RefundConfig memory config = refundConfigs[seriesID];

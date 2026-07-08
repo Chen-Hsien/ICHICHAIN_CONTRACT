@@ -111,13 +111,12 @@ contract DoudoCollectionRewardModuleUpgradeable is
         }
 
         if (config.rewardKind == uint8(RewardKind.NftPrize)) {
-            tokenID = core.moduleMintRevealed(to, config.seriesID, config.prizeID, 0);
+            tokenID = core.moduleMintRevealed(to, config.seriesID, config.prizeID);
             emit CollectionRewardMinted(rewardData, to, config.rewardKind, 1, tokenID);
             return tokenID;
         }
 
         uint256 expires = block.timestamp + config.pointsAmount;
-        core.moduleUnlockSeriesFor(config.seriesID, to, expires);
         emit SeriesUnlockedFor(config.seriesID, to, expires);
         emit CollectionRewardMinted(rewardData, to, config.rewardKind, expires, 0);
     }
@@ -125,7 +124,6 @@ contract DoudoCollectionRewardModuleUpgradeable is
     function unlockSeriesFor(address user, uint256 seriesID) external {
         if (msg.sender != collectionBook) revert OnlyCollectionBook(msg.sender);
         uint256 expires = block.timestamp + 30 days;
-        core.moduleUnlockSeriesFor(seriesID, user, expires);
         emit SeriesUnlockedFor(seriesID, user, expires);
     }
 

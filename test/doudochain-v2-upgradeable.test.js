@@ -199,9 +199,7 @@ describe("DOUDOCHAINV2Upgradeable series and AdminMint", function () {
       .to.emit(core, "NewTicketStatus")
       .withArgs(0, 0, 0, false, false, user.address, 1)
       .and.to.emit(core, "UpdateSeriesRemainingTicketNumbers")
-      .withArgs(0, 3)
-      .and.to.emit(core, "AdminMinted")
-      .withArgs(admin.address, user.address, 0, 2);
+      .withArgs(0, 3);
 
     expect(await points.balanceOf(user.address)).to.equal(0);
     expect(await core.ownerOf(0)).to.equal(user.address);

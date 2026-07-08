@@ -1,4 +1,5 @@
 import { ethers, upgrades } from "hardhat";
+import { CORE_FQN, linkedCoreFactory } from "./linkedCoreFactory";
 
 const DEFAULT_DOUDO_POINTS_ADDRESS = "0xFFCD533609e0e9E810C4C5D8Cb7a69D7a537C17E";
 const DEFAULT_VRF_COORDINATOR = "0x5CE8D5A2BC84beb22a398CCA51996F7930313D61";
@@ -6,7 +7,7 @@ const DEFAULT_KEY_HASH =
   "0x1770bdc7eec7771f7ba4ffd640f34260d7f095b79c92d34a5b2551d6f6cfd2be";
 const DEFAULT_SUBSCRIPTION_ID =
   "106016056432422253373974444299096295296684744368940754254159766683809634643463";
-const DEFAULT_REQUEST_CONFIRMATIONS = 0;
+const DEFAULT_REQUEST_CONFIRMATIONS = 3;
 const DEFAULT_CALLBACK_GAS_LIMIT = 2_500_000;
 
 const VRF_COORDINATOR_ABI = [
@@ -70,10 +71,13 @@ async function maybeAddVrfConsumer(vrfCoordinator: string, subscriptionId: strin
 }
 
 async function deployProxy(factoryName: string, args: unknown[], label: string) {
-  const Factory = await ethers.getContractFactory(factoryName);
+  const Factory = factoryName === CORE_FQN
+    ? await linkedCoreFactory()
+    : await ethers.getContractFactory(factoryName);
   const contract = await upgrades.deployProxy(Factory, args, {
     initializer: "initialize",
     kind: "uups",
+    unsafeAllowLinkedLibraries: factoryName === CORE_FQN,
   });
   await contract.waitForDeployment();
   const proxy = await contract.getAddress();
@@ -130,9 +134,14 @@ async function main() {
   console.log("DoudoVRFRouter:", routerAddress);
 
   const coreDeployment = await deployProxy(
-    "contracts/DOUDOCHAINV2CoreUpgradeable.sol:DOUDOCHAINV2CoreUpgradeable",
+    CORE_FQN,
     [pointsAddress, routerAddress],
     "DOUDOCHAINV2CoreUpgradeable"
+  );
+  const seriesOpsDeployment = await deployProxy(
+    "contracts/modules/DoudoSeriesOpsModuleUpgradeable.sol:DoudoSeriesOpsModuleUpgradeable",
+    [coreDeployment.proxy],
+    "DoudoSeriesOpsModuleUpgradeable"
   );
   const bundleDeployment = await deployProxy(
     "contracts/modules/DoudoBundleModuleUpgradeable.sol:DoudoBundleModuleUpgradeable",
@@ -167,6 +176,10 @@ async function main() {
   const reward = rewardDeployment.contract;
   const book = bookDeployment.contract;
 
+  let tx = await core.setSeriesOpsModule(seriesOpsDeployment.proxy);
+  console.log("Core series ops module tx:", tx.hash);
+  await tx.wait();
+
   await grantIfNeeded(core, "MODULE_ROLE", bundleDeployment.proxy);
   await grantIfNeeded(core, "MODULE_ROLE", refundDeployment.proxy);
   await grantIfNeeded(core, "MODULE_ROLE", redrawDeployment.proxy);
@@ -181,7 +194,7 @@ async function main() {
   await grantIfNeeded(points, "MINTER_ROLE", rewardDeployment.proxy);
   await grantIfNeeded(points, "MINTER_ROLE", bookDeployment.proxy);
 
-  let tx = await bundle.setRedrawModule(redrawDeployment.proxy);
+  tx = await bundle.setRedrawModule(redrawDeployment.proxy);
   console.log("Bundle redraw module tx:", tx.hash);
   await tx.wait();
   tx = await redraw.setBundleModule(bundleDeployment.proxy);
@@ -203,6 +216,8 @@ async function main() {
     doudoVRFRouter: routerAddress,
     doudochainV2CoreProxy: coreDeployment.proxy,
     doudochainV2CoreImplementation: coreDeployment.implementation,
+    seriesOpsModuleProxy: seriesOpsDeployment.proxy,
+    seriesOpsModuleImplementation: seriesOpsDeployment.implementation,
     bundleModuleProxy: bundleDeployment.proxy,
     bundleModuleImplementation: bundleDeployment.implementation,
     refundModuleProxy: refundDeployment.proxy,
@@ -217,6 +232,7 @@ async function main() {
       doudoPoints: "artifacts/contracts/DDOUDOCOIN.sol/DOUDOCOIN.json",
       doudoVRFRouter: "artifacts/contracts/DoudoVRFRouter.sol/DoudoVRFRouter.json",
       core: "artifacts/contracts/DOUDOCHAINV2CoreUpgradeable.sol/DOUDOCHAINV2CoreUpgradeable.json",
+      seriesOpsModule: "artifacts/contracts/modules/DoudoSeriesOpsModuleUpgradeable.sol/DoudoSeriesOpsModuleUpgradeable.json",
       bundleModule: "artifacts/contracts/modules/DoudoBundleModuleUpgradeable.sol/DoudoBundleModuleUpgradeable.json",
       refundModule: "artifacts/contracts/modules/DoudoRefundModuleUpgradeable.sol/DoudoRefundModuleUpgradeable.json",
       redrawModule: "artifacts/contracts/modules/DoudoRedrawModuleUpgradeable.sol/DoudoRedrawModuleUpgradeable.json",

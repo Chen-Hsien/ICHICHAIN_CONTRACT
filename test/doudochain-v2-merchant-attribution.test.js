@@ -54,15 +54,23 @@ async function deployFullSuite() {
   await points.waitForDeployment();
   const routerPlaceholder = admin.address;
 
-  const Core = await ethers.getContractFactory(
-    "contracts/DOUDOCHAINV2CoreUpgradeable.sol:DOUDOCHAINV2CoreUpgradeable"
-  );
+  const Core = await linkedCoreFactory();
   const core = await upgrades.deployProxy(
     Core,
     [await points.getAddress(), routerPlaceholder],
-    { initializer: "initialize", kind: "uups" }
+    { initializer: "initialize", kind: "uups", unsafeAllowLinkedLibraries: true }
   );
   await core.waitForDeployment();
+
+  const SeriesOps = await ethers.getContractFactory(
+    "contracts/modules/DoudoSeriesOpsModuleUpgradeable.sol:DoudoSeriesOpsModuleUpgradeable"
+  );
+  const seriesOps = await upgrades.deployProxy(SeriesOps, [await core.getAddress()], {
+    initializer: "initialize",
+    kind: "uups",
+  });
+  await seriesOps.waitForDeployment();
+  await core.setSeriesOpsModule(await seriesOps.getAddress());
 
   const Registry = await ethers.getContractFactory(
     "contracts/MerchantSeriesRegistry.sol:MerchantSeriesRegistry"
@@ -88,6 +96,30 @@ async function deployFullSuite() {
   await publisher.grantRole(await publisher.PUBLISHER_OPERATION_ROLE(), operator.address);
 
   return { admin, operator, human, user, points, core, registry, publisher };
+}
+
+async function linkedCoreFactory() {
+  const PrizeDrawLib = await ethers.getContractFactory(
+    "contracts/helpers/DoudoPrizeDrawLib.sol:DoudoPrizeDrawLib"
+  );
+  const prizeDrawLib = await PrizeDrawLib.deploy();
+  await prizeDrawLib.waitForDeployment();
+
+  const TokenURILib = await ethers.getContractFactory(
+    "contracts/helpers/DoudoTokenURILib.sol:DoudoTokenURILib"
+  );
+  const tokenURILib = await TokenURILib.deploy();
+  await tokenURILib.waitForDeployment();
+
+  return ethers.getContractFactory(
+    "contracts/DOUDOCHAINV2CoreUpgradeable.sol:DOUDOCHAINV2CoreUpgradeable",
+    {
+      libraries: {
+        DoudoPrizeDrawLib: await prizeDrawLib.getAddress(),
+        DoudoTokenURILib: await tokenURILib.getAddress(),
+      },
+    }
+  );
 }
 
 describe("Merchant publish - atomic flow", function () {

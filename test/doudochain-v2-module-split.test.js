@@ -59,14 +59,23 @@ async function deploySplitSuite() {
   );
   await router.waitForDeployment();
 
-  const Core = await ethers.getContractFactory(
-    "contracts/DOUDOCHAINV2CoreUpgradeable.sol:DOUDOCHAINV2CoreUpgradeable"
-  );
+  const Core = await linkedCoreFactory();
   const core = await upgrades.deployProxy(Core, [await points.getAddress(), await router.getAddress()], {
     initializer: "initialize",
     kind: "uups",
+    unsafeAllowLinkedLibraries: true,
   });
   await core.waitForDeployment();
+
+  const SeriesOps = await ethers.getContractFactory(
+    "contracts/modules/DoudoSeriesOpsModuleUpgradeable.sol:DoudoSeriesOpsModuleUpgradeable"
+  );
+  const seriesOps = await upgrades.deployProxy(SeriesOps, [await core.getAddress()], {
+    initializer: "initialize",
+    kind: "uups",
+  });
+  await seriesOps.waitForDeployment();
+  await core.setSeriesOpsModule(await seriesOps.getAddress());
 
   const Bundle = await ethers.getContractFactory(
     "contracts/modules/DoudoBundleModuleUpgradeable.sol:DoudoBundleModuleUpgradeable"
@@ -138,12 +147,37 @@ async function deploySplitSuite() {
     vrf,
     router,
     core,
+    seriesOps,
     bundle,
     refund,
     redraw,
     reward,
     book,
   };
+}
+
+async function linkedCoreFactory() {
+  const PrizeDrawLib = await ethers.getContractFactory(
+    "contracts/helpers/DoudoPrizeDrawLib.sol:DoudoPrizeDrawLib"
+  );
+  const prizeDrawLib = await PrizeDrawLib.deploy();
+  await prizeDrawLib.waitForDeployment();
+
+  const TokenURILib = await ethers.getContractFactory(
+    "contracts/helpers/DoudoTokenURILib.sol:DoudoTokenURILib"
+  );
+  const tokenURILib = await TokenURILib.deploy();
+  await tokenURILib.waitForDeployment();
+
+  return ethers.getContractFactory(
+    "contracts/DOUDOCHAINV2CoreUpgradeable.sol:DOUDOCHAINV2CoreUpgradeable",
+    {
+      libraries: {
+        DoudoPrizeDrawLib: await prizeDrawLib.getAddress(),
+        DoudoTokenURILib: await tokenURILib.getAddress(),
+      },
+    }
+  );
 }
 
 async function createSeries(core, overrides = {}) {
@@ -326,7 +360,7 @@ describe("DOUDOCHAIN V2 split module suite", function () {
     await expect(bundle.connect(user).mintTickets(0, [], false))
       .to.be.revertedWithCustomError(bundle, "InvalidConfig");
     await expect(bundle.connect(user).mintTickets(999, [0], false))
-      .to.be.revertedWithCustomError(core, "InvalidSeriesInput");
+      .to.be.revertedWithCustomError(bundle, "InvalidConfig");
   });
 
   it("claims refunds through the refund module and burns tickets through Core", async function () {
@@ -346,7 +380,7 @@ describe("DOUDOCHAIN V2 split module suite", function () {
     expect(await points.balanceOf(user.address)).to.equal(ethers.parseEther("1000"));
   });
 
-  it("redraws main prizes by burning revealed tickets and minting unrevealed replacements", async function () {
+  it("redraws main prizes by burning revealed tickets and requesting reveal for replacements", async function () {
     const { user, points, vrf, router, core, redraw } = await deploySplitSuite();
     await createSeries(core);
     await issuePoints(points, user.address);
@@ -358,7 +392,9 @@ describe("DOUDOCHAIN V2 split module suite", function () {
     await expect(redraw.connect(user).redrawMain(0, [0, 1]))
       .to.emit(redraw, "RedrawMinted")
       .withArgs(0, user.address, 2, 2)
-      .and.to.emit(core, "NewTicketStatus");
+      .and.to.emit(core, "NewTicketStatus")
+      .and.to.emit(core, "RevealDrawSent")
+      .withArgs(2, [2, 3]);
 
     await expect(core.ownerOf(0)).to.be.reverted;
     await expect(core.ownerOf(1)).to.be.reverted;
@@ -380,7 +416,9 @@ describe("DOUDOCHAIN V2 split module suite", function () {
 
     await expect(redraw.connect(user).redrawMain(0, [0, 1]))
       .to.emit(redraw, "RedrawMinted")
-      .withArgs(0, user.address, 1, 3);
+      .withArgs(0, user.address, 1, 3)
+      .and.to.emit(core, "RevealDrawSent")
+      .withArgs(2, [3]);
 
     await expect(core.ownerOf(0)).to.be.reverted;
     await expect(core.ownerOf(1)).to.be.reverted;

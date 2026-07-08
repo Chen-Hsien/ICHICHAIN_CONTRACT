@@ -1,9 +1,9 @@
 import { ethers, upgrades } from "hardhat";
+import { linkedCoreFactory } from "./linkedCoreFactory";
 
 // Read-only: validates that the new Core implementation is storage-layout
 // compatible with the currently-deployed proxy. Sends no transaction.
 const DEFAULTS = { core: "0xf75395A8cd753f47135cfcaE00D2706252c3E0F5" };
-const CORE_FQN = "contracts/DOUDOCHAINV2CoreUpgradeable.sol:DOUDOCHAINV2CoreUpgradeable";
 
 async function main() {
   const coreProxy = process.env.DOUDOCHAIN_CORE_PROXY_ADDRESS || DEFAULTS.core;
@@ -14,8 +14,11 @@ async function main() {
   const oldImpl = await upgrades.erc1967.getImplementationAddress(coreProxy);
   console.log("Current Core implementation:", oldImpl);
 
-  const Core = await ethers.getContractFactory(CORE_FQN);
-  await upgrades.validateUpgrade(coreProxy, Core, { kind: "uups" });
+  const Core = await linkedCoreFactory();
+  await upgrades.validateUpgrade(coreProxy, Core, {
+    kind: "uups",
+    unsafeAllowLinkedLibraries: true,
+  });
   console.log("Storage-layout validation: OK (upgrade is safe, no tx sent)");
 }
 

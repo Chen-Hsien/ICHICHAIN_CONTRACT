@@ -130,6 +130,7 @@ contract DoudoVRFRouter is VRFConsumerBaseV2Plus, IDoudoVRFRouter {
         address callbackTarget = requestCallbackTarget[requestId];
         if (callbackTarget == address(0)) revert UnknownRequest(requestId);
         delete requestCallbackTarget[requestId];
+        delete requestSender[requestId];
         pendingRequests -= 1;
         IDoudoVRFCallback(callbackTarget).fulfillRandomWordsFromRouter(requestId, randomWords);
         emit VrfRandomWordsFulfilled(requestId, callbackTarget);

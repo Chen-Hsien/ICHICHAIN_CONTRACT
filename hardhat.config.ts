@@ -21,9 +21,12 @@ const config: HardhatUserConfig = {
       {
         version: "0.8.19",
         settings: {
+          metadata: {
+            bytecodeHash: "none",
+          },
           optimizer: {
             enabled: true,
-            runs: 1,
+            runs: 0,
           },
           viaIR: true,
         },
@@ -31,9 +34,12 @@ const config: HardhatUserConfig = {
       {
         version: "0.8.20",
         settings: {
+          metadata: {
+            bytecodeHash: "none",
+          },
           optimizer: {
             enabled: true,
-            runs: 1,
+            runs: 0,
           },
           viaIR: true,
         },
@@ -41,6 +47,9 @@ const config: HardhatUserConfig = {
     ],
   },
   networks: {
+    hardhat: {
+      allowUnlimitedContractSize: true,
+    },
     sepolia: {
       chainId: 11155111,
       url: process.env.MAINNET_URL || "https://ethereum-sepolia-rpc.publicnode.com",

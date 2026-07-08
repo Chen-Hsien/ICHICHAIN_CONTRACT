@@ -44,6 +44,6 @@ interface IDoudoSeriesPublishing {
     function createSeriesWithSubPrizes(
         SeriesInput calldata input,
         SubPrize[] calldata subPrizes,
-        bool markGoodsArrived
+        bool revealEnabled
     ) external returns (uint256 seriesID);
 }

@@ -152,13 +152,20 @@ contract DoudoBundleModuleUpgradeable is
 
         if (pointsPerTicket == 0) revert InvalidConfig();
         uint256 priceInPoints = pointsPerTicket * ticketQuantity;
+        uint256 rebate = _rebateFor(seriesID, ticketQuantity);
+        uint256 paidPointsPerTicket = pointsPerTicket;
+        if (rebate >= priceInPoints) {
+            paidPointsPerTicket = 0;
+        } else if (rebate != 0) {
+            paidPointsPerTicket = (priceInPoints - rebate) / ticketQuantity;
+        }
 
         doudoPoints.burnFromWithReason(msg.sender, priceInPoints, BUNDLE_MINT);
         firstTokenID = core.moduleMintUnrevealed(
             msg.sender,
             seriesID,
             luckyNumbers,
-            pointsPerTicket,
+            paidPointsPerTicket,
             true
         );
 
@@ -172,7 +179,6 @@ contract DoudoBundleModuleUpgradeable is
             core.reveal(seriesID, tokenIDs);
         }
 
-        uint256 rebate = _rebateFor(seriesID, ticketQuantity);
         if (rebate != 0) {
             doudoPoints.mintWithReason(msg.sender, rebate, BUNDLE_REBATE);
             emit TicketPurchaseRebatePaid(seriesID, msg.sender, ticketQuantity, rebate);

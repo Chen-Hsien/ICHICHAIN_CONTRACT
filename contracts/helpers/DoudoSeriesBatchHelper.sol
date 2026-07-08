@@ -9,15 +9,15 @@ contract DoudoSeriesBatchHelper {
         DOUDOCHAINV2CoreUpgradeable core,
         DOUDOCHAINV2CoreUpgradeable.SeriesInput[] calldata inputs,
         DOUDOCHAINV2CoreUpgradeable.SubPrize[][] calldata subPrizesList,
-        bool[] calldata markGoodsArrivedList
+        bool[] calldata revealEnabledList
     ) external returns (uint256[] memory seriesIDs) {
-        if (inputs.length == 0 || inputs.length != subPrizesList.length || inputs.length != markGoodsArrivedList.length) {
+        if (inputs.length == 0 || inputs.length != subPrizesList.length || inputs.length != revealEnabledList.length) {
             revert DOUDOCHAINV2CoreUpgradeable.InvalidSeriesInput();
         }
 
         seriesIDs = new uint256[](inputs.length);
         for (uint256 i = 0; i < inputs.length; i++) {
-            seriesIDs[i] = core.createSeriesWithSubPrizes(inputs[i], subPrizesList[i], markGoodsArrivedList[i]);
+            seriesIDs[i] = core.createSeriesWithSubPrizes(inputs[i], subPrizesList[i], revealEnabledList[i]);
         }
     }
 }

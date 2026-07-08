@@ -20,6 +20,7 @@ contract DoudoRedrawModuleUpgradeable is
 {
     bytes32 public constant OPERATION_ROLE = keccak256("OPERATION_ROLE");
     bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
+    uint256 private constant MAX_REVEAL_BATCH = 20;
 
     struct RedrawConfig {
         uint16 mainBurnCount;
@@ -175,7 +176,7 @@ contract DoudoRedrawModuleUpgradeable is
         if (!redrawEnabled[seriesID] || config.mainBurnCount == 0 || mainMintCount == 0) revert RedrawDisabled();
         if (burnQuantity != config.mainBurnCount) revert RedrawCountMismatch();
         for (uint256 i = 0; i < burnQuantity; i++) {
-            (uint256 burnedSeriesID,) = core.moduleBurnForRedraw(tokenIDs[i], msg.sender);
+            uint256 burnedSeriesID = core.moduleBurnForRedraw(tokenIDs[i], msg.sender);
             if (burnedSeriesID != seriesID) revert MixedSeries();
         }
         uint16[] memory autoAssignedLuckyNumbers = new uint16[](mainMintCount);
@@ -186,6 +187,7 @@ contract DoudoRedrawModuleUpgradeable is
             0,
             false
         );
+        _requestRevealForMintedTokens(seriesID, firstTokenID, mainMintCount);
         emit RedrawMinted(seriesID, msg.sender, mainMintCount, firstTokenID);
     }
 
@@ -209,7 +211,7 @@ contract DoudoRedrawModuleUpgradeable is
         delete requestContexts[requestId];
 
         uint256 prizeID = _drawConsolationPrize(context.seriesID, randomWords[0]);
-        uint256 tokenID = core.moduleMintRevealed(context.user, context.seriesID, prizeID, 0);
+        uint256 tokenID = core.moduleMintRevealed(context.user, context.seriesID, prizeID);
         emit RedrawFulfilled(requestId, context.seriesID, context.user, tokenID, context.consolation);
     }
 
@@ -221,6 +223,24 @@ contract DoudoRedrawModuleUpgradeable is
             consolation: consolation
         });
         emit RedrawRequested(requestId, seriesID, user, consolation);
+    }
+
+    function _requestRevealForMintedTokens(
+        uint256 seriesID,
+        uint256 firstTokenID,
+        uint256 quantity
+    ) internal {
+        for (uint256 offset = 0; offset < quantity; offset += MAX_REVEAL_BATCH) {
+            uint256 batchSize = quantity - offset;
+            if (batchSize > MAX_REVEAL_BATCH) {
+                batchSize = MAX_REVEAL_BATCH;
+            }
+            uint256[] memory tokenIDs = new uint256[](batchSize);
+            for (uint256 i = 0; i < batchSize; i++) {
+                tokenIDs[i] = firstTokenID + offset + i;
+            }
+            core.reveal(seriesID, tokenIDs);
+        }
     }
 
     function _drawConsolationPrize(uint256 seriesID, uint256 randomWord) internal returns (uint256 subPrizeID) {

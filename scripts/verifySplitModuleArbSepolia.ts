@@ -6,7 +6,7 @@ const DEFAULT_KEY_HASH =
   "0x1770bdc7eec7771f7ba4ffd640f34260d7f095b79c92d34a5b2551d6f6cfd2be";
 const DEFAULT_SUBSCRIPTION_ID =
   "106016056432422253373974444299096295296684744368940754254159766683809634643463";
-const DEFAULT_REQUEST_CONFIRMATIONS = 0;
+const DEFAULT_REQUEST_CONFIRMATIONS = 3;
 const DEFAULT_CALLBACK_GAS_LIMIT = 2_500_000;
 
 async function verify(address: string, constructorArguments: unknown[] = [], contract?: string) {
@@ -41,15 +41,16 @@ async function main() {
   const pointsAddress = process.env.DOUDO_POINTS_ADDRESS || DEFAULT_DOUDO_POINTS_ADDRESS;
   const routerAddress = process.env.DOUDO_VRF_ROUTER_ADDRESS || "";
   const coreProxy = process.env.DOUDOCHAIN_CORE_PROXY_ADDRESS || "";
+  const seriesOpsProxy = process.env.DOUDO_SERIES_OPS_MODULE_PROXY_ADDRESS || "";
   const bundleProxy = process.env.DOUDO_BUNDLE_MODULE_PROXY_ADDRESS || "";
   const refundProxy = process.env.DOUDO_REFUND_MODULE_PROXY_ADDRESS || "";
   const redrawProxy = process.env.DOUDO_REDRAW_MODULE_PROXY_ADDRESS || "";
   const rewardProxy = process.env.DOUDO_COLLECTION_REWARD_MODULE_PROXY_ADDRESS || "";
   const bookProxy = process.env.COLLECTION_BOOK_PROXY_ADDRESS || "";
 
-  if (!routerAddress || !coreProxy || !bundleProxy || !refundProxy || !redrawProxy || !rewardProxy || !bookProxy) {
+  if (!routerAddress || !coreProxy || !seriesOpsProxy || !bundleProxy || !refundProxy || !redrawProxy || !rewardProxy || !bookProxy) {
     throw new Error(
-      "Set DOUDO_VRF_ROUTER_ADDRESS, DOUDOCHAIN_CORE_PROXY_ADDRESS, DOUDO_BUNDLE_MODULE_PROXY_ADDRESS, DOUDO_REFUND_MODULE_PROXY_ADDRESS, DOUDO_REDRAW_MODULE_PROXY_ADDRESS, DOUDO_COLLECTION_REWARD_MODULE_PROXY_ADDRESS, COLLECTION_BOOK_PROXY_ADDRESS"
+      "Set DOUDO_VRF_ROUTER_ADDRESS, DOUDOCHAIN_CORE_PROXY_ADDRESS, DOUDO_SERIES_OPS_MODULE_PROXY_ADDRESS, DOUDO_BUNDLE_MODULE_PROXY_ADDRESS, DOUDO_REFUND_MODULE_PROXY_ADDRESS, DOUDO_REDRAW_MODULE_PROXY_ADDRESS, DOUDO_COLLECTION_REWARD_MODULE_PROXY_ADDRESS, COLLECTION_BOOK_PROXY_ADDRESS"
     );
   }
 
@@ -77,6 +78,7 @@ async function main() {
   );
 
   await verifyProxy(coreProxy, "DOUDOCHAINV2CoreUpgradeable");
+  await verifyProxy(seriesOpsProxy, "DoudoSeriesOpsModuleUpgradeable");
   await verifyProxy(bundleProxy, "DoudoBundleModuleUpgradeable");
   await verifyProxy(refundProxy, "DoudoRefundModuleUpgradeable");
   await verifyProxy(redrawProxy, "DoudoRedrawModuleUpgradeable");
