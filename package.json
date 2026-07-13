@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "migration:polygon-holders": "hardhat run --no-compile scripts/queryPolygonMigrationHolders.ts",
     "test": "hardhat test"
   },
   "author": "",

@@ -1,0 +1,401 @@
+address,tokenId,seriesId,seriesName,prizeId,prizeGroup,prizeName,priceInTWD,isLastPrize
+0x5027a19ea2146a8f2d3558698727c90230a3440d,4,0,YU-GI-OH! SERIES VOL.3,18,G,G1,100,false
+0x5027a19ea2146a8f2d3558698727c90230a3440d,7,3,Hololive Art Acrylic Collection,2,B,B1,150,false
+0x6f722c329769959421f1179a084d61f7517c63db,17,1,Comic Nova14 - tinaaaaalee.cosplay,3,C,C1,400,false
+0x7104e71cd54309d0df2ca799b6649bbc36799ffd,31,0,YU-GI-OH! SERIES VOL.3,5,E,E1,100,false
+0x6f722c329769959421f1179a084d61f7517c63db,32,4,Stranger Things - The Unknown World,1,A,A1,150,false
+0x6f722c329769959421f1179a084d61f7517c63db,33,4,Stranger Things - The Unknown World,6,F,F1,150,false
+0x6f722c329769959421f1179a084d61f7517c63db,34,4,Stranger Things - The Unknown World,12,H,H1,150,false
+0x6f722c329769959421f1179a084d61f7517c63db,35,4,Stranger Things - The Unknown World,9,G,G3,150,false
+0x6f722c329769959421f1179a084d61f7517c63db,36,4,Stranger Things - The Unknown World,6,F,F1,150,false
+0x5027a19ea2146a8f2d3558698727c90230a3440d,38,0,YU-GI-OH! SERIES VOL.3,5,E,E1,100,false
+0x82e0d323791671ee031e274f0ef36a6b1c63f23e,39,0,YU-GI-OH! SERIES VOL.3,5,E,E1,100,false
+0xe70cd546076e9d6122e3302c6d40858e75cdbaf4,260,4,Stranger Things - The Unknown World,8,G,G2,150,false
+0xe70cd546076e9d6122e3302c6d40858e75cdbaf4,261,4,Stranger Things - The Unknown World,10,G,G4,150,false
+0xe70cd546076e9d6122e3302c6d40858e75cdbaf4,262,4,Stranger Things - The Unknown World,12,H,H1,150,false
+0xe70cd546076e9d6122e3302c6d40858e75cdbaf4,263,4,Stranger Things - The Unknown World,6,F,F1,150,false
+0xe70cd546076e9d6122e3302c6d40858e75cdbaf4,264,4,Stranger Things - The Unknown World,5,E,E1,150,false
+0x1c4c07d0aefca555eda7d9cbc7ae95b2a58d6abf,349,8,Chiikawa Super Big Series,4,D,D1,100,false
+0xd9a919592e9c799f5734fb388d71deff22cdcd1a,636,17,One Piece Legend Hero,7,G,G1,300,false
+0xd9a919592e9c799f5734fb388d71deff22cdcd1a,637,17,One Piece Legend Hero,7,G,G1,300,false
+0xd9a919592e9c799f5734fb388d71deff22cdcd1a,638,17,One Piece Legend Hero,6,F,F1,300,false
+0xd9a919592e9c799f5734fb388d71deff22cdcd1a,639,17,One Piece Legend Hero,7,G,G1,300,false
+0xd9a919592e9c799f5734fb388d71deff22cdcd1a,640,17,One Piece Legend Hero,7,G,G1,300,false
+0x0fcede2356fc8307a6534046c10826362d64ece4,651,14,Chiikawa Birthday Series x Super Big Series,4,D,D1,140,false
+0x0fcede2356fc8307a6534046c10826362d64ece4,652,14,Chiikawa Birthday Series x Super Big Series,6,F,F1,140,false
+0x0fcede2356fc8307a6534046c10826362d64ece4,653,14,Chiikawa Birthday Series x Super Big Series,3,C,C1,140,false
+0x0fcede2356fc8307a6534046c10826362d64ece4,654,14,Chiikawa Birthday Series x Super Big Series,1,A,A1,140,false
+0x0fcede2356fc8307a6534046c10826362d64ece4,655,14,Chiikawa Birthday Series x Super Big Series,5,E,E1,140,false
+0xd653895e6a1747095cf1ef7c4cef41f9dcb53d19,656,14,Chiikawa Birthday Series x Super Big Series,6,F,F1,140,false
+0xd653895e6a1747095cf1ef7c4cef41f9dcb53d19,657,14,Chiikawa Birthday Series x Super Big Series,3,C,C1,140,false
+0xd653895e6a1747095cf1ef7c4cef41f9dcb53d19,658,14,Chiikawa Birthday Series x Super Big Series,6,F,F1,140,false
+0xd653895e6a1747095cf1ef7c4cef41f9dcb53d19,659,14,Chiikawa Birthday Series x Super Big Series,5,E,E1,140,false
+0xd653895e6a1747095cf1ef7c4cef41f9dcb53d19,660,14,Chiikawa Birthday Series x Super Big Series,6,F,F1,140,false
+0xaf8b467b3048414ef93589f1cf990fb2448e4fda,672,17,One Piece Legend Hero,5,E,E1,300,false
+0x27ab7f619b24f65b3af36a73da0034ab2d1a6aae,673,14,Chiikawa Birthday Series x Super Big Series,6,F,F1,140,false
+0x27ab7f619b24f65b3af36a73da0034ab2d1a6aae,674,14,Chiikawa Birthday Series x Super Big Series,2,B,B1,140,false
+0x27ab7f619b24f65b3af36a73da0034ab2d1a6aae,675,14,Chiikawa Birthday Series x Super Big Series,6,F,F1,140,false
+0x6177849c1c1d5545fa855edd80148d0ba85dc3cf,677,14,Chiikawa Birthday Series x Super Big Series,6,F,F1,140,false
+0x6177849c1c1d5545fa855edd80148d0ba85dc3cf,678,14,Chiikawa Birthday Series x Super Big Series,4,D,D1,140,false
+0x6177849c1c1d5545fa855edd80148d0ba85dc3cf,679,14,Chiikawa Birthday Series x Super Big Series,6,F,F1,140,false
+0x6177849c1c1d5545fa855edd80148d0ba85dc3cf,680,14,Chiikawa Birthday Series x Super Big Series,6,F,F1,140,false
+0x6177849c1c1d5545fa855edd80148d0ba85dc3cf,681,14,Chiikawa Birthday Series x Super Big Series,6,F,F1,140,false
+0x6177849c1c1d5545fa855edd80148d0ba85dc3cf,682,14,Chiikawa Birthday Series x Super Big Series,6,F,F1,140,false
+0x6177849c1c1d5545fa855edd80148d0ba85dc3cf,683,15,Chiikawa-Hachiware Birthday Series x Super Big Series,5,E,E1,140,false
+0x6177849c1c1d5545fa855edd80148d0ba85dc3cf,684,15,Chiikawa-Hachiware Birthday Series x Super Big Series,4,D,D1,140,false
+0x6177849c1c1d5545fa855edd80148d0ba85dc3cf,685,15,Chiikawa-Hachiware Birthday Series x Super Big Series,3,C,C1,140,false
+0x6177849c1c1d5545fa855edd80148d0ba85dc3cf,686,15,Chiikawa-Hachiware Birthday Series x Super Big Series,1,A,A1,140,false
+0x6177849c1c1d5545fa855edd80148d0ba85dc3cf,687,15,Chiikawa-Hachiware Birthday Series x Super Big Series,6,F,F1,140,false
+0x6177849c1c1d5545fa855edd80148d0ba85dc3cf,688,17,One Piece Legend Hero,7,G,G1,300,false
+0x6177849c1c1d5545fa855edd80148d0ba85dc3cf,689,17,One Piece Legend Hero,8,H,H1,300,false
+0x6177849c1c1d5545fa855edd80148d0ba85dc3cf,690,17,One Piece Legend Hero,8,H,H1,300,false
+0x6177849c1c1d5545fa855edd80148d0ba85dc3cf,691,14,Chiikawa Birthday Series x Super Big Series,4,D,D1,140,false
+0x6177849c1c1d5545fa855edd80148d0ba85dc3cf,692,14,Chiikawa Birthday Series x Super Big Series,6,F,F1,140,false
+0x6177849c1c1d5545fa855edd80148d0ba85dc3cf,693,14,Chiikawa Birthday Series x Super Big Series,6,F,F1,140,false
+0x6177849c1c1d5545fa855edd80148d0ba85dc3cf,694,14,Chiikawa Birthday Series x Super Big Series,6,F,F1,140,false
+0x6177849c1c1d5545fa855edd80148d0ba85dc3cf,695,14,Chiikawa Birthday Series x Super Big Series,3,C,C1,140,false
+0x6177849c1c1d5545fa855edd80148d0ba85dc3cf,696,15,Chiikawa-Hachiware Birthday Series x Super Big Series,4,D,D1,140,false
+0x6177849c1c1d5545fa855edd80148d0ba85dc3cf,697,15,Chiikawa-Hachiware Birthday Series x Super Big Series,6,F,F1,140,false
+0x6177849c1c1d5545fa855edd80148d0ba85dc3cf,698,15,Chiikawa-Hachiware Birthday Series x Super Big Series,6,F,F1,140,false
+0x6177849c1c1d5545fa855edd80148d0ba85dc3cf,699,15,Chiikawa-Hachiware Birthday Series x Super Big Series,3,C,C1,140,false
+0x6177849c1c1d5545fa855edd80148d0ba85dc3cf,700,15,Chiikawa-Hachiware Birthday Series x Super Big Series,4,D,D1,140,false
+0x6177849c1c1d5545fa855edd80148d0ba85dc3cf,701,15,Chiikawa-Hachiware Birthday Series x Super Big Series,6,F,F1,140,false
+0x6177849c1c1d5545fa855edd80148d0ba85dc3cf,702,15,Chiikawa-Hachiware Birthday Series x Super Big Series,6,F,F1,140,false
+0x6177849c1c1d5545fa855edd80148d0ba85dc3cf,703,15,Chiikawa-Hachiware Birthday Series x Super Big Series,6,F,F1,140,false
+0x6177849c1c1d5545fa855edd80148d0ba85dc3cf,704,15,Chiikawa-Hachiware Birthday Series x Super Big Series,3,C,C1,140,false
+0x6177849c1c1d5545fa855edd80148d0ba85dc3cf,705,15,Chiikawa-Hachiware Birthday Series x Super Big Series,6,F,F1,140,false
+0x6177849c1c1d5545fa855edd80148d0ba85dc3cf,706,15,Chiikawa-Hachiware Birthday Series x Super Big Series,2,B,B1,140,false
+0x6177849c1c1d5545fa855edd80148d0ba85dc3cf,707,15,Chiikawa-Hachiware Birthday Series x Super Big Series,6,F,F1,140,false
+0x6177849c1c1d5545fa855edd80148d0ba85dc3cf,708,15,Chiikawa-Hachiware Birthday Series x Super Big Series,6,F,F1,140,false
+0x6177849c1c1d5545fa855edd80148d0ba85dc3cf,709,15,Chiikawa-Hachiware Birthday Series x Super Big Series,5,E,E1,140,false
+0x6177849c1c1d5545fa855edd80148d0ba85dc3cf,710,15,Chiikawa-Hachiware Birthday Series x Super Big Series,6,F,F1,140,false
+0x6177849c1c1d5545fa855edd80148d0ba85dc3cf,711,15,Chiikawa-Hachiware Birthday Series x Super Big Series,6,F,F1,140,false
+0x6177849c1c1d5545fa855edd80148d0ba85dc3cf,712,15,Chiikawa-Hachiware Birthday Series x Super Big Series,6,F,F1,140,false
+0x6177849c1c1d5545fa855edd80148d0ba85dc3cf,713,15,Chiikawa-Hachiware Birthday Series x Super Big Series,6,F,F1,140,false
+0x6177849c1c1d5545fa855edd80148d0ba85dc3cf,714,15,Chiikawa-Hachiware Birthday Series x Super Big Series,6,F,F1,140,false
+0x6177849c1c1d5545fa855edd80148d0ba85dc3cf,715,15,Chiikawa-Hachiware Birthday Series x Super Big Series,3,C,C1,140,false
+0x6177849c1c1d5545fa855edd80148d0ba85dc3cf,716,15,Chiikawa-Hachiware Birthday Series x Super Big Series,6,F,F1,140,false
+0x6177849c1c1d5545fa855edd80148d0ba85dc3cf,717,15,Chiikawa-Hachiware Birthday Series x Super Big Series,6,F,F1,140,false
+0x6177849c1c1d5545fa855edd80148d0ba85dc3cf,718,15,Chiikawa-Hachiware Birthday Series x Super Big Series,6,F,F1,140,false
+0x6177849c1c1d5545fa855edd80148d0ba85dc3cf,719,15,Chiikawa-Hachiware Birthday Series x Super Big Series,6,F,F1,140,false
+0x6177849c1c1d5545fa855edd80148d0ba85dc3cf,720,15,Chiikawa-Hachiware Birthday Series x Super Big Series,6,F,F1,140,false
+0x6177849c1c1d5545fa855edd80148d0ba85dc3cf,733,15,Chiikawa-Hachiware Birthday Series x Super Big Series,6,F,F1,140,false
+0x6177849c1c1d5545fa855edd80148d0ba85dc3cf,734,15,Chiikawa-Hachiware Birthday Series x Super Big Series,4,D,D1,140,false
+0x6177849c1c1d5545fa855edd80148d0ba85dc3cf,735,15,Chiikawa-Hachiware Birthday Series x Super Big Series,5,E,E1,140,false
+0x6177849c1c1d5545fa855edd80148d0ba85dc3cf,736,15,Chiikawa-Hachiware Birthday Series x Super Big Series,6,F,F1,140,false
+0x6177849c1c1d5545fa855edd80148d0ba85dc3cf,737,15,Chiikawa-Hachiware Birthday Series x Super Big Series,6,F,F1,140,false
+0x6177849c1c1d5545fa855edd80148d0ba85dc3cf,738,14,Chiikawa Birthday Series x Super Big Series,6,F,F1,140,false
+0x6177849c1c1d5545fa855edd80148d0ba85dc3cf,739,14,Chiikawa Birthday Series x Super Big Series,6,F,F1,140,false
+0x6177849c1c1d5545fa855edd80148d0ba85dc3cf,740,14,Chiikawa Birthday Series x Super Big Series,6,F,F1,140,false
+0x6177849c1c1d5545fa855edd80148d0ba85dc3cf,741,14,Chiikawa Birthday Series x Super Big Series,6,F,F1,140,false
+0x6177849c1c1d5545fa855edd80148d0ba85dc3cf,742,14,Chiikawa Birthday Series x Super Big Series,6,F,F1,140,false
+0x6177849c1c1d5545fa855edd80148d0ba85dc3cf,743,14,Chiikawa Birthday Series x Super Big Series,6,F,F1,140,false
+0x6177849c1c1d5545fa855edd80148d0ba85dc3cf,744,14,Chiikawa Birthday Series x Super Big Series,6,F,F1,140,false
+0x6177849c1c1d5545fa855edd80148d0ba85dc3cf,745,14,Chiikawa Birthday Series x Super Big Series,5,E,E1,140,false
+0x6177849c1c1d5545fa855edd80148d0ba85dc3cf,746,14,Chiikawa Birthday Series x Super Big Series,6,F,F1,140,false
+0x6177849c1c1d5545fa855edd80148d0ba85dc3cf,747,14,Chiikawa Birthday Series x Super Big Series,4,D,D1,140,false
+0xc38da45533b648d6f90281e17f685bb03fe6feb3,797,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0xc66bc4206f6463171fdf5aae758d9a3be499494d,798,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0xc66bc4206f6463171fdf5aae758d9a3be499494d,799,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0x30a8222c315eea9c88e73990f06162954e93e5d4,806,18,TOM and JERRY FUNNY ART 4!,5,A,A4,300,false
+0x30a8222c315eea9c88e73990f06162954e93e5d4,807,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0x30a8222c315eea9c88e73990f06162954e93e5d4,808,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0x30a8222c315eea9c88e73990f06162954e93e5d4,809,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0x30a8222c315eea9c88e73990f06162954e93e5d4,810,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0x30a8222c315eea9c88e73990f06162954e93e5d4,811,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0x30a8222c315eea9c88e73990f06162954e93e5d4,812,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0x30a8222c315eea9c88e73990f06162954e93e5d4,813,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0x30a8222c315eea9c88e73990f06162954e93e5d4,814,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0x30a8222c315eea9c88e73990f06162954e93e5d4,815,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0x30a8222c315eea9c88e73990f06162954e93e5d4,816,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0x30a8222c315eea9c88e73990f06162954e93e5d4,817,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0x30a8222c315eea9c88e73990f06162954e93e5d4,818,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0x30a8222c315eea9c88e73990f06162954e93e5d4,819,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0x30a8222c315eea9c88e73990f06162954e93e5d4,820,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0x30a8222c315eea9c88e73990f06162954e93e5d4,821,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0x30a8222c315eea9c88e73990f06162954e93e5d4,822,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0x30a8222c315eea9c88e73990f06162954e93e5d4,823,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0x30a8222c315eea9c88e73990f06162954e93e5d4,824,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0x30a8222c315eea9c88e73990f06162954e93e5d4,825,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0x30a8222c315eea9c88e73990f06162954e93e5d4,826,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0x30a8222c315eea9c88e73990f06162954e93e5d4,827,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0x30a8222c315eea9c88e73990f06162954e93e5d4,828,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0x30a8222c315eea9c88e73990f06162954e93e5d4,829,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0x30a8222c315eea9c88e73990f06162954e93e5d4,830,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0x30a8222c315eea9c88e73990f06162954e93e5d4,831,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0x30a8222c315eea9c88e73990f06162954e93e5d4,832,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0x30a8222c315eea9c88e73990f06162954e93e5d4,833,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0x30a8222c315eea9c88e73990f06162954e93e5d4,834,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0x30a8222c315eea9c88e73990f06162954e93e5d4,835,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0x30a8222c315eea9c88e73990f06162954e93e5d4,836,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0x71c91e562242c28cfa6f40c1d3a0ea6e7476be23,837,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0x71c91e562242c28cfa6f40c1d3a0ea6e7476be23,838,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0x71c91e562242c28cfa6f40c1d3a0ea6e7476be23,839,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0x71c91e562242c28cfa6f40c1d3a0ea6e7476be23,840,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0x71c91e562242c28cfa6f40c1d3a0ea6e7476be23,841,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0x71c91e562242c28cfa6f40c1d3a0ea6e7476be23,842,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0x71c91e562242c28cfa6f40c1d3a0ea6e7476be23,843,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0x71c91e562242c28cfa6f40c1d3a0ea6e7476be23,844,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0x71c91e562242c28cfa6f40c1d3a0ea6e7476be23,845,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0x589f0e19104800148e6b1596026a0026166be90f,846,27,Chiikawa Mega Size Crepes,4,D,D1,390,false
+0x589f0e19104800148e6b1596026a0026166be90f,847,27,Chiikawa Mega Size Crepes,3,C,C1,390,false
+0x589f0e19104800148e6b1596026a0026166be90f,848,27,Chiikawa Mega Size Crepes,4,D,D1,390,false
+0x71c91e562242c28cfa6f40c1d3a0ea6e7476be23,849,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0x30a8222c315eea9c88e73990f06162954e93e5d4,850,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0x32f069f9d853b90cef5aae6439ad527c201bde0b,851,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0x32f069f9d853b90cef5aae6439ad527c201bde0b,852,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0x32f069f9d853b90cef5aae6439ad527c201bde0b,853,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0x32f069f9d853b90cef5aae6439ad527c201bde0b,863,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0x32f069f9d853b90cef5aae6439ad527c201bde0b,864,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0x32f069f9d853b90cef5aae6439ad527c201bde0b,865,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0x32f069f9d853b90cef5aae6439ad527c201bde0b,866,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0x32f069f9d853b90cef5aae6439ad527c201bde0b,867,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0x32f069f9d853b90cef5aae6439ad527c201bde0b,868,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0x32f069f9d853b90cef5aae6439ad527c201bde0b,869,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0xb455244aa0135c0cd7e25ca20d699a137ed32f1c,871,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0xb455244aa0135c0cd7e25ca20d699a137ed32f1c,872,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0xb455244aa0135c0cd7e25ca20d699a137ed32f1c,873,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0xb455244aa0135c0cd7e25ca20d699a137ed32f1c,874,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0xb455244aa0135c0cd7e25ca20d699a137ed32f1c,875,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0xb455244aa0135c0cd7e25ca20d699a137ed32f1c,876,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0x32f069f9d853b90cef5aae6439ad527c201bde0b,877,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0x32f069f9d853b90cef5aae6439ad527c201bde0b,878,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0x32f069f9d853b90cef5aae6439ad527c201bde0b,879,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0xb73ee1fdab06daf7f6fdbc482ce0e21cf5000878,880,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0xb73ee1fdab06daf7f6fdbc482ce0e21cf5000878,881,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0xb73ee1fdab06daf7f6fdbc482ce0e21cf5000878,882,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0xb73ee1fdab06daf7f6fdbc482ce0e21cf5000878,883,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0xb73ee1fdab06daf7f6fdbc482ce0e21cf5000878,884,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0xb73ee1fdab06daf7f6fdbc482ce0e21cf5000878,885,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0xb73ee1fdab06daf7f6fdbc482ce0e21cf5000878,886,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0xb73ee1fdab06daf7f6fdbc482ce0e21cf5000878,887,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0xb73ee1fdab06daf7f6fdbc482ce0e21cf5000878,888,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0xb73ee1fdab06daf7f6fdbc482ce0e21cf5000878,889,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0xb73ee1fdab06daf7f6fdbc482ce0e21cf5000878,890,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0xb73ee1fdab06daf7f6fdbc482ce0e21cf5000878,891,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0xb73ee1fdab06daf7f6fdbc482ce0e21cf5000878,892,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0xb73ee1fdab06daf7f6fdbc482ce0e21cf5000878,893,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0xb73ee1fdab06daf7f6fdbc482ce0e21cf5000878,894,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0xb73ee1fdab06daf7f6fdbc482ce0e21cf5000878,895,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0xb73ee1fdab06daf7f6fdbc482ce0e21cf5000878,896,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0xb73ee1fdab06daf7f6fdbc482ce0e21cf5000878,897,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0xb73ee1fdab06daf7f6fdbc482ce0e21cf5000878,898,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0xb73ee1fdab06daf7f6fdbc482ce0e21cf5000878,899,24,APPLE SERIES - AirPods4 Noise Cancellation,2,B,B1,100,false
+0xb73ee1fdab06daf7f6fdbc482ce0e21cf5000878,900,13,Hangyodon - Music in the background,11,K,K1,330,false
+0xb73ee1fdab06daf7f6fdbc482ce0e21cf5000878,901,13,Hangyodon - Music in the background,7,G,G1,330,false
+0xe0abf167fbe3dd05f5bee19b2803f8d9b28da2d3,902,25,Spy x Family Care for another?,7,G,G1,300,false
+0xa2dce565ac02d7ab866ab8abd9473b68e015cca1,905,25,Spy x Family Care for another?,7,G,G1,300,false
+0xa4b99219836e747e5469487eeedb02b70301f79c,1080,18,TOM and JERRY FUNNY ART 4!,24,D,D1,300,false
+0x9c414a9d0331db1dcae760f2fc916ef7b319bd42,1083,17,One Piece Legend Hero,5,E,E1,300,false
+0xb455244aa0135c0cd7e25ca20d699a137ed32f1c,1084,29,Custom Chiikawa Miniso Sleepwear Party Series,7,F,F1,315,false
+0xb455244aa0135c0cd7e25ca20d699a137ed32f1c,1085,29,Custom Chiikawa Miniso Sleepwear Party Series,6,E,E2,315,false
+0xb455244aa0135c0cd7e25ca20d699a137ed32f1c,1086,29,Custom Chiikawa Miniso Sleepwear Party Series,8,G,G1,315,false
+0x467cee70e2b15a6868e318f02d713901a5b59408,1102,17,One Piece Legend Hero,6,F,F1,300,false
+0x467cee70e2b15a6868e318f02d713901a5b59408,1103,33,Dragon Ball DAIMA,10,J,J1,350,false
+0x467cee70e2b15a6868e318f02d713901a5b59408,1104,33,Dragon Ball DAIMA,8,H,H1,350,false
+0x467cee70e2b15a6868e318f02d713901a5b59408,1105,33,Dragon Ball DAIMA,10,J,J1,350,false
+0x467cee70e2b15a6868e318f02d713901a5b59408,1106,33,Dragon Ball DAIMA,7,G,G1,350,false
+0x467cee70e2b15a6868e318f02d713901a5b59408,1107,33,Dragon Ball DAIMA,10,J,J1,350,false
+0x467cee70e2b15a6868e318f02d713901a5b59408,1108,33,Dragon Ball DAIMA,10,J,J1,350,false
+0x467cee70e2b15a6868e318f02d713901a5b59408,1109,33,Dragon Ball DAIMA,8,H,H1,350,false
+0x467cee70e2b15a6868e318f02d713901a5b59408,1110,33,Dragon Ball DAIMA,10,J,J1,350,false
+0x467cee70e2b15a6868e318f02d713901a5b59408,1111,33,Dragon Ball DAIMA,9,I,I1,350,false
+0x467cee70e2b15a6868e318f02d713901a5b59408,1112,33,Dragon Ball DAIMA,7,G,G1,350,false
+0x467cee70e2b15a6868e318f02d713901a5b59408,1113,33,Dragon Ball DAIMA,7,G,G1,350,false
+0x467cee70e2b15a6868e318f02d713901a5b59408,1114,33,Dragon Ball DAIMA,10,J,J1,350,false
+0x467cee70e2b15a6868e318f02d713901a5b59408,1115,33,Dragon Ball DAIMA,9,I,I1,350,false
+0x467cee70e2b15a6868e318f02d713901a5b59408,1116,33,Dragon Ball DAIMA,8,H,H1,350,false
+0x467cee70e2b15a6868e318f02d713901a5b59408,1117,33,Dragon Ball DAIMA,2,B,B1,350,false
+0x467cee70e2b15a6868e318f02d713901a5b59408,1118,33,Dragon Ball DAIMA,7,G,G1,350,false
+0x467cee70e2b15a6868e318f02d713901a5b59408,1119,33,Dragon Ball DAIMA,9,I,I1,350,false
+0x467cee70e2b15a6868e318f02d713901a5b59408,1120,33,Dragon Ball DAIMA,8,H,H1,350,false
+0x467cee70e2b15a6868e318f02d713901a5b59408,1121,33,Dragon Ball DAIMA,10,J,J1,350,false
+0xe0bde167ce0e4ab7bd148676ae0908d481bfdc25,1187,17,One Piece Legend Hero,8,H,H1,300,false
+0xe0bde167ce0e4ab7bd148676ae0908d481bfdc25,1188,17,One Piece Legend Hero,5,E,E1,300,false
+0xe0bde167ce0e4ab7bd148676ae0908d481bfdc25,1189,17,One Piece Legend Hero,6,F,F1,300,false
+0xe0bde167ce0e4ab7bd148676ae0908d481bfdc25,1190,17,One Piece Legend Hero,5,E,E1,300,false
+0xe0bde167ce0e4ab7bd148676ae0908d481bfdc25,1191,17,One Piece Legend Hero,8,H,H1,300,false
+0xe0bde167ce0e4ab7bd148676ae0908d481bfdc25,1192,17,One Piece Legend Hero,7,G,G1,300,false
+0xe0bde167ce0e4ab7bd148676ae0908d481bfdc25,1193,17,One Piece Legend Hero,6,F,F1,300,false
+0xe0bde167ce0e4ab7bd148676ae0908d481bfdc25,1194,17,One Piece Legend Hero,6,F,F1,300,false
+0xe0bde167ce0e4ab7bd148676ae0908d481bfdc25,1195,17,One Piece Legend Hero,7,G,G1,300,false
+0xe0bde167ce0e4ab7bd148676ae0908d481bfdc25,1196,17,One Piece Legend Hero,7,G,G1,300,false
+0xe0bde167ce0e4ab7bd148676ae0908d481bfdc25,1197,17,One Piece Legend Hero,7,G,G1,300,false
+0xe0bde167ce0e4ab7bd148676ae0908d481bfdc25,1198,17,One Piece Legend Hero,8,H,H1,300,false
+0xe0bde167ce0e4ab7bd148676ae0908d481bfdc25,1199,17,One Piece Legend Hero,2,B,B1,300,false
+0xe0bde167ce0e4ab7bd148676ae0908d481bfdc25,1200,17,One Piece Legend Hero,8,H,H1,300,false
+0x5027a19ea2146a8f2d3558698727c90230a3440d,1201,17,One Piece Legend Hero,3,C,C1,300,false
+0xb90001588e24d7c5031556a9b6b08c614995ce37,1202,30,Chiikawa Figure by Good Smile Company,12,L,L1,270,false
+0x6beb8db4422e82c2f5b5297e5460eb6b8042ee23,1460,39,"Line Group - All Usagi Prize, Full of Usagi!",3,DOUDO_10,DOUDO COIN 10,300,false
+0xf583d136423278c746c30dcdb569c44a3b0341a2,1529,41,Threads - Chiikawa Ichiban kuji,1,DOUDO_50,DOUDO COIN 50,300,false
+0x900ec54beda87a15f7fd4427063c6d560c07c6bf,1543,41,Threads - Chiikawa Ichiban kuji,999,LAST,Last Prize,300,true
+0xb2cd97f80826f4158b2adb84ec97ca36a121c099,1544,41,Threads - Chiikawa Ichiban kuji,999,LAST,Last Prize,300,true
+0x267f617ccaf1675d97a3434bdf4d4830788f2f76,1925,46,Demon Slayer: Kimetsu no Yaiba MASTERLISE Dream Edition,8,G,G1,375,false
+0x29750f2f2d83715fe61b27790ca458409f9a1eb2,1993,48,Usaqi Giant Octopus Series,11,J,J1,300,false
+0x29750f2f2d83715fe61b27790ca458409f9a1eb2,1994,48,Usaqi Giant Octopus Series,11,J,J1,300,false
+0x7a779f98902e3e7f35ea7bd153d81a88acbe40b7,2003,35,NARUTO SHIPPUDEN - Red Eyes Reflecting the Heart,9,I,I1,330,false
+0x7a779f98902e3e7f35ea7bd153d81a88acbe40b7,2004,35,NARUTO SHIPPUDEN - Red Eyes Reflecting the Heart,9,I,I1,330,false
+0x7a779f98902e3e7f35ea7bd153d81a88acbe40b7,2005,35,NARUTO SHIPPUDEN - Red Eyes Reflecting the Heart,7,G,G1,330,false
+0x7a779f98902e3e7f35ea7bd153d81a88acbe40b7,2006,35,NARUTO SHIPPUDEN - Red Eyes Reflecting the Heart,6,F,F1,330,false
+0x7a779f98902e3e7f35ea7bd153d81a88acbe40b7,2007,35,NARUTO SHIPPUDEN - Red Eyes Reflecting the Heart,8,H,H1,330,false
+0x7a779f98902e3e7f35ea7bd153d81a88acbe40b7,2008,35,NARUTO SHIPPUDEN - Red Eyes Reflecting the Heart,9,I,I1,330,false
+0x7a779f98902e3e7f35ea7bd153d81a88acbe40b7,2009,35,NARUTO SHIPPUDEN - Red Eyes Reflecting the Heart,6,F,F1,330,false
+0x7a779f98902e3e7f35ea7bd153d81a88acbe40b7,2010,35,NARUTO SHIPPUDEN - Red Eyes Reflecting the Heart,8,H,H1,330,false
+0x7a779f98902e3e7f35ea7bd153d81a88acbe40b7,2011,35,NARUTO SHIPPUDEN - Red Eyes Reflecting the Heart,8,H,H1,330,false
+0x7a779f98902e3e7f35ea7bd153d81a88acbe40b7,2012,35,NARUTO SHIPPUDEN - Red Eyes Reflecting the Heart,9,I,I1,330,false
+0x7a779f98902e3e7f35ea7bd153d81a88acbe40b7,2013,35,NARUTO SHIPPUDEN - Red Eyes Reflecting the Heart,6,F,F1,330,false
+0x7a779f98902e3e7f35ea7bd153d81a88acbe40b7,2014,35,NARUTO SHIPPUDEN - Red Eyes Reflecting the Heart,7,G,G1,330,false
+0x7a779f98902e3e7f35ea7bd153d81a88acbe40b7,2015,35,NARUTO SHIPPUDEN - Red Eyes Reflecting the Heart,9,I,I1,330,false
+0x7a779f98902e3e7f35ea7bd153d81a88acbe40b7,2016,35,NARUTO SHIPPUDEN - Red Eyes Reflecting the Heart,6,F,F1,330,false
+0x7a779f98902e3e7f35ea7bd153d81a88acbe40b7,2017,35,NARUTO SHIPPUDEN - Red Eyes Reflecting the Heart,6,F,F1,330,false
+0x7a779f98902e3e7f35ea7bd153d81a88acbe40b7,2018,35,NARUTO SHIPPUDEN - Red Eyes Reflecting the Heart,7,G,G1,330,false
+0x7a779f98902e3e7f35ea7bd153d81a88acbe40b7,2019,35,NARUTO SHIPPUDEN - Red Eyes Reflecting the Heart,9,I,I1,330,false
+0x7a779f98902e3e7f35ea7bd153d81a88acbe40b7,2020,35,NARUTO SHIPPUDEN - Red Eyes Reflecting the Heart,6,F,F1,330,false
+0x7a779f98902e3e7f35ea7bd153d81a88acbe40b7,2021,35,NARUTO SHIPPUDEN - Red Eyes Reflecting the Heart,9,I,I1,330,false
+0x7a779f98902e3e7f35ea7bd153d81a88acbe40b7,2022,35,NARUTO SHIPPUDEN - Red Eyes Reflecting the Heart,8,H,H1,330,false
+0x7a779f98902e3e7f35ea7bd153d81a88acbe40b7,2023,35,NARUTO SHIPPUDEN - Red Eyes Reflecting the Heart,6,F,F1,330,false
+0x7a779f98902e3e7f35ea7bd153d81a88acbe40b7,2024,35,NARUTO SHIPPUDEN - Red Eyes Reflecting the Heart,8,H,H1,330,false
+0x7a779f98902e3e7f35ea7bd153d81a88acbe40b7,2025,35,NARUTO SHIPPUDEN - Red Eyes Reflecting the Heart,7,G,G1,330,false
+0x7a779f98902e3e7f35ea7bd153d81a88acbe40b7,2026,35,NARUTO SHIPPUDEN - Red Eyes Reflecting the Heart,9,I,I1,330,false
+0x7a779f98902e3e7f35ea7bd153d81a88acbe40b7,2028,35,NARUTO SHIPPUDEN - Red Eyes Reflecting the Heart,9,I,I1,330,false
+0x7a779f98902e3e7f35ea7bd153d81a88acbe40b7,2029,35,NARUTO SHIPPUDEN - Red Eyes Reflecting the Heart,7,G,G1,330,false
+0x7a779f98902e3e7f35ea7bd153d81a88acbe40b7,2030,35,NARUTO SHIPPUDEN - Red Eyes Reflecting the Heart,9,I,I1,330,false
+0x7a779f98902e3e7f35ea7bd153d81a88acbe40b7,2031,35,NARUTO SHIPPUDEN - Red Eyes Reflecting the Heart,7,G,G1,330,false
+0x7a779f98902e3e7f35ea7bd153d81a88acbe40b7,2032,35,NARUTO SHIPPUDEN - Red Eyes Reflecting the Heart,9,I,I1,330,false
+0x7a779f98902e3e7f35ea7bd153d81a88acbe40b7,2033,35,NARUTO SHIPPUDEN - Red Eyes Reflecting the Heart,7,G,G1,330,false
+0x7a779f98902e3e7f35ea7bd153d81a88acbe40b7,2034,35,NARUTO SHIPPUDEN - Red Eyes Reflecting the Heart,8,H,H1,330,false
+0x7a779f98902e3e7f35ea7bd153d81a88acbe40b7,2035,35,NARUTO SHIPPUDEN - Red Eyes Reflecting the Heart,6,F,F1,330,false
+0x7a779f98902e3e7f35ea7bd153d81a88acbe40b7,2036,35,NARUTO SHIPPUDEN - Red Eyes Reflecting the Heart,6,F,F1,330,false
+0x7a779f98902e3e7f35ea7bd153d81a88acbe40b7,2037,35,NARUTO SHIPPUDEN - Red Eyes Reflecting the Heart,7,G,G1,330,false
+0x7a779f98902e3e7f35ea7bd153d81a88acbe40b7,2038,35,NARUTO SHIPPUDEN - Red Eyes Reflecting the Heart,6,F,F1,330,false
+0x7a779f98902e3e7f35ea7bd153d81a88acbe40b7,2040,35,NARUTO SHIPPUDEN - Red Eyes Reflecting the Heart,9,I,I1,330,false
+0x7a779f98902e3e7f35ea7bd153d81a88acbe40b7,2041,35,NARUTO SHIPPUDEN - Red Eyes Reflecting the Heart,6,F,F1,330,false
+0x7a779f98902e3e7f35ea7bd153d81a88acbe40b7,2042,35,NARUTO SHIPPUDEN - Red Eyes Reflecting the Heart,8,H,H1,330,false
+0x7a779f98902e3e7f35ea7bd153d81a88acbe40b7,2043,35,NARUTO SHIPPUDEN - Red Eyes Reflecting the Heart,8,H,H1,330,false
+0x7a779f98902e3e7f35ea7bd153d81a88acbe40b7,2044,35,NARUTO SHIPPUDEN - Red Eyes Reflecting the Heart,7,G,G1,330,false
+0x7a779f98902e3e7f35ea7bd153d81a88acbe40b7,2045,35,NARUTO SHIPPUDEN - Red Eyes Reflecting the Heart,6,F,F1,330,false
+0x7a779f98902e3e7f35ea7bd153d81a88acbe40b7,2048,35,NARUTO SHIPPUDEN - Red Eyes Reflecting the Heart,7,G,G1,330,false
+0x7a779f98902e3e7f35ea7bd153d81a88acbe40b7,2049,35,NARUTO SHIPPUDEN - Red Eyes Reflecting the Heart,8,H,H1,330,false
+0x7a779f98902e3e7f35ea7bd153d81a88acbe40b7,2050,35,NARUTO SHIPPUDEN - Red Eyes Reflecting the Heart,7,G,G1,330,false
+0x7a779f98902e3e7f35ea7bd153d81a88acbe40b7,2051,35,NARUTO SHIPPUDEN - Red Eyes Reflecting the Heart,7,G,G1,330,false
+0x7a779f98902e3e7f35ea7bd153d81a88acbe40b7,2052,35,NARUTO SHIPPUDEN - Red Eyes Reflecting the Heart,8,H,H1,330,false
+0x7a779f98902e3e7f35ea7bd153d81a88acbe40b7,2053,35,NARUTO SHIPPUDEN - Red Eyes Reflecting the Heart,8,H,H1,330,false
+0x7a779f98902e3e7f35ea7bd153d81a88acbe40b7,2054,35,NARUTO SHIPPUDEN - Red Eyes Reflecting the Heart,9,I,I1,330,false
+0x7a779f98902e3e7f35ea7bd153d81a88acbe40b7,2055,35,NARUTO SHIPPUDEN - Red Eyes Reflecting the Heart,9,I,I1,330,false
+0x7a779f98902e3e7f35ea7bd153d81a88acbe40b7,2056,35,NARUTO SHIPPUDEN - Red Eyes Reflecting the Heart,9,I,I1,330,false
+0x7a779f98902e3e7f35ea7bd153d81a88acbe40b7,2058,35,NARUTO SHIPPUDEN - Red Eyes Reflecting the Heart,8,H,H1,330,false
+0x7a779f98902e3e7f35ea7bd153d81a88acbe40b7,2059,35,NARUTO SHIPPUDEN - Red Eyes Reflecting the Heart,8,H,H1,330,false
+0x7a779f98902e3e7f35ea7bd153d81a88acbe40b7,2061,35,NARUTO SHIPPUDEN - Red Eyes Reflecting the Heart,7,G,G1,330,false
+0x7a779f98902e3e7f35ea7bd153d81a88acbe40b7,2062,35,NARUTO SHIPPUDEN - Red Eyes Reflecting the Heart,7,G,G1,330,false
+0x7a779f98902e3e7f35ea7bd153d81a88acbe40b7,2063,35,NARUTO SHIPPUDEN - Red Eyes Reflecting the Heart,9,I,I1,330,false
+0x7a779f98902e3e7f35ea7bd153d81a88acbe40b7,2064,35,NARUTO SHIPPUDEN - Red Eyes Reflecting the Heart,8,H,H1,330,false
+0x7a779f98902e3e7f35ea7bd153d81a88acbe40b7,2066,35,NARUTO SHIPPUDEN - Red Eyes Reflecting the Heart,6,F,F1,330,false
+0x7a779f98902e3e7f35ea7bd153d81a88acbe40b7,2067,35,NARUTO SHIPPUDEN - Red Eyes Reflecting the Heart,7,G,G1,330,false
+0x7a779f98902e3e7f35ea7bd153d81a88acbe40b7,2068,35,NARUTO SHIPPUDEN - Red Eyes Reflecting the Heart,9,I,I1,330,false
+0x7a779f98902e3e7f35ea7bd153d81a88acbe40b7,2069,35,NARUTO SHIPPUDEN - Red Eyes Reflecting the Heart,7,G,G1,330,false
+0x29750f2f2d83715fe61b27790ca458409f9a1eb2,2103,49,Attack on Titan - World Outside the Walls Dream Edition,8,G,G1,375,false
+0x29750f2f2d83715fe61b27790ca458409f9a1eb2,2104,49,Attack on Titan - World Outside the Walls Dream Edition,9,H,H1,375,false
+0x29750f2f2d83715fe61b27790ca458409f9a1eb2,2105,49,Attack on Titan - World Outside the Walls Dream Edition,9,H,H1,375,false
+0x29750f2f2d83715fe61b27790ca458409f9a1eb2,2109,49,Attack on Titan - World Outside the Walls Dream Edition,9,H,H1,375,false
+0xf583d136423278c746c30dcdb569c44a3b0341a2,2111,49,Attack on Titan - World Outside the Walls Dream Edition,8,G,G1,375,false
+0x67f025f97e6d40fd9ed75d0a7cbe91ddfe073fa2,2136,46,Demon Slayer: Kimetsu no Yaiba MASTERLISE Dream Edition,9,H,H1,375,false
+0x67f025f97e6d40fd9ed75d0a7cbe91ddfe073fa2,2137,46,Demon Slayer: Kimetsu no Yaiba MASTERLISE Dream Edition,5,D,D1,375,false
+0x29750f2f2d83715fe61b27790ca458409f9a1eb2,2186,52,Childhood Series Keroro Gunso,11,J,J1,390,false
+0x5fa5cb8cb9bfc2a95d2ad355556b8efeb0c1950b,2240,55,Demon Slayer: Upper Rank Three - Akaza,8,G,G1,360,false
+0x5fa5cb8cb9bfc2a95d2ad355556b8efeb0c1950b,2241,55,Demon Slayer: Upper Rank Three - Akaza,7,F,F1,360,false
+0x5fa5cb8cb9bfc2a95d2ad355556b8efeb0c1950b,2242,55,Demon Slayer: Upper Rank Three - Akaza,8,G,G1,360,false
+0x5fa5cb8cb9bfc2a95d2ad355556b8efeb0c1950b,2243,55,Demon Slayer: Upper Rank Three - Akaza,9,H,H1,360,false
+0x5fa5cb8cb9bfc2a95d2ad355556b8efeb0c1950b,2244,55,Demon Slayer: Upper Rank Three - Akaza,9,H,H1,360,false
+0x5fa5cb8cb9bfc2a95d2ad355556b8efeb0c1950b,2245,55,Demon Slayer: Upper Rank Three - Akaza,8,G,G1,360,false
+0x5fa5cb8cb9bfc2a95d2ad355556b8efeb0c1950b,2246,55,Demon Slayer: Upper Rank Three - Akaza,7,F,F1,360,false
+0x5fa5cb8cb9bfc2a95d2ad355556b8efeb0c1950b,2247,55,Demon Slayer: Upper Rank Three - Akaza,8,G,G1,360,false
+0x5fa5cb8cb9bfc2a95d2ad355556b8efeb0c1950b,2248,55,Demon Slayer: Upper Rank Three - Akaza,9,H,H1,360,false
+0x5fa5cb8cb9bfc2a95d2ad355556b8efeb0c1950b,2249,55,Demon Slayer: Upper Rank Three - Akaza,2,A,A1,360,false
+0x67f025f97e6d40fd9ed75d0a7cbe91ddfe073fa2,2250,55,Demon Slayer: Upper Rank Three - Akaza,3,B,B1,360,false
+0x67f025f97e6d40fd9ed75d0a7cbe91ddfe073fa2,2251,55,Demon Slayer: Upper Rank Three - Akaza,7,F,F1,360,false
+0x67f025f97e6d40fd9ed75d0a7cbe91ddfe073fa2,2252,55,Demon Slayer: Upper Rank Three - Akaza,7,F,F1,360,false
+0x67f025f97e6d40fd9ed75d0a7cbe91ddfe073fa2,2253,55,Demon Slayer: Upper Rank Three - Akaza,7,F,F1,360,false
+0x67f025f97e6d40fd9ed75d0a7cbe91ddfe073fa2,2254,55,Demon Slayer: Upper Rank Three - Akaza,6,E,E1,360,false
+0x67f025f97e6d40fd9ed75d0a7cbe91ddfe073fa2,2255,55,Demon Slayer: Upper Rank Three - Akaza,7,F,F1,360,false
+0x67f025f97e6d40fd9ed75d0a7cbe91ddfe073fa2,2256,55,Demon Slayer: Upper Rank Three - Akaza,7,F,F1,360,false
+0x67f025f97e6d40fd9ed75d0a7cbe91ddfe073fa2,2257,55,Demon Slayer: Upper Rank Three - Akaza,8,G,G1,360,false
+0x67f025f97e6d40fd9ed75d0a7cbe91ddfe073fa2,2258,55,Demon Slayer: Upper Rank Three - Akaza,9,H,H1,360,false
+0x67f025f97e6d40fd9ed75d0a7cbe91ddfe073fa2,2259,55,Demon Slayer: Upper Rank Three - Akaza,6,E,E1,360,false
+0x32371ffdfdf4f863c44190f69dd7691d5a488b5c,2266,46,Demon Slayer: Kimetsu no Yaiba MASTERLISE Dream Edition,9,H,H1,375,false
+0x32371ffdfdf4f863c44190f69dd7691d5a488b5c,2267,46,Demon Slayer: Kimetsu no Yaiba MASTERLISE Dream Edition,9,H,H1,375,false
+0xf583d136423278c746c30dcdb569c44a3b0341a2,2293,32,APPLE SERIES - AirPods Pro 2nd (USB-C),3,DOUDO_10,DOUDO COIN 10,120,false
+0x705b8d813e947c8685f0c9d0fca3ff2066062503,2332,59,Berserk The Oath of Counterattack - Last Prize Dream Edition,7,F,F1,420,false
+0x7e91104c72aea47b9537ba83438ad7e387c321a6,2339,32,APPLE SERIES - AirPods Pro 2nd (USB-C),3,DOUDO_10,DOUDO COIN 10,120,false
+0x7e91104c72aea47b9537ba83438ad7e387c321a6,2340,32,APPLE SERIES - AirPods Pro 2nd (USB-C),3,DOUDO_10,DOUDO COIN 10,120,false
+0x7e91104c72aea47b9537ba83438ad7e387c321a6,2341,32,APPLE SERIES - AirPods Pro 2nd (USB-C),3,DOUDO_10,DOUDO COIN 10,120,false
+0x7e91104c72aea47b9537ba83438ad7e387c321a6,2342,32,APPLE SERIES - AirPods Pro 2nd (USB-C),2,B,B1,120,false
+0x7e91104c72aea47b9537ba83438ad7e387c321a6,2343,32,APPLE SERIES - AirPods Pro 2nd (USB-C),2,B,B1,120,false
+0x7e91104c72aea47b9537ba83438ad7e387c321a6,2344,32,APPLE SERIES - AirPods Pro 2nd (USB-C),3,DOUDO_10,DOUDO COIN 10,120,false
+0x7e91104c72aea47b9537ba83438ad7e387c321a6,2345,32,APPLE SERIES - AirPods Pro 2nd (USB-C),3,DOUDO_10,DOUDO COIN 10,120,false
+0x7e91104c72aea47b9537ba83438ad7e387c321a6,2346,32,APPLE SERIES - AirPods Pro 2nd (USB-C),3,DOUDO_10,DOUDO COIN 10,120,false
+0x7e91104c72aea47b9537ba83438ad7e387c321a6,2347,32,APPLE SERIES - AirPods Pro 2nd (USB-C),3,DOUDO_10,DOUDO COIN 10,120,false
+0x7e91104c72aea47b9537ba83438ad7e387c321a6,2348,32,APPLE SERIES - AirPods Pro 2nd (USB-C),3,DOUDO_10,DOUDO COIN 10,120,false
+0x7e91104c72aea47b9537ba83438ad7e387c321a6,2349,32,APPLE SERIES - AirPods Pro 2nd (USB-C),3,DOUDO_10,DOUDO COIN 10,120,false
+0x7e91104c72aea47b9537ba83438ad7e387c321a6,2350,32,APPLE SERIES - AirPods Pro 2nd (USB-C),3,DOUDO_10,DOUDO COIN 10,120,false
+0x5027a19ea2146a8f2d3558698727c90230a3440d,2352,60,Demon Slayer: Kimetsu no Yaiba ~Thunder Brothers~,8,G,G1,420,false
+0x5027a19ea2146a8f2d3558698727c90230a3440d,2353,60,Demon Slayer: Kimetsu no Yaiba ~Thunder Brothers~,8,G,G1,420,false
+0xe0bde167ce0e4ab7bd148676ae0908d481bfdc25,2354,60,Demon Slayer: Kimetsu no Yaiba ~Thunder Brothers~,8,G,G1,420,false
+0x705b8d813e947c8685f0c9d0fca3ff2066062503,2382,59,Berserk The Oath of Counterattack - Last Prize Dream Edition,7,F,F1,420,false
+0x705b8d813e947c8685f0c9d0fca3ff2066062503,2383,59,Berserk The Oath of Counterattack - Last Prize Dream Edition,7,F,F1,420,false
+0x705b8d813e947c8685f0c9d0fca3ff2066062503,2384,59,Berserk The Oath of Counterattack - Last Prize Dream Edition,7,F,F1,420,false
+0x705b8d813e947c8685f0c9d0fca3ff2066062503,2385,59,Berserk The Oath of Counterattack - Last Prize Dream Edition,7,F,F1,420,false
+0xe0bde167ce0e4ab7bd148676ae0908d481bfdc25,2392,13,Hangyodon - Music in the background,5,E,E1,330,false
+0x5027a19ea2146a8f2d3558698727c90230a3440d,2404,63,Godzilla vs King Ghidorah - Super Dragon King Ghidorah,3,DOUDO_50,C1,225,false
+0x5027a19ea2146a8f2d3558698727c90230a3440d,2405,63,Godzilla vs King Ghidorah - Super Dragon King Ghidorah,4,DOUDO_10,D1,225,false
+0x5027a19ea2146a8f2d3558698727c90230a3440d,2406,63,Godzilla vs King Ghidorah - Super Dragon King Ghidorah,4,DOUDO_10,D1,225,false
+0x5027a19ea2146a8f2d3558698727c90230a3440d,2407,63,Godzilla vs King Ghidorah - Super Dragon King Ghidorah,4,DOUDO_10,D1,225,false
+0x5027a19ea2146a8f2d3558698727c90230a3440d,2408,63,Godzilla vs King Ghidorah - Super Dragon King Ghidorah,4,DOUDO_10,D1,225,false
+0x5027a19ea2146a8f2d3558698727c90230a3440d,2409,63,Godzilla vs King Ghidorah - Super Dragon King Ghidorah,3,DOUDO_50,C1,225,false
+0x5027a19ea2146a8f2d3558698727c90230a3440d,2410,63,Godzilla vs King Ghidorah - Super Dragon King Ghidorah,4,DOUDO_10,D1,225,false
+0x5027a19ea2146a8f2d3558698727c90230a3440d,2411,63,Godzilla vs King Ghidorah - Super Dragon King Ghidorah,4,DOUDO_10,D1,225,false
+0x5027a19ea2146a8f2d3558698727c90230a3440d,2412,63,Godzilla vs King Ghidorah - Super Dragon King Ghidorah,4,DOUDO_10,D1,225,false
+0x5027a19ea2146a8f2d3558698727c90230a3440d,2413,63,Godzilla vs King Ghidorah - Super Dragon King Ghidorah,4,DOUDO_10,D1,225,false
+0x5027a19ea2146a8f2d3558698727c90230a3440d,2414,63,Godzilla vs King Ghidorah - Super Dragon King Ghidorah,3,DOUDO_50,C1,225,false
+0x5027a19ea2146a8f2d3558698727c90230a3440d,2415,63,Godzilla vs King Ghidorah - Super Dragon King Ghidorah,4,DOUDO_10,D1,225,false
+0x5027a19ea2146a8f2d3558698727c90230a3440d,2416,63,Godzilla vs King Ghidorah - Super Dragon King Ghidorah,3,DOUDO_50,C1,225,false
+0x5027a19ea2146a8f2d3558698727c90230a3440d,2417,63,Godzilla vs King Ghidorah - Super Dragon King Ghidorah,4,DOUDO_10,D1,225,false
+0x5027a19ea2146a8f2d3558698727c90230a3440d,2418,63,Godzilla vs King Ghidorah - Super Dragon King Ghidorah,4,DOUDO_10,D1,225,false
+0x5027a19ea2146a8f2d3558698727c90230a3440d,2419,63,Godzilla vs King Ghidorah - Super Dragon King Ghidorah,4,DOUDO_10,D1,225,false
+0x5027a19ea2146a8f2d3558698727c90230a3440d,2420,63,Godzilla vs King Ghidorah - Super Dragon King Ghidorah,4,DOUDO_10,D1,225,false
+0x5027a19ea2146a8f2d3558698727c90230a3440d,2421,63,Godzilla vs King Ghidorah - Super Dragon King Ghidorah,3,DOUDO_50,C1,225,false
+0x5027a19ea2146a8f2d3558698727c90230a3440d,2422,63,Godzilla vs King Ghidorah - Super Dragon King Ghidorah,4,DOUDO_10,D1,225,false
+0x5027a19ea2146a8f2d3558698727c90230a3440d,2423,63,Godzilla vs King Ghidorah - Super Dragon King Ghidorah,4,DOUDO_10,D1,225,false
+0x5027a19ea2146a8f2d3558698727c90230a3440d,2424,63,Godzilla vs King Ghidorah - Super Dragon King Ghidorah,3,DOUDO_50,C1,225,false
+0x5027a19ea2146a8f2d3558698727c90230a3440d,2425,63,Godzilla vs King Ghidorah - Super Dragon King Ghidorah,3,DOUDO_50,C1,225,false
+0x5027a19ea2146a8f2d3558698727c90230a3440d,2426,63,Godzilla vs King Ghidorah - Super Dragon King Ghidorah,4,DOUDO_10,D1,225,false
+0x5027a19ea2146a8f2d3558698727c90230a3440d,2427,63,Godzilla vs King Ghidorah - Super Dragon King Ghidorah,4,DOUDO_10,D1,225,false
+0x5027a19ea2146a8f2d3558698727c90230a3440d,2428,63,Godzilla vs King Ghidorah - Super Dragon King Ghidorah,4,DOUDO_10,D1,225,false
+0x5027a19ea2146a8f2d3558698727c90230a3440d,2429,63,Godzilla vs King Ghidorah - Super Dragon King Ghidorah,3,DOUDO_50,C1,225,false
+0x5027a19ea2146a8f2d3558698727c90230a3440d,2430,63,Godzilla vs King Ghidorah - Super Dragon King Ghidorah,4,DOUDO_10,D1,225,false
+0x5027a19ea2146a8f2d3558698727c90230a3440d,2431,63,Godzilla vs King Ghidorah - Super Dragon King Ghidorah,4,DOUDO_10,D1,225,false
+0x5027a19ea2146a8f2d3558698727c90230a3440d,2432,63,Godzilla vs King Ghidorah - Super Dragon King Ghidorah,4,DOUDO_10,D1,225,false
+0x5027a19ea2146a8f2d3558698727c90230a3440d,2433,63,Godzilla vs King Ghidorah - Super Dragon King Ghidorah,4,DOUDO_10,D1,225,false
+0x5027a19ea2146a8f2d3558698727c90230a3440d,2434,63,Godzilla vs King Ghidorah - Super Dragon King Ghidorah,4,DOUDO_10,D1,225,false
+0x5027a19ea2146a8f2d3558698727c90230a3440d,2435,63,Godzilla vs King Ghidorah - Super Dragon King Ghidorah,4,DOUDO_10,D1,225,false
+0x5027a19ea2146a8f2d3558698727c90230a3440d,2436,63,Godzilla vs King Ghidorah - Super Dragon King Ghidorah,3,DOUDO_50,C1,225,false
+0x5027a19ea2146a8f2d3558698727c90230a3440d,2437,63,Godzilla vs King Ghidorah - Super Dragon King Ghidorah,4,DOUDO_10,D1,225,false
+0x29750f2f2d83715fe61b27790ca458409f9a1eb2,2472,64,My Hero Academia - Toward a More Distant Future,11,J,J1,420,false
+0xed26df71d0278d429d7ec5536b6f9d9e2717d94d,2612,51,Harry Potter Magical Dessert Party,8,G,G1,225,false
+0x5027a19ea2146a8f2d3558698727c90230a3440d,2613,58,Demon Slayer Mugen Train Edition,1,A,A1,810,false
+0x705b8d813e947c8685f0c9d0fca3ff2066062503,2614,60,Demon Slayer: Kimetsu no Yaiba ~Thunder Brothers~,5,D,D1,420,false
+0x5027a19ea2146a8f2d3558698727c90230a3440d,2615,60,Demon Slayer: Kimetsu no Yaiba ~Thunder Brothers~,8,G,G1,420,false
+0x5027a19ea2146a8f2d3558698727c90230a3440d,2616,60,Demon Slayer: Kimetsu no Yaiba ~Thunder Brothers~,7,F,F1,420,false
+0xe0bde167ce0e4ab7bd148676ae0908d481bfdc25,2617,50,Minecraft Surprise Block Design BOX,10,I,I1,240,false
+0xe0bde167ce0e4ab7bd148676ae0908d481bfdc25,2618,46,Demon Slayer: Kimetsu no Yaiba MASTERLISE Dream Edition,8,G,G1,375,false
+0xe0bde167ce0e4ab7bd148676ae0908d481bfdc25,2619,46,Demon Slayer: Kimetsu no Yaiba MASTERLISE Dream Edition,7,F,F1,375,false
+0x0edf05a2d27ba54dee62aed61f84ace138351911,2621,64,My Hero Academia - Toward a More Distant Future,12,K,K1,420,false
+0x65f1467fda9dd7adea137378f6f7f4202eed22c1,2643,32,APPLE SERIES - AirPods Pro 2nd (USB-C),2,B,B1,120,false
+0xdf6574cd56818f6433e550e49eb5fb2d7b90ff33,2739,59,Berserk The Oath of Counterattack - Last Prize Dream Edition,9,H,H1,420,false
+0xdf6574cd56818f6433e550e49eb5fb2d7b90ff33,2740,59,Berserk The Oath of Counterattack - Last Prize Dream Edition,7,F,F1,420,false
+0xe7a81e93c88852cab09f140c1d7f3cd37f90dd8b,2741,17,One Piece Legend Hero,6,F,F1,300,false
+0xe7a81e93c88852cab09f140c1d7f3cd37f90dd8b,2742,17,One Piece Legend Hero,6,F,F1,300,false
+0xe7a81e93c88852cab09f140c1d7f3cd37f90dd8b,2743,64,My Hero Academia - Toward a More Distant Future,13,L,L1,420,false
+0xdf6574cd56818f6433e550e49eb5fb2d7b90ff33,2744,59,Berserk The Oath of Counterattack - Last Prize Dream Edition,8,G,G1,420,false
+0xdf6574cd56818f6433e550e49eb5fb2d7b90ff33,2745,59,Berserk The Oath of Counterattack - Last Prize Dream Edition,8,G,G1,420,false
+0xdf6574cd56818f6433e550e49eb5fb2d7b90ff33,2746,59,Berserk The Oath of Counterattack - Last Prize Dream Edition,9,H,H1,420,false
+0xdf6574cd56818f6433e550e49eb5fb2d7b90ff33,2747,59,Berserk The Oath of Counterattack - Last Prize Dream Edition,9,H,H1,420,false

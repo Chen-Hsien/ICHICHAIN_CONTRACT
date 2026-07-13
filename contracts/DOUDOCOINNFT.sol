@@ -6,6 +6,8 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "./interfaces/IDoudoPoints.sol";
 
@@ -13,7 +15,8 @@ contract DOUDOCOINNFT is
     ERC721,
     ERC721Enumerable,
     ERC721Burnable,
-    AccessControl
+    AccessControl,
+    ReentrancyGuard
 {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
@@ -70,7 +73,7 @@ contract DOUDOCOINNFT is
 
     // Membership NFT metadata base (Pinata dedicated gateway + IPFS directory CID)
     string private constant MEMBERSHIP_METADATA_BASE =
-        "https://lime-basic-thrush-351.mypinata.cloud/ipfs/bafybeigarayofyyqxamwhx6mzy4cwxlw57sfrtfaz3iauxtfrdg7gymh6q/";
+        "https://lime-basic-thrush-351.mypinata.cloud/ipfs/bafybeifydnzvcfadln226n63fqow3xrlhqhrbmvuphokyysgzkhcnsxvwe/";
 
     event VoucherTypeCreated(
         uint256 voucherTypeId,
@@ -213,6 +216,7 @@ contract DOUDOCOINNFT is
     function tokenURI(
         uint256 tokenId
     ) public view override returns (string memory) {
+        _requireMinted(tokenId);
         if (isMembershipNFT[tokenId]) {
             uint256 membershipLevel = userInfo[ownerOf(tokenId)].membershipLevel;
             return membershipLevels[membershipLevel].membershipTokenURI;
@@ -226,7 +230,7 @@ contract DOUDOCOINNFT is
         address to,
         uint256[] memory _voucherTypeIds,
         uint256[] memory quantities
-    ) public onlyRole(MINTER_ROLE) {
+    ) public onlyRole(MINTER_ROLE) nonReentrant {
         require(
             _voucherTypeIds.length == quantities.length,
             "Mismatched inputs"
@@ -244,16 +248,15 @@ contract DOUDOCOINNFT is
                     voucherTypes[voucherTypeId].maxPerUser,
                 "Exceeds max vouchers per user"
             );
+            updateUserVoucherCount(to, voucherTypeId, quantity);
 
             for (uint256 j = 0; j < quantity; j++) {
                 _tokenIds.increment();
                 uint256 tokenId = _tokenIds.current();
-                _safeMint(to, tokenId);
                 voucherTypeIds[tokenId] = voucherTypeId;
+                _safeMint(to, tokenId);
                 emit VoucherMinted(tokenId, to, voucherTypeId);
             }
-
-            updateUserVoucherCount(to, voucherTypeId, quantity);
         }
     }
 
@@ -261,7 +264,7 @@ contract DOUDOCOINNFT is
     function mintMembershipNFT(
         address to,
         uint256 membershipLevel
-    ) public onlyRole(MINTER_ROLE) {
+    ) public onlyRole(MINTER_ROLE) nonReentrant {
         require(
             userInfo[to].membershipNFT == 0,
             "User already owns a membership NFT"
@@ -279,11 +282,10 @@ contract DOUDOCOINNFT is
 
         _tokenIds.increment();
         uint256 tokenId = _tokenIds.current();
-        _safeMint(to, tokenId);
-
         isMembershipNFT[tokenId] = true;
         userInfo[to].membershipNFT = tokenId;
         userInfo[to].membershipLevel = membershipLevel;
+        _safeMint(to, tokenId);
 
         emit MembershipUpgraded(
             to,
@@ -318,12 +320,30 @@ contract DOUDOCOINNFT is
         address to,
         uint256 tokenId,
         bytes memory _data
-    ) public override(ERC721, IERC721) {
-        super.safeTransferFrom(from, to, tokenId, _data);
-        if (isMembershipNFT[tokenId]) {
+    ) public override(ERC721, IERC721) nonReentrant {
+        bool membershipToken = isMembershipNFT[tokenId];
+        super.transferFrom(from, to, tokenId);
+
+        if (membershipToken) {
             _transferMembership(from, to, tokenId);
         } else {
             emit VoucherTransferred(from, to, tokenId);
+        }
+
+        // Membership reconciliation can replace or burn tokenId. Only notify the
+        // receiver when this exact token still belongs to it.
+        if (_exists(tokenId)) {
+            require(
+                ownerOf(tokenId) == to &&
+                    _checkOnERC721ReceivedAfterState(
+                        _msgSender(),
+                        from,
+                        to,
+                        tokenId,
+                        _data
+                    ),
+                "ERC721: transfer to non ERC721Receiver implementer"
+            );
         }
     }
 
@@ -331,7 +351,7 @@ contract DOUDOCOINNFT is
         address from,
         address to,
         uint256 tokenId
-    ) public virtual override(ERC721, IERC721) {
+    ) public virtual override(ERC721, IERC721) nonReentrant {
         // 保存原始的 packed ownership 數據
         require(
             ownerOf(tokenId) == from,
@@ -355,6 +375,21 @@ contract DOUDOCOINNFT is
         address to,
         uint256 tokenId
     ) internal {
+        require(
+            userInfo[from].membershipNFT == tokenId,
+            "Membership state mismatch"
+        );
+
+        if (from == to) {
+            emit MembershipTransferred(
+                from,
+                to,
+                tokenId,
+                membershipLevels[userInfo[to].membershipLevel].name
+            );
+            return;
+        }
+
         uint256 transferredLevel = userInfo[from].membershipLevel;
         uint256 transferredTotalRedeemed = userInfo[from].totalRedeemed;
         uint256 transferredCurrentRoundRedeemed = userInfo[from]
@@ -387,7 +422,9 @@ contract DOUDOCOINNFT is
         // 重置發送者的信息
         userInfo[from].membershipLevel = 0;
         userInfo[from].membershipNFT = 0;
+        userInfo[from].totalRedeemed = 0;
         userInfo[from].currentRoundRedeemed = 0;
+        userInfo[from].lastActiveTimestamp = 0;
 
         // 檢查並可能升級接收者的會員等級
         _updateMembershipLevel(to);
@@ -401,7 +438,9 @@ contract DOUDOCOINNFT is
     }
 
     // Batch burn vouchers and redeem tokens with additional rewards
-    function burnVouchersBatch(uint256[] calldata tokenIds) external {
+    function burnVouchersBatch(
+        uint256[] calldata tokenIds
+    ) external nonReentrant {
         _checkMembershipExpiration(msg.sender); // Check if membership is expired
 
         uint256 totalAmount = 0;
@@ -439,12 +478,6 @@ contract DOUDOCOINNFT is
             additionalReward
         );
 
-        // Mint reward points directly to the user (reason-coded for analytics)
-        require(
-            rewardToken.mintWithReason(msg.sender, totalAmount, VOUCHER_REDEEM),
-            "Token minting failed"
-        );
-
         // Update the user's total redeemed amount, current round redeemed amount, and last activity timestamp
         userInfo[msg.sender].totalRedeemed += totalAmount;
         userInfo[msg.sender].currentRoundRedeemed += totalAmount; // Track current round redemption
@@ -452,6 +485,13 @@ contract DOUDOCOINNFT is
 
         // Check if membership level should be upgraded
         _updateMembershipLevel(msg.sender);
+
+        // Interact with the reward contract only after redemption and membership
+        // state have been fully initialized.
+        require(
+            rewardToken.mintWithReason(msg.sender, totalAmount, VOUCHER_REDEEM),
+            "Token minting failed"
+        );
     }
 
     // Internal function to update membership level and handle NFT minting/burning
@@ -475,6 +515,7 @@ contract DOUDOCOINNFT is
             if (oldMembershipNFT != 0) {
                 _burn(oldMembershipNFT);
                 delete isMembershipNFT[oldMembershipNFT];
+                userInfo[user].membershipNFT = 0;
                 emit MembershipNFTBurned(user, oldMembershipNFT);
             }
 
@@ -482,9 +523,10 @@ contract DOUDOCOINNFT is
             if (newLevel >= 1) {
                 _tokenIds.increment();
                 uint256 tokenId = _tokenIds.current();
-                _safeMint(user, tokenId);
                 userInfo[user].membershipNFT = tokenId;
                 isMembershipNFT[tokenId] = true;
+                userInfo[user].membershipLevel = newLevel;
+                _safeMint(user, tokenId);
 
                 emit MembershipUpgraded(
                     user,
@@ -513,6 +555,7 @@ contract DOUDOCOINNFT is
             // Membership expired, burn the membership NFT and reset the membership level
             if (userInfo[user].membershipNFT != 0) {
                 _burn(userInfo[user].membershipNFT);
+                delete isMembershipNFT[userInfo[user].membershipNFT];
                 emit MembershipNFTBurned(user, userInfo[user].membershipNFT);
                 userInfo[user].membershipNFT = 0;
             }
@@ -574,6 +617,7 @@ contract DOUDOCOINNFT is
         string memory _membershipTokenURI,
         uint256 rewardBasisPoints
     ) internal {
+        require(rewardBasisPoints <= 10000, "Invalid reward basis points");
         membershipLevels.push(
             MembershipLevel(
                 name,
@@ -629,12 +673,46 @@ contract DOUDOCOINNFT is
         return voucherTypeIds[tokenId];
     }
 
+    function burn(uint256 tokenId) public override nonReentrant {
+        require(!isMembershipNFT[tokenId], "Cannot burn membership NFTs");
+        super.burn(tokenId);
+        delete voucherTypeIds[tokenId];
+    }
+
     function _handleLowerLevelNFT(address owner, uint256 tokenId) internal {
         // 這裡可以選擇銷毀 NFT 或將其轉移到一個特定地址
         // 例如：
         _burn(tokenId);
         delete isMembershipNFT[tokenId];
         emit MembershipNFTBurned(owner, tokenId);
+    }
+
+    function _checkOnERC721ReceivedAfterState(
+        address operator,
+        address from,
+        address to,
+        uint256 tokenId,
+        bytes memory data
+    ) private returns (bool) {
+        if (to.code.length == 0) return true;
+
+        try
+            IERC721Receiver(to).onERC721Received(
+                operator,
+                from,
+                tokenId,
+                data
+            )
+        returns (bytes4 retval) {
+            return retval == IERC721Receiver.onERC721Received.selector;
+        } catch (bytes memory reason) {
+            if (reason.length == 0) {
+                revert("ERC721: transfer to non ERC721Receiver implementer");
+            }
+            assembly {
+                revert(add(32, reason), mload(reason))
+            }
+        }
     }
 
     // function _update(

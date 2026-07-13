@@ -12,6 +12,7 @@ import "./interfaces/IDoudoVRFRouter.sol";
 import "./helpers/DoudoCoreTypes.sol";
 import "./helpers/DoudoPrizeDrawLib.sol";
 import "./helpers/DoudoTokenURILib.sol";
+import "./helpers/SafeERC721AReceiver.sol";
 import "./security/LightweightGuardsUpgradeable.sol";
 
 contract DOUDOCHAINV2CoreUpgradeable is
@@ -569,7 +570,7 @@ contract DOUDOCHAINV2CoreUpgradeable is
         uint256 quantity = luckyNumbers.length;
         if (quantity == 0 || quantity > series.remainingTicketNumbers) revert NotEnoughNFTsRemaining();
         uint256 startTokenId = _nextTokenId();
-        _safeMint(to, quantity);
+        _mint(to, quantity);
         for (uint256 i = 0; i < quantity; i++) {
             uint16 luckyNumber = luckyNumbersPreassigned
                 ? luckyNumbers[i]
@@ -593,6 +594,7 @@ contract DOUDOCHAINV2CoreUpgradeable is
             _seriesOps().recordMint(seriesID, to, quantity);
         }
         emit UpdateSeriesRemainingTicketNumbers(seriesID, series.remainingTicketNumbers);
+        SafeERC721AReceiver.notify(msg.sender, to, startTokenId, quantity);
         if (series.remainingTicketNumbers == 0) {
             uint32 lastPrizeQuantity = series.lastPrizeQuantity;
             if (lastPrizeQuantity == 0) {
@@ -799,10 +801,12 @@ contract DOUDOCHAINV2CoreUpgradeable is
         tokenId = _mintRevealedTicket(seriesID, to, subPrizeID, consumedLuckyNumber);
         totalMintedInSeries[seriesID] += 1;
         _recordSeriesRange(seriesID, tokenId, 1);
+        SafeERC721AReceiver.notify(msg.sender, to, tokenId, 1);
     }
 
     function _mintLastPrizeToken(uint256 seriesID, address to) internal returns (uint256 tokenId) {
         tokenId = _mintRevealedTicket(seriesID, to, LAST_PRIZE_ID, 0);
+        SafeERC721AReceiver.notify(msg.sender, to, tokenId, 1);
     }
 
     function _mintRevealedTicket(
@@ -812,7 +816,7 @@ contract DOUDOCHAINV2CoreUpgradeable is
         uint16 luckyNumber
     ) internal returns (uint256 tokenId) {
         tokenId = _nextTokenId();
-        _safeMint(to, 1);
+        _mint(to, 1);
         ticketStatusDetail[tokenId] = TicketStatus({
             seriesID: seriesID,
             tokenRevealedPrize: prizeID,

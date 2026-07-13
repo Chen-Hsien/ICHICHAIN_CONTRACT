@@ -8,6 +8,7 @@ import {VRFConsumerBaseV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/VRFCo
 import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
 import "erc721a/contracts/ERC721A.sol";
 import "./interfaces/IDoudoPoints.sol";
+import "./helpers/SafeERC721AReceiver.sol";
 
 contract DOUDOCHAINV2 is
     ERC721A,
@@ -533,7 +534,7 @@ contract DOUDOCHAINV2 is
     function mintCollectionReward(
         address to,
         uint256 rewardData
-    ) external onlyRole(COLLECTION_BOOK_ROLE) returns (uint256 tokenId) {
+    ) external onlyRole(COLLECTION_BOOK_ROLE) nonReentrant returns (uint256 tokenId) {
         CollectionRewardConfig memory config = collectionRewardConfigs[rewardData];
         if (!config.active) revert CollectionRewardNotConfigured();
         if (config.revealed && config.subPrizeID != 0) {
@@ -619,7 +620,7 @@ contract DOUDOCHAINV2 is
         Series storage series = seriesData[seriesID];
         uint256 quantity = luckyNumbers.length;
         uint256 startTokenId = _nextTokenId();
-        _safeMint(to, quantity);
+        _mint(to, quantity);
         for (uint256 i = 0; i < quantity; i++) {
             uint16 luckyNumber = _consumeLuckyNumber(seriesID, series.useLuckyNumber, luckyNumbers[i]);
             uint256 tokenId = startTokenId + i;
@@ -632,6 +633,7 @@ contract DOUDOCHAINV2 is
         mintedPerWallet[seriesID][to] += quantity;
         totalMintedInSeries[seriesID] += quantity;
         _recordSeriesRange(seriesID, startTokenId, quantity);
+        SafeERC721AReceiver.notify(msg.sender, to, startTokenId, quantity);
     }
 
     function _consumeLuckyNumber(
@@ -702,7 +704,7 @@ contract DOUDOCHAINV2 is
         if (series.remainingTicketNumbers == 0) revert NotEnoughNFTsRemaining();
 
         tokenId = _nextTokenId();
-        _safeMint(to, 1);
+        _mint(to, 1);
         ticketStatusDetail[tokenId] = TicketStatus({
             seriesID: seriesID,
             tokenRevealedPrize: revealed ? subPrizeID : 0,
@@ -715,11 +717,12 @@ contract DOUDOCHAINV2 is
         totalMintedInSeries[seriesID] += 1;
         _recordSeriesRange(seriesID, tokenId, 1);
         emit NewTicketStatus(tokenId, seriesID, revealed ? subPrizeID : 0, false, revealed, to, 0);
+        SafeERC721AReceiver.notify(msg.sender, to, tokenId, 1);
     }
 
     function _mintLastPrizeToken(uint256 seriesID, address to) internal returns (uint256 tokenId) {
         tokenId = _nextTokenId();
-        _safeMint(to, 1);
+        _mint(to, 1);
         ticketStatusDetail[tokenId] = TicketStatus({
             seriesID: seriesID,
             tokenRevealedPrize: LAST_PRIZE_ID,
@@ -728,6 +731,7 @@ contract DOUDOCHAINV2 is
             luckyNumber: 0
         });
         emit NewTicketStatus(tokenId, seriesID, LAST_PRIZE_ID, false, true, to, 0);
+        SafeERC721AReceiver.notify(msg.sender, to, tokenId, 1);
     }
 
     function _consumePrizeSlot(uint256 seriesID, uint256 subPrizeID) internal {
@@ -865,7 +869,7 @@ contract DOUDOCHAINV2 is
     function fulfillRandomWords(
         uint256 requestId,
         uint256[] calldata randomWords
-    ) internal virtual override {
+    ) internal virtual override nonReentrant {
         if (requestKind[requestId] == RequestKind.Reveal) {
             _fulfillReveal(requestId, randomWords[0]);
         } else if (requestKind[requestId] == RequestKind.LastPrize) {

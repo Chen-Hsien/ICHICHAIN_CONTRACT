@@ -66,12 +66,46 @@ describe("CollectionBook", function () {
     expect(await source.ownerOf(tokenId)).to.equal(await book.getAddress());
   });
 
+  it("rejects ERC721 transfers that do not come through depositToBook", async function () {
+    const { user, source, book } = await deployFixture();
+    const tokenId = await source.nextTokenId();
+    await source.mintRevealed(user.address, 0, 1, false);
+
+    await expect(
+      source
+        .connect(user)
+        ["safeTransferFrom(address,address,uint256)"](
+          user.address,
+          await book.getAddress(),
+          tokenId
+        )
+    ).to.be.revertedWithCustomError(book, "UnexpectedERC721Transfer");
+    expect(await source.ownerOf(tokenId)).to.equal(user.address);
+  });
+
+  it("recovers untracked NFTs sent with unsafe transferFrom without touching deposits", async function () {
+    const { user, source, book } = await deployFixture();
+    const tokenId = await source.nextTokenId();
+    await source.mintRevealed(user.address, 0, 1, false);
+    await source.connect(user).transferFrom(user.address, await book.getAddress(), tokenId);
+
+    await expect(
+      book.recoverUntrackedERC721(await source.getAddress(), tokenId, user.address)
+    )
+      .to.emit(book, "UntrackedERC721Recovered")
+      .withArgs(await source.getAddress(), tokenId, user.address);
+    expect(await source.ownerOf(tokenId)).to.equal(user.address);
+  });
+
   it("lets users withdraw deposited tokens before claim and blocks other users", async function () {
     const { user, other, source, book } = await deployFixture();
     await createOneSlotBook(book, source);
     const tokenId = await mintAndApprove(source, book, user);
     await book.connect(user).depositToBook(0, [tokenId]);
 
+    await expect(
+      book.recoverUntrackedERC721(await source.getAddress(), tokenId, other.address)
+    ).to.be.revertedWithCustomError(book, "TrackedERC721");
     await expect(book.connect(other).withdrawDeposited(0, await source.getAddress(), [tokenId]))
       .to.be.revertedWithCustomError(book, "TokenDepositedByAnotherUser");
 
@@ -96,6 +130,15 @@ describe("CollectionBook", function () {
 
     expect(await points.balanceOf(user.address)).to.equal(ethers.parseEther("50"));
     await expect(book.connect(user).claimBook(0)).to.be.revertedWithCustomError(book, "BookAlreadyClaimed");
+  });
+
+  it("rejects claims for book IDs that were never created", async function () {
+    const { user, book } = await deployFixture();
+
+    await expect(book.connect(user).claimBook(0))
+      .to.be.revertedWithCustomError(book, "BookDoesNotExist");
+    await expect(book.connect(user).claimBook(999))
+      .to.be.revertedWithCustomError(book, "BookDoesNotExist");
   });
 
   it("routes NFT and unlock rewards to DOUDOCHAINV2 reward target", async function () {

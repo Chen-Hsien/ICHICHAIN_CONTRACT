@@ -1,6 +1,6 @@
 # DOUDOCHAIN V2 Upgradeable Handoff
 
-Last updated: 2026-06-27
+Last updated: 2026-07-12
 
 This document is the current handoff for the upgraded Arbitrum Sepolia V2 split-module deployment. Use proxy addresses for app/subgraph calls and implementation addresses only for verification and upgrade records.
 
@@ -24,12 +24,12 @@ coordinator and authorize their respective requester.
 | `DOUDOCOIN` | `0xFFCD533609e0e9E810C4C5D8Cb7a69D7a537C17E` | Non-proxy | Verified |
 | `DoudoVRFRouter` (Core) | `0x48A1205c9b6BF1Da1a3D1bE651A9e237AC349Eb5` | Non-proxy | Chain read confirmed |
 | `DoudoVRFRouter` (Redraw) | `0x5A59D45437559C7CE0A012630a456321180C21e1` | Non-proxy | Verified |
-| `DOUDOCHAINV2CoreUpgradeable` | `0xf75395A8cd753f47135cfcaE00D2706252c3E0F5` | `0x2341BDa880b03Decf5aA314047f180C60f72Af10` | Verified |
+| `DOUDOCHAINV2CoreUpgradeable` | `0xf75395A8cd753f47135cfcaE00D2706252c3E0F5` | `0x69Cba537C085BA7D9242C71c434F4cD0F81d4311` | Verified |
 | `DoudoBundleModuleUpgradeable` | `0x68cBA2b3c72Be39be748B06c1e6dDab2855E91b6` | `0x331818ea2401847823A5dc5C76358db04707F74e` | Verified and proxy-linked |
 | `DoudoRefundModuleUpgradeable` | `0x8ee19238DAa466B7792BE33569c6E4f6993CCf20` | `0xC6cad8c6A27170848CF295fd1A290A143d3Ea4a3` | Verified and proxy-linked |
 | `DoudoRedrawModuleUpgradeable` | `0xE75461828f41C890fbc811e7cABFe2143B3F4afE` | `0xaa02Ee36a3CC7cc66e69cD8b25Cba39071101B92` | Verified and proxy-linked |
 | `DoudoCollectionRewardModuleUpgradeable` | `0x680618a6933DD68fF84Ff9F64760120d27400B3C` | `0x2cE5a89cBA7F79a6de97E6d798522f66310a6d83` | Verified and proxy-linked |
-| `CollectionBookUpgradeable` | `0x4284be399cA9591fBd98248969fCcb969E21B2C6` | `0x8084993A227F9dc060407F568B95c5201b55259f` | Verified and proxy-linked |
+| `CollectionBookUpgradeable` | `0x4284be399cA9591fBd98248969fCcb969E21B2C6` | `0x65910b3d16cD79c82B9FDC5f1c62C712Fe18F88C` | Verified and proxy-linked |
 | `MerchantSeriesRegistry` | `0x03dBEE1f231A29b06032aa24D2CFb96a1321C1A6` | `0x59B2869C51cc555734845DF9eb3bDFb5Fc6f1E81` | Verified and proxy-linked |
 | `MerchantSeriesPublisher` | `0xB0EC5ca70a9AeCaeb260FdCDF238a64Ad37F5515` | `0xC76F735c59CAa54B2a3bea79010Fc934E206b393` | Verified |
 
@@ -39,7 +39,7 @@ Explorer links:
 - Core DoudoVRFRouter: `https://sepolia.arbiscan.io/address/0x48A1205c9b6BF1Da1a3D1bE651A9e237AC349Eb5#code`
 - Redraw DoudoVRFRouter: `https://sepolia.arbiscan.io/address/0x5A59D45437559C7CE0A012630a456321180C21e1#code`
 - Core proxy: `https://sepolia.arbiscan.io/address/0xf75395A8cd753f47135cfcaE00D2706252c3E0F5#code`
-- Core implementation: `https://sepolia.arbiscan.io/address/0x2341BDa880b03Decf5aA314047f180C60f72Af10#code`
+- Core implementation: `https://sepolia.arbiscan.io/address/0x69Cba537C085BA7D9242C71c434F4cD0F81d4311#code`
 - Bundle proxy: `https://sepolia.arbiscan.io/address/0x68cBA2b3c72Be39be748B06c1e6dDab2855E91b6#code`
 - Bundle implementation: `https://sepolia.arbiscan.io/address/0x331818ea2401847823A5dc5C76358db04707F74e#code`
 - Refund proxy: `https://sepolia.arbiscan.io/address/0x8ee19238DAa466B7792BE33569c6E4f6993CCf20#code`
@@ -48,6 +48,7 @@ Explorer links:
 - Redraw implementation: `https://sepolia.arbiscan.io/address/0xaa02Ee36a3CC7cc66e69cD8b25Cba39071101B92#code`
 - Collection reward proxy: `https://sepolia.arbiscan.io/address/0x680618a6933DD68fF84Ff9F64760120d27400B3C#code`
 - CollectionBook proxy: `https://sepolia.arbiscan.io/address/0x4284be399cA9591fBd98248969fCcb969E21B2C6#code`
+- CollectionBook implementation: `https://sepolia.arbiscan.io/address/0x65910b3d16cD79c82B9FDC5f1c62C712Fe18F88C#code`
 - MerchantSeriesRegistry proxy: `https://sepolia.arbiscan.io/address/0x03dBEE1f231A29b06032aa24D2CFb96a1321C1A6#code`
 - MerchantSeriesRegistry implementation: `https://sepolia.arbiscan.io/address/0x59B2869C51cc555734845DF9eb3bDFb5Fc6f1E81#code`
 - MerchantSeriesPublisher proxy: `https://sepolia.arbiscan.io/address/0xB0EC5ca70a9AeCaeb260FdCDF238a64Ad37F5515#code`
@@ -99,6 +100,12 @@ Latest upgrade/wiring txs:
 
 | Action | Tx |
 | --- | --- |
+| Security-hardening Core implementation deployment (block `286422420`) | `0x6e453135384cf9c4fe5eccb73842f3d778f7c695684dbdf8ada6c7088a82d9d6` |
+| Security-hardening Core proxy upgrade (block `286422442`) | `0xd79ab03359616e5abaa35a7442454704b9007e78c710f499e74274acb14bdce1` |
+| Security-hardening CollectionBook implementation deployment (block `286422474`) | `0xeb66b856a11e9d43f85f0c22860d0d5dcb80f76abfe245af9254729452bc82de` |
+| Security-hardening CollectionBook proxy upgrade (block `286422500`) | `0x34c13533e2351fc14e03e9d3f24a786971157a8de7a0d5c29db10674233dec34` |
+| Core pause before security upgrade | `0x0e9cf694028312a448ef3a67623fda64dcc2715c3077d60808bf8cbfa28df9a2` |
+| Core unpause after security upgrade | `0x3574265e48be5c99d3e8493795fc260b22be9ec6ea546f16bfc87ec795fa7efc` |
 | Core source-tag implementation deployment (block `282585997`) | `0x41ab85295e8a0e2f3a3236b96c819fa34c4ca2ce6b66f0bd54b37b903b9bb5b6` |
 | Core source-tag proxy upgrade (block `282586025`) | `0x4ffd0a9c1887fe72be3a9ab5a5a22247e40a291ee56076e34c01984e3bcb413f` |
 | MerchantSeriesPublisher source-tag deployment (block `282586258`) | `0x1b52d302305e6734cabaa2bdadea15db99b35f2d0d45052b55ba5df85a1090cb` |
@@ -387,7 +394,7 @@ npx hardhat compile
 OK
 
 npm test
-90 passing
+128 passing
 24 pending
 
 npx hardhat run scripts/checkSplitModuleArbSepolia.ts --network arbitrumSepolia
@@ -404,18 +411,18 @@ Redraw: deployProxy(previous split-layout harness) -> upgradeProxy(current Redra
 Bytecode size snapshot:
 
 ```text
-DOUDOCHAINV2CoreUpgradeable: 24,573 bytes
+DOUDOCHAINV2CoreUpgradeable: 24,201 bytes
 DoudoBundleModuleUpgradeable: 6,919 bytes
 DoudoRefundModuleUpgradeable: 5,660 bytes
 DoudoRedrawModuleUpgradeable: 9,459 bytes
 DoudoCollectionRewardModuleUpgradeable: 6,205 bytes
-CollectionBookUpgradeable: 10,519 bytes
+CollectionBookUpgradeable: 10,837 bytes
 DoudoVRFRouter: 2,999 bytes
 ```
 
 TypeScript note: `npx tsc --noEmit --pretty false` still reports pre-existing Hardhat/TypeChain inference errors in older deploy scripts. The latest upgrade script has no reported TypeScript error in that run.
 
-Explorer verification note: the Bundle implementation is verified on Arbiscan.
-Core verification is still pending because Arbiscan's recompilation comparison
-failed, while the deployed creation bytecode hash exactly matches the local
-Hardhat artifact.
+Explorer verification note: the security-hardening Core implementation
+`0x69Cba537C085BA7D9242C71c434F4cD0F81d4311` and CollectionBook implementation
+`0x65910b3d16cD79c82B9FDC5f1c62C712Fe18F88C` are verified on Arbiscan. The
+split-module wiring check passed after both upgrades, and Core was unpaused.

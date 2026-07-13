@@ -59,6 +59,7 @@ contract CollectionBookUpgradeable is
     mapping(address => mapping(uint256 => address)) public depositedTokenOwner;
 
     error InvalidBookDefinition();
+    error BookDoesNotExist();
     error BookInactive();
     error BookAlreadyClaimed();
     error TokenDoesNotMatchAnyOpenSlot();
@@ -69,6 +70,8 @@ contract CollectionBookUpgradeable is
     error TokenDepositedByAnotherUser();
     error BookIncomplete();
     error RewardTargetMissing();
+    error UnexpectedERC721Transfer();
+    error TrackedERC721();
 
     event CollectionBookCreated(
         uint256 indexed bookId,
@@ -104,6 +107,11 @@ contract CollectionBookUpgradeable is
         uint32 newFilledCount
     );
     event CollectionBookClaimed(address indexed user, uint256 indexed bookId, RewardKind rewardKind, uint256 rewardData);
+    event UntrackedERC721Recovered(
+        address indexed sourceContract,
+        uint256 indexed tokenId,
+        address indexed recipient
+    );
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
@@ -190,7 +198,25 @@ contract CollectionBookUpgradeable is
         }
     }
 
+    function recoverUntrackedERC721(
+        address sourceContract,
+        uint256 tokenId,
+        address recipient
+    ) external onlyRole(OPERATION_ROLE) nonReentrant {
+        if (recipient == address(0) || recipient == address(this)) {
+            revert InvalidBookDefinition();
+        }
+        if (depositedTokenOwner[sourceContract][tokenId] != address(0)) {
+            revert TrackedERC721();
+        }
+        IDoudoPrizeSource source = IDoudoPrizeSource(sourceContract);
+        if (!_isOwnedBy(source, tokenId, address(this))) revert TokenNotDeposited();
+        source.safeTransferFrom(address(this), recipient, tokenId);
+        emit UntrackedERC721Recovered(sourceContract, tokenId, recipient);
+    }
+
     function claimBook(uint256 bookId) external nonReentrant {
+        if (bookId >= bookCounter) revert BookDoesNotExist();
         Book storage book = books[bookId];
         if (claimed[msg.sender][bookId]) revert BookAlreadyClaimed();
         if (filledCount[msg.sender][bookId] != totalRequired[bookId]) revert BookIncomplete();
@@ -322,11 +348,12 @@ contract CollectionBookUpgradeable is
     }
 
     function onERC721Received(
-        address,
+        address operator,
         address,
         uint256,
         bytes calldata
-    ) external pure returns (bytes4) {
+    ) external view returns (bytes4) {
+        if (operator != address(this)) revert UnexpectedERC721Transfer();
         return IERC721Receiver.onERC721Received.selector;
     }
 
