@@ -99,7 +99,10 @@ contract DoudoRedrawModuleUpgradeable is
 
     function setRouter(address routerAddress) external onlyRole(OPERATION_ROLE) {
         if (routerAddress == address(0)) revert InvalidConfig();
-        router = IDoudoVRFRouter(routerAddress);
+        if (routerAddress != address(router)) {
+            if (router.pendingRequests() != 0) revert InvalidConfig();
+            router = IDoudoVRFRouter(routerAddress);
+        }
         emit RouterUpdated(routerAddress);
     }
 

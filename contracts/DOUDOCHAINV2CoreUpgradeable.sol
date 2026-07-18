@@ -178,6 +178,13 @@ contract DOUDOCHAINV2CoreUpgradeable is
         uint16 luckyNumber
     );
     event MintLockUpdated(uint256 indexed seriesID, address indexed owner, uint256 until);
+    event AdminMinted(
+        address indexed operator,
+        address indexed to,
+        uint256 indexed seriesID,
+        uint256 quantity
+    );
+    event VrfRouterUpdated(address indexed vrfRouter, address indexed operator);
     event RevealDrawSent(uint256 requestId, uint256[] tokenIDs);
     event RevealDrawFulfilled(uint256 requestId, uint256 seriesID, uint256[] randomWords);
     event UpdatePrize(uint256 indexed seriesID, uint256 subPrizeID, uint256 subPrizeRemainingQuantity);
@@ -188,8 +195,10 @@ contract DOUDOCHAINV2CoreUpgradeable is
         bool tokenExchange,
         bool tokenRevealed
     );
+    event LastPrizeDraw(uint256 requestId, uint256 seriesID, uint256 quantity);
     event LastPrizeWinner(uint256 requestId, uint256[] randomWord);
     event UpdateSeriesLastPrizeOwner(uint256 indexed seriesID, address[] lastPrizeOwner);
+    event SeriesUnlockedFor(uint256 indexed seriesID, address indexed user, uint256 expires);
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
         _disableInitializers();
@@ -254,11 +263,35 @@ contract DOUDOCHAINV2CoreUpgradeable is
         if (series.isRefund) revert SeriesIsRefund();
         if (quantity == 0 || quantity > series.remainingTicketNumbers) revert NotEnoughNFTsRemaining();
         _mintTickets(seriesID, to, luckyNumbers, 0, false, false);
+        emit AdminMinted(msg.sender, to, seriesID, quantity);
     }
 
     function setVrfRouter(address vrfRouter_) external onlyRole(OPERATION_ROLE) {
         if (vrfRouter_ == address(0)) revert InvalidConfig();
-        vrfRouter = vrfRouter_;
+        if (vrfRouter_ != vrfRouter) {
+            assembly {
+                // The low sentinel byte remains non-zero on short return data,
+                // while the four-byte calldata still contains only the selector.
+                // 0x4a0aee29 = pendingRequests(); 0x35be3ac8 = InvalidConfig().
+                mstore(0, or(shl(224, 0x4a0aee29), 1))
+                let success := staticcall(gas(), sload(vrfRouter.slot), 0, 4, 0, 0x20)
+                if or(iszero(success), mload(0)) {
+                    mstore(0, shl(224, 0x35be3ac8))
+                    revert(0, 4)
+                }
+            }
+            vrfRouter = vrfRouter_;
+            assembly {
+                // keccak256("VrfRouterUpdated(address,address)")
+                log3(
+                    0,
+                    0,
+                    0x4f7ca0fb25f1afd3ba7a3583d71fae2425dfeb3618749c2e16971f4ad3471f93,
+                    vrfRouter_,
+                    caller()
+                )
+            }
+        }
     }
 
     function setSeriesOpsModule(address moduleAddress) external onlyRole(OPERATION_ROLE) {
@@ -414,6 +447,40 @@ contract DOUDOCHAINV2CoreUpgradeable is
         Series storage series = seriesData[seriesID];
         if (series.totalTicketNumbers == 0) revert InvalidSeriesInput();
         series.isRefund = isRefund;
+    }
+
+    function moduleUnlockSeriesFor(
+        uint256 seriesID,
+        address user,
+        uint256 expires
+    ) external onlyRole(MODULE_ROLE) {
+        assembly {
+            mstore(0, seriesID)
+            mstore(0x20, seriesData.slot)
+            let seriesSlot := keccak256(0, 0x40)
+            // totalTicketNumbers is Series storage word 1;
+            // 0xbe1e97d3 = InvalidSeriesInput().
+            if or(iszero(sload(add(seriesSlot, 1))), iszero(user)) {
+                mstore(0, shl(224, 0xbe1e97d3))
+                revert(0, 4)
+            }
+
+            mstore(0, seriesID)
+            mstore(0x20, seriesUnlockUntil.slot)
+            let unlockSeriesSlot := keccak256(0, 0x40)
+            mstore(0, user)
+            mstore(0x20, unlockSeriesSlot)
+            sstore(keccak256(0, 0x40), expires)
+            mstore(0, expires)
+            // keccak256("SeriesUnlockedFor(uint256,address,uint256)")
+            log3(
+                0,
+                0x20,
+                0x172ccbba477893ff7947845600c7fb59a68dc3de81bafe8dc97d60aed65b7d64,
+                seriesID,
+                user
+            )
+        }
     }
 
     function setGoodsArrived(uint256 seriesID) external onlyRole(OPERATION_ROLE) {
@@ -628,6 +695,7 @@ contract DOUDOCHAINV2CoreUpgradeable is
         requestKind[requestId] = RequestKind.LastPrize;
         requestToSeries[requestId] = seriesID;
         lastPrizeRequestPending[seriesID] = true;
+        emit LastPrizeDraw(requestId, seriesID, quantity);
     }
 
     function _requestRandomWords(uint32 numWords) internal returns (uint256 requestId) {

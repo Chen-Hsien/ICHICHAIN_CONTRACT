@@ -85,6 +85,7 @@ contract DoudoCollectionRewardModuleUpgradeable is
         uint256 collectionBookID,
         RewardConfig calldata config
     ) external onlyRole(OPERATION_ROLE) {
+        _validateRewardConfig(config);
         rewardConfigs[collectionBookID] = config;
         emit CollectionRewardConfigSet(
             collectionBookID,
@@ -116,15 +117,30 @@ contract DoudoCollectionRewardModuleUpgradeable is
             return tokenID;
         }
 
+        if (config.rewardKind != uint8(RewardKind.UnlockSeries) || config.pointsAmount == 0) {
+            revert InvalidConfig();
+        }
+
         uint256 expires = block.timestamp + config.pointsAmount;
-        emit SeriesUnlockedFor(config.seriesID, to, expires);
+        core.moduleUnlockSeriesFor(config.seriesID, to, expires);
         emit CollectionRewardMinted(rewardData, to, config.rewardKind, expires, 0);
     }
 
     function unlockSeriesFor(address user, uint256 seriesID) external {
         if (msg.sender != collectionBook) revert OnlyCollectionBook(msg.sender);
         uint256 expires = block.timestamp + 30 days;
-        emit SeriesUnlockedFor(seriesID, user, expires);
+        core.moduleUnlockSeriesFor(seriesID, user, expires);
+    }
+
+    function _validateRewardConfig(RewardConfig calldata config) internal view {
+        if (config.rewardKind > uint8(RewardKind.UnlockSeries)) revert InvalidConfig();
+        if (config.rewardKind == uint8(RewardKind.Points)) return;
+
+        (uint256 priceInPoints, ) = core.seriesMintConfig(config.seriesID);
+        if (priceInPoints == 0) revert InvalidConfig();
+        if (config.rewardKind == uint8(RewardKind.UnlockSeries) && config.pointsAmount == 0) {
+            revert InvalidConfig();
+        }
     }
 
     function _authorizeUpgrade(address) internal override onlyRole(UPGRADER_ROLE) {}

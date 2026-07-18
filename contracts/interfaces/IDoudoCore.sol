@@ -48,5 +48,6 @@ interface IDoudoCore {
     ) external returns (uint256 seriesID);
 
     function moduleSetSeriesRefund(uint256 seriesID, bool isRefund) external;
+    function moduleUnlockSeriesFor(uint256 seriesID, address user, uint256 expires) external;
     function pointsPaid(uint256 tokenID) external view returns (uint256);
 }

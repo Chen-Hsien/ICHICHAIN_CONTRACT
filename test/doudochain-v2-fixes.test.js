@@ -191,7 +191,29 @@ function revealDrawSentEvents(receipt, core) {
   return events;
 }
 
+async function seriesUnlockExpiration(core, seriesID, user) {
+  // Storage slot is unchanged from the previous split implementation. Reading it
+  // directly keeps the production ABI limited to the canonical mutation + event.
+  const mappingSlot = 219n;
+  const seriesSlot = ethers.keccak256(
+    ethers.AbiCoder.defaultAbiCoder().encode(["uint256", "uint256"], [seriesID, mappingSlot])
+  );
+  const userSlot = ethers.keccak256(
+    ethers.AbiCoder.defaultAbiCoder().encode(["address", "uint256"], [user, seriesSlot])
+  );
+  return BigInt(await ethers.provider.getStorage(await core.getAddress(), userSlot));
+}
+
 describe("DOUDOCHAIN V2 fixes", function () {
+  it("emits the canonical admin mint audit event", async function () {
+    const { admin, user, core } = await deploySplitSuite();
+    await createSeries(core, { useLuckyNumber: false, maxPerWallet: 0 });
+
+    await expect(core.adminMint(user.address, 0, [0, 0]))
+      .to.emit(core, "AdminMinted")
+      .withArgs(admin.address, user.address, 0, 2);
+  });
+
   it("keeps merchant attribution outside Core and links through the registry", async function () {
     const { admin, core } = await deploySplitSuite();
     const input = seriesInput({ seriesName: "Merchant Series" });
@@ -731,7 +753,9 @@ describe("DOUDOCHAIN V2 fixes", function () {
     await core.connect(user).mint(0, [0]);
     await expect(core.connect(user).mint(0, [0]))
       .to.emit(router, "VrfRandomWordsRequested")
-      .withArgs(1, await core.getAddress(), await core.getAddress(), 1);
+      .withArgs(1, await core.getAddress(), await core.getAddress(), 1)
+      .and.to.emit(core, "LastPrizeDraw")
+      .withArgs(1, 0, 1);
 
     expect(await router.pendingRequests()).to.equal(1);
     await expect(vrf.fulfill(await router.getAddress(), 1, [0]))
@@ -861,6 +885,38 @@ describe("DOUDOCHAIN V2 fixes", function () {
     await router.setVrfConfig(await nextVrf.getAddress(), 123n, ethers.ZeroHash, 2_500_000, 0);
   });
 
+  it("blocks Core and Redraw router rotation until callbacks settle", async function () {
+    const suite = await deploySplitSuite();
+    const { admin, user, points, vrf, router, core, redraw } = suite;
+    await createSeries(core, { totalTicketNumbers: 2, useLuckyNumber: false, maxPerWallet: 0 });
+    await issuePoints(points, user.address);
+    await core.connect(user).mint(0, [0]);
+    await core.connect(user).reveal(0, [0]);
+
+    const NextVrf = await ethers.getContractFactory(
+      "contracts/test/VRFCoordinatorV2PlusMock.sol:VRFCoordinatorV2PlusMock"
+    );
+    const nextVrf = await NextVrf.deploy();
+    await nextVrf.waitForDeployment();
+    const Router = await ethers.getContractFactory("contracts/DoudoVRFRouter.sol:DoudoVRFRouter");
+    const nextRouter = await Router.deploy(await nextVrf.getAddress(), 456n, ethers.ZeroHash, 0, 2_500_000);
+    await nextRouter.waitForDeployment();
+
+    expect(await router.pendingRequests()).to.equal(1);
+    await expect(core.setVrfRouter(await nextRouter.getAddress()))
+      .to.be.revertedWithCustomError(core, "InvalidConfig");
+    await expect(redraw.setRouter(await nextRouter.getAddress()))
+      .to.be.revertedWithCustomError(redraw, "InvalidConfig");
+
+    await vrf.fulfill(await router.getAddress(), 1, [777n]);
+    await expect(core.setVrfRouter(await nextRouter.getAddress()))
+      .to.emit(core, "VrfRouterUpdated")
+      .withArgs(await nextRouter.getAddress(), admin.address);
+    await expect(redraw.setRouter(await nextRouter.getAddress()))
+      .to.emit(redraw, "RouterUpdated")
+      .withArgs(await nextRouter.getAddress());
+  });
+
   it("preserves Core state when upgrading from the previous split implementation", async function () {
     const [admin, user, other] = await ethers.getSigners();
 
@@ -891,6 +947,7 @@ describe("DOUDOCHAIN V2 fixes", function () {
     expect(await oldCore.ownerOf(0)).to.equal(user.address);
     expect(await oldCore.mintedPerWallet(0, user.address)).to.equal(1);
     expect(await oldCore.luckyNumberUsed(0, 7)).to.equal(true);
+    const legacyUnlockExpiration = await oldCore.seriesUnlockUntil(0, user.address);
 
     const Core = await linkedCoreFactory();
     const core = await upgrades.upgradeProxy(await oldCore.getAddress(), Core, {
@@ -916,6 +973,7 @@ describe("DOUDOCHAIN V2 fixes", function () {
     expect(seededStatus.luckyNumber).to.equal(7);
     expect(await core.pointsPaid(0)).to.equal(ethers.parseEther("1"));
     expect(await core.tokenURI(0)).to.equal("ipfs://old-unreveal");
+    expect(await seriesUnlockExpiration(core, 0, user.address)).to.equal(legacyUnlockExpiration);
 
     expect(await seriesOps.seriesLockDuration(0)).to.equal(0);
     await seriesOps.setSeriesLockDuration(0, 30);
@@ -993,6 +1051,64 @@ describe("DOUDOCHAIN V2 fixes", function () {
     expect(await redraw.router()).to.equal(await nextRouter.getAddress());
     await expect(redraw.connect(user).setRouter(admin.address))
       .to.be.revertedWithCustomError(redraw, "MissingRole");
+  });
+
+  it("persists a future Collection Book unlock entitlement in Core", async function () {
+    const { user, other, core, reward } = await deploySplitSuite();
+    await createSeries(core, { useLuckyNumber: false, maxPerWallet: 0 });
+    await reward.setCollectionBook(other.address);
+
+    const unlockTx = await reward.connect(other).unlockSeriesFor(user.address, 0);
+    const unlockReceipt = await unlockTx.wait();
+    const unlockBlock = await ethers.provider.getBlock(unlockReceipt.blockNumber);
+    const expires = BigInt(unlockBlock.timestamp + 30 * 24 * 60 * 60);
+
+    await expect(unlockTx)
+      .to.emit(core, "SeriesUnlockedFor")
+      .withArgs(0, user.address, expires);
+    expect(await seriesUnlockExpiration(core, 0, user.address)).to.equal(expires);
+    expect(expires).to.be.greaterThan(BigInt(unlockBlock.timestamp));
+  });
+
+  it("rejects invalid or unauthorized unlock entitlement writes", async function () {
+    const { user, other, core, reward } = await deploySplitSuite();
+    await createSeries(core, { useLuckyNumber: false, maxPerWallet: 0 });
+    await reward.setCollectionBook(other.address);
+
+    await expect(core.connect(user).moduleUnlockSeriesFor(0, user.address, 1))
+      .to.be.revertedWithCustomError(core, "MissingRole");
+    await expect(reward.connect(other).unlockSeriesFor(user.address, 999))
+      .to.be.revertedWithCustomError(core, "InvalidSeriesInput");
+    await expect(reward.connect(other).unlockSeriesFor(ethers.ZeroAddress, 0))
+      .to.be.revertedWithCustomError(core, "InvalidSeriesInput");
+    await expect(reward.setCollectionRewardConfig(7, {
+      rewardKind: 2,
+      pointsAmount: 0,
+      seriesID: 0,
+      prizeID: 0,
+      active: true,
+    })).to.be.revertedWithCustomError(reward, "InvalidConfig");
+    await expect(reward.setCollectionRewardConfig(7, {
+      rewardKind: 3,
+      pointsAmount: 1,
+      seriesID: 0,
+      prizeID: 0,
+      active: true,
+    })).to.be.revertedWithCustomError(reward, "InvalidConfig");
+    await expect(reward.setCollectionRewardConfig(7, {
+      rewardKind: 0,
+      pointsAmount: 0,
+      seriesID: 999,
+      prizeID: 1,
+      active: true,
+    })).to.be.revertedWithCustomError(reward, "InvalidConfig");
+    await expect(reward.setCollectionRewardConfig(7, {
+      rewardKind: 2,
+      pointsAmount: 1,
+      seriesID: 999,
+      prizeID: 0,
+      active: true,
+    })).to.be.revertedWithCustomError(reward, "InvalidConfig");
   });
 
   it("collection NFT rewards mint with luckyNumber 0 even when the lucky-number series is sold out", async function () {
