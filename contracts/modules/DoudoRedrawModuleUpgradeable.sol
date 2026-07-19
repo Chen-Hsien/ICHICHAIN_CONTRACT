@@ -177,12 +177,14 @@ contract DoudoRedrawModuleUpgradeable is
         uint256 burnQuantity = tokenIDs.length;
         if (burnQuantity == 0) revert InvalidConfig();
         if (!redrawEnabled[seriesID] || config.mainBurnCount == 0 || mainMintCount == 0) revert RedrawDisabled();
-        if (burnQuantity != config.mainBurnCount) revert RedrawCountMismatch();
+        if (burnQuantity % config.mainBurnCount != 0) revert RedrawCountMismatch();
+        uint256 batchCount = burnQuantity / config.mainBurnCount;
+        uint256 mintQuantity = batchCount * uint256(mainMintCount);
         for (uint256 i = 0; i < burnQuantity; i++) {
             uint256 burnedSeriesID = core.moduleBurnForRedraw(tokenIDs[i], msg.sender);
             if (burnedSeriesID != seriesID) revert MixedSeries();
         }
-        uint16[] memory autoAssignedLuckyNumbers = new uint16[](mainMintCount);
+        uint16[] memory autoAssignedLuckyNumbers = new uint16[](mintQuantity);
         uint256 firstTokenID = core.moduleMintUnrevealed(
             msg.sender,
             seriesID,
@@ -190,8 +192,8 @@ contract DoudoRedrawModuleUpgradeable is
             0,
             false
         );
-        _requestRevealForMintedTokens(seriesID, firstTokenID, mainMintCount);
-        emit RedrawMinted(seriesID, msg.sender, mainMintCount, firstTokenID);
+        _requestRevealForMintedTokens(seriesID, firstTokenID, mintQuantity);
+        emit RedrawMinted(seriesID, msg.sender, mintQuantity, firstTokenID);
     }
 
     function drawConsolation(uint256 seriesID) external nonReentrant {

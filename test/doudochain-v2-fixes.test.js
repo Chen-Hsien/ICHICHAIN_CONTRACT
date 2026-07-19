@@ -371,6 +371,63 @@ describe("DOUDOCHAIN V2 fixes", function () {
     expect((await core.ticketStatusDetail(4)).tokenRevealed).to.equal(true);
   });
 
+  it("redrawMain atomically processes multiple complete redraw groups", async function () {
+    const suite = await deploySplitSuite();
+    const { user, points, core, redraw } = suite;
+    await createSeries(core, { totalTicketNumbers: 9, useLuckyNumber: false, maxPerWallet: 0 });
+    await issuePoints(points, user.address);
+    await core.connect(user).mint(0, [0, 0, 0, 0]);
+    await revealTickets(suite, 0, [0, 1, 2, 3], 777n);
+    const beforeBalance = await core.balanceOf(user.address);
+
+    await redraw.setRedrawMainConfig(0, 2, 2);
+    await expect(redraw.connect(user).redrawMain(0, [0, 1, 2, 3]))
+      .to.emit(redraw, "RedrawMinted")
+      .withArgs(0, user.address, 4, 4)
+      .and.to.emit(core, "RevealDrawSent")
+      .withArgs(2, [4, 5, 6, 7]);
+
+    expect(await core.balanceOf(user.address)).to.equal(beforeBalance);
+    for (const tokenId of [0, 1, 2, 3]) {
+      await expect(core.ownerOf(tokenId)).to.be.reverted;
+    }
+    for (const tokenId of [4, 5, 6, 7]) {
+      expect(await core.ownerOf(tokenId)).to.equal(user.address);
+    }
+  });
+
+  it("redrawMain rejects a partial group without burning any selected token", async function () {
+    const suite = await deploySplitSuite();
+    const { user, points, core, redraw } = suite;
+    await createSeries(core, { totalTicketNumbers: 8, useLuckyNumber: false, maxPerWallet: 0 });
+    await issuePoints(points, user.address);
+    await core.connect(user).mint(0, [0, 0, 0]);
+    await revealTickets(suite, 0, [0, 1, 2], 777n);
+    await redraw.setRedrawMainConfig(0, 2, 2);
+
+    await expect(redraw.connect(user).redrawMain(0, [0, 1, 2]))
+      .to.be.revertedWithCustomError(redraw, "RedrawCountMismatch");
+    for (const tokenId of [0, 1, 2]) {
+      expect(await core.ownerOf(tokenId)).to.equal(user.address);
+    }
+  });
+
+  it("redrawMain rolls back every burn when batch replacement inventory is insufficient", async function () {
+    const suite = await deploySplitSuite();
+    const { user, points, core, redraw } = suite;
+    await createSeries(core, { totalTicketNumbers: 6, useLuckyNumber: false, maxPerWallet: 0 });
+    await issuePoints(points, user.address);
+    await core.connect(user).mint(0, [0, 0, 0, 0]);
+    await revealTickets(suite, 0, [0, 1, 2, 3], 777n);
+    await redraw.setRedrawMainConfig(0, 2, 2);
+
+    await expect(redraw.connect(user).redrawMain(0, [0, 1, 2, 3]))
+      .to.be.revertedWithCustomError(core, "NotEnoughNFTsRemaining");
+    for (const tokenId of [0, 1, 2, 3]) {
+      expect(await core.ownerOf(tokenId)).to.equal(user.address);
+    }
+  });
+
   it("redrawMain reverts when remaining inventory is less than burn count", async function () {
     const suite = await deploySplitSuite();
     const { user, points, core, redraw } = suite;
@@ -455,22 +512,22 @@ describe("DOUDOCHAIN V2 fixes", function () {
     expect(await core.ownerOf(2)).to.equal(user.address);
   });
 
-  it("redrawMain preserves a longer active reservation for the same wallet", async function () {
+  it("redrawMain refreshes the same wallet reservation to five minutes", async function () {
     const suite = await deploySplitSuite();
     const { other, points, core, seriesOps, redraw } = suite;
     await createSeries(core, { totalTicketNumbers: 4, useLuckyNumber: false, maxPerWallet: 0 });
     await issuePoints(points, other.address);
 
     const mintTx = await core.connect(other).mint(0, [0]);
-    const mintReceipt = await mintTx.wait();
-    const originalLockUntil = mintLockUntilFrom(mintReceipt, seriesOps);
+    await mintTx.wait();
     await revealTickets({ ...suite, user: other }, 0, [0], 777n);
     await redraw.setRedrawMainConfig(0, 1, 1);
 
     const redrawTx = await redraw.connect(other).redrawMain(0, [0]);
     const redrawReceipt = await redrawTx.wait();
+    const redrawBlock = await ethers.provider.getBlock(redrawReceipt.blockNumber);
 
-    expect(mintLockUntilFrom(redrawReceipt, seriesOps)).to.equal(originalLockUntil);
+    expect(mintLockUntilFrom(redrawReceipt, seriesOps)).to.equal(redrawBlock.timestamp + 300);
   });
 
   it("ticket quantity mints do not grant consolation draw credits without a separate redraw credit", async function () {
@@ -825,7 +882,7 @@ describe("DOUDOCHAIN V2 fixes", function () {
       .to.be.revertedWithCustomError(seriesOps, "WalletCapExceeded");
   });
 
-  it("caps refreshed mint locks at 10 minutes from each mint block", async function () {
+  it("caps refreshed mint locks at five minutes from each mint block", async function () {
     const { user, points, core, seriesOps } = await deploySplitSuite();
     await createSeries(core, { totalTicketNumbers: 5, useLuckyNumber: false, maxPerWallet: 0 });
     await issuePoints(points, user.address);
@@ -834,7 +891,7 @@ describe("DOUDOCHAIN V2 fixes", function () {
     const firstTx = await core.connect(user).mint(0, [0]);
     const firstReceipt = await firstTx.wait();
     const firstBlock = await ethers.provider.getBlock(firstReceipt.blockNumber);
-    expect(mintLockUntilFrom(firstReceipt, seriesOps)).to.equal(firstBlock.timestamp + 600);
+    expect(mintLockUntilFrom(firstReceipt, seriesOps)).to.equal(firstBlock.timestamp + 300);
 
     await ethers.provider.send("evm_increaseTime", [100]);
     await ethers.provider.send("evm_mine", []);
@@ -842,7 +899,7 @@ describe("DOUDOCHAIN V2 fixes", function () {
     const secondTx = await core.connect(user).mint(0, [0]);
     const secondReceipt = await secondTx.wait();
     const secondBlock = await ethers.provider.getBlock(secondReceipt.blockNumber);
-    expect(mintLockUntilFrom(secondReceipt, seriesOps)).to.equal(secondBlock.timestamp + 600);
+    expect(mintLockUntilFrom(secondReceipt, seriesOps)).to.equal(secondBlock.timestamp + 300);
   });
 
   it("advances the lucky-number cursor as numbers are consumed and auto-assigned", async function () {

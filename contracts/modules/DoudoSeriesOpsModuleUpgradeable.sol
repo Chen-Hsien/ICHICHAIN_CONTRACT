@@ -14,7 +14,7 @@ contract DoudoSeriesOpsModuleUpgradeable is
 {
     bytes32 public constant OPERATION_ROLE = keccak256("OPERATION_ROLE");
     bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
-    uint256 public constant MAX_MINT_LOCK_DURATION = 10 minutes;
+    uint256 public constant MAX_MINT_LOCK_DURATION = 5 minutes;
 
     address public core;
     uint256 public defaultLockDuration;
