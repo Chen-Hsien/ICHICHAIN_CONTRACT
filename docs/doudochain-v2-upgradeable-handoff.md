@@ -1,6 +1,6 @@
 # DOUDOCHAIN V2 Upgradeable Handoff
 
-Last updated: 2026-07-12
+Last updated: 2026-07-19
 
 This document is the current handoff for the upgraded Arbitrum Sepolia V2 split-module deployment. Use proxy addresses for app/subgraph calls and implementation addresses only for verification and upgrade records.
 
@@ -25,9 +25,10 @@ coordinator and authorize their respective requester.
 | `DoudoVRFRouter` (Core) | `0x48A1205c9b6BF1Da1a3D1bE651A9e237AC349Eb5` | Non-proxy | Chain read confirmed |
 | `DoudoVRFRouter` (Redraw) | `0x5A59D45437559C7CE0A012630a456321180C21e1` | Non-proxy | Verified |
 | `DOUDOCHAINV2CoreUpgradeable` | `0xf75395A8cd753f47135cfcaE00D2706252c3E0F5` | `0x69Cba537C085BA7D9242C71c434F4cD0F81d4311` | Verified |
+| `DoudoSeriesOpsModuleUpgradeable` | `0x2FF7521dEF3903fc5c6f2877252cdf5019380070` | `0x5409aa1Fbdd2e28fb47457F7ee50af1f73dD966D` | Verified and proxy-linked |
 | `DoudoBundleModuleUpgradeable` | `0x68cBA2b3c72Be39be748B06c1e6dDab2855E91b6` | `0x331818ea2401847823A5dc5C76358db04707F74e` | Verified and proxy-linked |
 | `DoudoRefundModuleUpgradeable` | `0x8ee19238DAa466B7792BE33569c6E4f6993CCf20` | `0xC6cad8c6A27170848CF295fd1A290A143d3Ea4a3` | Verified and proxy-linked |
-| `DoudoRedrawModuleUpgradeable` | `0xE75461828f41C890fbc811e7cABFe2143B3F4afE` | `0xaa02Ee36a3CC7cc66e69cD8b25Cba39071101B92` | Verified and proxy-linked |
+| `DoudoRedrawModuleUpgradeable` | `0xE75461828f41C890fbc811e7cABFe2143B3F4afE` | `0xAC4A0DF12704eFE73ca8D20eC4965C69105AF2b8` | Verified and proxy-linked |
 | `DoudoCollectionRewardModuleUpgradeable` | `0x680618a6933DD68fF84Ff9F64760120d27400B3C` | `0x2cE5a89cBA7F79a6de97E6d798522f66310a6d83` | Verified and proxy-linked |
 | `CollectionBookUpgradeable` | `0x4284be399cA9591fBd98248969fCcb969E21B2C6` | `0x65910b3d16cD79c82B9FDC5f1c62C712Fe18F88C` | Verified and proxy-linked |
 | `MerchantSeriesRegistry` | `0x03dBEE1f231A29b06032aa24D2CFb96a1321C1A6` | `0x59B2869C51cc555734845DF9eb3bDFb5Fc6f1E81` | Verified and proxy-linked |
@@ -40,12 +41,14 @@ Explorer links:
 - Redraw DoudoVRFRouter: `https://sepolia.arbiscan.io/address/0x5A59D45437559C7CE0A012630a456321180C21e1#code`
 - Core proxy: `https://sepolia.arbiscan.io/address/0xf75395A8cd753f47135cfcaE00D2706252c3E0F5#code`
 - Core implementation: `https://sepolia.arbiscan.io/address/0x69Cba537C085BA7D9242C71c434F4cD0F81d4311#code`
+- SeriesOps proxy: `https://sepolia.arbiscan.io/address/0x2FF7521dEF3903fc5c6f2877252cdf5019380070#code`
+- SeriesOps implementation: `https://sepolia.arbiscan.io/address/0x5409aa1Fbdd2e28fb47457F7ee50af1f73dD966D#code`
 - Bundle proxy: `https://sepolia.arbiscan.io/address/0x68cBA2b3c72Be39be748B06c1e6dDab2855E91b6#code`
 - Bundle implementation: `https://sepolia.arbiscan.io/address/0x331818ea2401847823A5dc5C76358db04707F74e#code`
 - Refund proxy: `https://sepolia.arbiscan.io/address/0x8ee19238DAa466B7792BE33569c6E4f6993CCf20#code`
 - Refund implementation: `https://sepolia.arbiscan.io/address/0xC6cad8c6A27170848CF295fd1A290A143d3Ea4a3#code`
 - Redraw proxy: `https://sepolia.arbiscan.io/address/0xE75461828f41C890fbc811e7cABFe2143B3F4afE#code`
-- Redraw implementation: `https://sepolia.arbiscan.io/address/0xaa02Ee36a3CC7cc66e69cD8b25Cba39071101B92#code`
+- Redraw implementation: `https://sepolia.arbiscan.io/address/0xAC4A0DF12704eFE73ca8D20eC4965C69105AF2b8#code`
 - Collection reward proxy: `https://sepolia.arbiscan.io/address/0x680618a6933DD68fF84Ff9F64760120d27400B3C#code`
 - CollectionBook proxy: `https://sepolia.arbiscan.io/address/0x4284be399cA9591fBd98248969fCcb969E21B2C6#code`
 - CollectionBook implementation: `https://sepolia.arbiscan.io/address/0x65910b3d16cD79c82B9FDC5f1c62C712Fe18F88C#code`
@@ -63,6 +66,7 @@ Use implementation ABIs for proxy calls.
 | `DOUDOCOIN` | `/Users/angustsai/ICHICHAIN_CONTRACT/artifacts/contracts/DDOUDOCOIN.sol/DOUDOCOIN.json` |
 | `DoudoVRFRouter` | `/Users/angustsai/ICHICHAIN_CONTRACT/artifacts/contracts/DoudoVRFRouter.sol/DoudoVRFRouter.json` |
 | `DOUDOCHAINV2CoreUpgradeable` | `/Users/angustsai/ICHICHAIN_CONTRACT/artifacts/contracts/DOUDOCHAINV2CoreUpgradeable.sol/DOUDOCHAINV2CoreUpgradeable.json` |
+| `DoudoSeriesOpsModuleUpgradeable` | `/Users/angustsai/ICHICHAIN_CONTRACT/artifacts/contracts/modules/DoudoSeriesOpsModuleUpgradeable.sol/DoudoSeriesOpsModuleUpgradeable.json` |
 | `DoudoBundleModuleUpgradeable` | `/Users/angustsai/ICHICHAIN_CONTRACT/artifacts/contracts/modules/DoudoBundleModuleUpgradeable.sol/DoudoBundleModuleUpgradeable.json` |
 | `DoudoRefundModuleUpgradeable` | `/Users/angustsai/ICHICHAIN_CONTRACT/artifacts/contracts/modules/DoudoRefundModuleUpgradeable.sol/DoudoRefundModuleUpgradeable.json` |
 | `DoudoRedrawModuleUpgradeable` | `/Users/angustsai/ICHICHAIN_CONTRACT/artifacts/contracts/modules/DoudoRedrawModuleUpgradeable.sol/DoudoRedrawModuleUpgradeable.json` |
@@ -100,6 +104,11 @@ Latest upgrade/wiring txs:
 
 | Action | Tx |
 | --- | --- |
+| SeriesOps five-minute-lock implementation deployment (block `289143188`) | `0xe4b1cd1180589eaba234b2f02c47252bb8ddfebd3d47cc4fa53f885b4bf40edf` |
+| SeriesOps five-minute-lock proxy upgrade (block `289143220`) | `0xfcd2039a763b37a00296eb1f26b40aecb14a99b8d085851cf8786a88dc4aeaa1` |
+| SeriesOps set default lock to 300 seconds (block `289143242`) | `0x2609bdf62837becaa5ae2812646aba527acb91aec4bc2fe8bec1447b3c9ea34a` |
+| Redraw atomic batch implementation deployment (block `289143470`) | `0x46976bcd8547ffe52b70b19d7c026686ac35c568691128f28303e556f8819d04` |
+| Redraw atomic batch proxy upgrade (block `289143498`) | `0x03b07d393a70835d8d08df08b1a71ebb7a624e3b7c04c5b5ba8960c2336b10b8` |
 | Security-hardening Core implementation deployment (block `286422420`) | `0x6e453135384cf9c4fe5eccb73842f3d778f7c695684dbdf8ada6c7088a82d9d6` |
 | Security-hardening Core proxy upgrade (block `286422442`) | `0xd79ab03359616e5abaa35a7442454704b9007e78c710f499e74274acb14bdce1` |
 | Security-hardening CollectionBook implementation deployment (block `286422474`) | `0xeb66b856a11e9d43f85f0c22860d0d5dcb80f76abfe245af9254729452bc82de` |

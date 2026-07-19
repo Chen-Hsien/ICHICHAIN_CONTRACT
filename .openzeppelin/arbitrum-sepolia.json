@@ -14446,7 +14446,7 @@
             "label": "core",
             "offset": 0,
             "slot": "201",
-            "type": "t_contract(IDoudoCore)4965",
+            "type": "t_contract(IDoudoCore)28110",
             "contract": "DoudoRedrawModuleUpgradeable",
             "src": "contracts/modules/DoudoRedrawModuleUpgradeable.sol:43"
           },
@@ -14454,7 +14454,7 @@
             "label": "router",
             "offset": 0,
             "slot": "202",
-            "type": "t_contract(IDoudoVRFRouter)5085",
+            "type": "t_contract(IDoudoVRFRouter)28328",
             "contract": "DoudoRedrawModuleUpgradeable",
             "src": "contracts/modules/DoudoRedrawModuleUpgradeable.sol:44"
           },
@@ -14470,7 +14470,7 @@
             "label": "redrawConfigs",
             "offset": 0,
             "slot": "204",
-            "type": "t_mapping(t_uint256,t_struct(RedrawConfig)6139_storage)",
+            "type": "t_mapping(t_uint256,t_struct(RedrawConfig)29425_storage)",
             "contract": "DoudoRedrawModuleUpgradeable",
             "src": "contracts/modules/DoudoRedrawModuleUpgradeable.sol:47"
           },
@@ -14478,7 +14478,7 @@
             "label": "requestContexts",
             "offset": 0,
             "slot": "205",
-            "type": "t_mapping(t_uint256,t_struct(RequestContext)6146_storage)",
+            "type": "t_mapping(t_uint256,t_struct(RequestContext)29432_storage)",
             "contract": "DoudoRedrawModuleUpgradeable",
             "src": "contracts/modules/DoudoRedrawModuleUpgradeable.sol:48"
           },
@@ -14502,7 +14502,7 @@
             "label": "consolationPrizes",
             "offset": 0,
             "slot": "208",
-            "type": "t_mapping(t_uint256,t_array(t_struct(SubPrize)6155_storage)dyn_storage)",
+            "type": "t_mapping(t_uint256,t_array(t_struct(SubPrize)29441_storage)dyn_storage)",
             "contract": "DoudoRedrawModuleUpgradeable",
             "src": "contracts/modules/DoudoRedrawModuleUpgradeable.sol:287"
           },
@@ -14528,7 +14528,7 @@
             "label": "address",
             "numberOfBytes": "20"
           },
-          "t_array(t_struct(SubPrize)6155_storage)dyn_storage": {
+          "t_array(t_struct(SubPrize)29441_storage)dyn_storage": {
             "label": "struct DoudoRedrawModuleUpgradeable.SubPrize[]",
             "numberOfBytes": "32"
           },
@@ -14556,11 +14556,11 @@
             "label": "bytes32",
             "numberOfBytes": "32"
           },
-          "t_contract(IDoudoCore)4965": {
+          "t_contract(IDoudoCore)28110": {
             "label": "contract IDoudoCore",
             "numberOfBytes": "20"
           },
-          "t_contract(IDoudoVRFRouter)5085": {
+          "t_contract(IDoudoVRFRouter)28328": {
             "label": "contract IDoudoVRFRouter",
             "numberOfBytes": "20"
           },
@@ -14576,7 +14576,7 @@
             "label": "mapping(bytes32 => mapping(address => bool))",
             "numberOfBytes": "32"
           },
-          "t_mapping(t_uint256,t_array(t_struct(SubPrize)6155_storage)dyn_storage)": {
+          "t_mapping(t_uint256,t_array(t_struct(SubPrize)29441_storage)dyn_storage)": {
             "label": "mapping(uint256 => struct DoudoRedrawModuleUpgradeable.SubPrize[])",
             "numberOfBytes": "32"
           },
@@ -14588,11 +14588,11 @@
             "label": "mapping(uint256 => mapping(address => uint256))",
             "numberOfBytes": "32"
           },
-          "t_mapping(t_uint256,t_struct(RedrawConfig)6139_storage)": {
+          "t_mapping(t_uint256,t_struct(RedrawConfig)29425_storage)": {
             "label": "mapping(uint256 => struct DoudoRedrawModuleUpgradeable.RedrawConfig)",
             "numberOfBytes": "32"
           },
-          "t_mapping(t_uint256,t_struct(RequestContext)6146_storage)": {
+          "t_mapping(t_uint256,t_struct(RequestContext)29432_storage)": {
             "label": "mapping(uint256 => struct DoudoRedrawModuleUpgradeable.RequestContext)",
             "numberOfBytes": "32"
           },
@@ -14604,7 +14604,7 @@
             "label": "string",
             "numberOfBytes": "32"
           },
-          "t_struct(RedrawConfig)6139_storage": {
+          "t_struct(RedrawConfig)29425_storage": {
             "label": "struct DoudoRedrawModuleUpgradeable.RedrawConfig",
             "members": [
               {
@@ -14622,7 +14622,7 @@
             ],
             "numberOfBytes": "32"
           },
-          "t_struct(RequestContext)6146_storage": {
+          "t_struct(RequestContext)29432_storage": {
             "label": "struct DoudoRedrawModuleUpgradeable.RequestContext",
             "members": [
               {
@@ -14646,7 +14646,7 @@
             ],
             "numberOfBytes": "64"
           },
-          "t_struct(SubPrize)6155_storage": {
+          "t_struct(SubPrize)29441_storage": {
             "label": "struct DoudoRedrawModuleUpgradeable.SubPrize",
             "members": [
               {
@@ -16566,6 +16566,536 @@
           "t_uint32": {
             "label": "uint32",
             "numberOfBytes": "4"
+          },
+          "t_uint8": {
+            "label": "uint8",
+            "numberOfBytes": "1"
+          }
+        },
+        "namespaces": {}
+      }
+    },
+    "4218e2d104fcf534f6fa4fa6a13fd532c1ca9141eaeb50bda9649a6e788ea8ef": {
+      "address": "0x5409aa1Fbdd2e28fb47457F7ee50af1f73dD966D",
+      "txHash": "0xe4b1cd1180589eaba234b2f02c47252bb8ddfebd3d47cc4fa53f885b4bf40edf",
+      "layout": {
+        "solcVersion": "0.8.20",
+        "storage": [
+          {
+            "label": "_initialized",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint8",
+            "contract": "Initializable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:63",
+            "retypedFrom": "bool"
+          },
+          {
+            "label": "_initializing",
+            "offset": 1,
+            "slot": "0",
+            "type": "t_bool",
+            "contract": "Initializable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:68"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "ERC1967UpgradeUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/ERC1967/ERC1967UpgradeUpgradeable.sol:169"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "51",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "UUPSUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol:111"
+          },
+          {
+            "label": "_roles",
+            "offset": 0,
+            "slot": "101",
+            "type": "t_mapping(t_bytes32,t_mapping(t_address,t_bool))",
+            "contract": "MinimalAccessControlUpgradeable",
+            "src": "contracts/access/MinimalAccessControlUpgradeable.sol:9"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "102",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "MinimalAccessControlUpgradeable",
+            "src": "contracts/access/MinimalAccessControlUpgradeable.sol:68"
+          },
+          {
+            "label": "core",
+            "offset": 0,
+            "slot": "151",
+            "type": "t_address",
+            "contract": "DoudoSeriesOpsModuleUpgradeable",
+            "src": "contracts/modules/DoudoSeriesOpsModuleUpgradeable.sol:19"
+          },
+          {
+            "label": "defaultLockDuration",
+            "offset": 0,
+            "slot": "152",
+            "type": "t_uint256",
+            "contract": "DoudoSeriesOpsModuleUpgradeable",
+            "src": "contracts/modules/DoudoSeriesOpsModuleUpgradeable.sol:20"
+          },
+          {
+            "label": "seriesInitialized",
+            "offset": 0,
+            "slot": "153",
+            "type": "t_mapping(t_uint256,t_bool)",
+            "contract": "DoudoSeriesOpsModuleUpgradeable",
+            "src": "contracts/modules/DoudoSeriesOpsModuleUpgradeable.sol:22"
+          },
+          {
+            "label": "seriesLockDuration",
+            "offset": 0,
+            "slot": "154",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "contract": "DoudoSeriesOpsModuleUpgradeable",
+            "src": "contracts/modules/DoudoSeriesOpsModuleUpgradeable.sol:23"
+          },
+          {
+            "label": "mintLockOwner",
+            "offset": 0,
+            "slot": "155",
+            "type": "t_mapping(t_uint256,t_address)",
+            "contract": "DoudoSeriesOpsModuleUpgradeable",
+            "src": "contracts/modules/DoudoSeriesOpsModuleUpgradeable.sol:24"
+          },
+          {
+            "label": "mintLockUntil",
+            "offset": 0,
+            "slot": "156",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "contract": "DoudoSeriesOpsModuleUpgradeable",
+            "src": "contracts/modules/DoudoSeriesOpsModuleUpgradeable.sol:25"
+          },
+          {
+            "label": "seriesMaxPerWallet",
+            "offset": 0,
+            "slot": "157",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "contract": "DoudoSeriesOpsModuleUpgradeable",
+            "src": "contracts/modules/DoudoSeriesOpsModuleUpgradeable.sol:26"
+          },
+          {
+            "label": "mintedPerWallet",
+            "offset": 0,
+            "slot": "158",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_uint256))",
+            "contract": "DoudoSeriesOpsModuleUpgradeable",
+            "src": "contracts/modules/DoudoSeriesOpsModuleUpgradeable.sol:27"
+          },
+          {
+            "label": "seriesRevealDisabled",
+            "offset": 0,
+            "slot": "159",
+            "type": "t_mapping(t_uint256,t_bool)",
+            "contract": "DoudoSeriesOpsModuleUpgradeable",
+            "src": "contracts/modules/DoudoSeriesOpsModuleUpgradeable.sol:28"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "160",
+            "type": "t_array(t_uint256)41_storage",
+            "contract": "DoudoSeriesOpsModuleUpgradeable",
+            "src": "contracts/modules/DoudoSeriesOpsModuleUpgradeable.sol:216"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_uint256)41_storage": {
+            "label": "uint256[41]",
+            "numberOfBytes": "1312"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]",
+            "numberOfBytes": "1568"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]",
+            "numberOfBytes": "1600"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_bytes32": {
+            "label": "bytes32",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_mapping(t_address,t_bool))": {
+            "label": "mapping(bytes32 => mapping(address => bool))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_address)": {
+            "label": "mapping(uint256 => address)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_bool)": {
+            "label": "mapping(uint256 => bool)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_mapping(t_address,t_uint256))": {
+            "label": "mapping(uint256 => mapping(address => uint256))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "label": "mapping(uint256 => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint8": {
+            "label": "uint8",
+            "numberOfBytes": "1"
+          }
+        },
+        "namespaces": {}
+      }
+    },
+    "b019cb2aecbf377c0c90274ac765c214c5267d3007b8d8f2977c14f1fa2de171": {
+      "address": "0xAC4A0DF12704eFE73ca8D20eC4965C69105AF2b8",
+      "txHash": "0x46976bcd8547ffe52b70b19d7c026686ac35c568691128f28303e556f8819d04",
+      "layout": {
+        "solcVersion": "0.8.20",
+        "storage": [
+          {
+            "label": "_initialized",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint8",
+            "contract": "Initializable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:63",
+            "retypedFrom": "bool"
+          },
+          {
+            "label": "_initializing",
+            "offset": 1,
+            "slot": "0",
+            "type": "t_bool",
+            "contract": "Initializable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:68"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "ERC1967UpgradeUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/ERC1967/ERC1967UpgradeUpgradeable.sol:169"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "51",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "UUPSUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol:111"
+          },
+          {
+            "label": "_roles",
+            "offset": 0,
+            "slot": "101",
+            "type": "t_mapping(t_bytes32,t_mapping(t_address,t_bool))",
+            "contract": "MinimalAccessControlUpgradeable",
+            "src": "contracts/access/MinimalAccessControlUpgradeable.sol:9"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "102",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "MinimalAccessControlUpgradeable",
+            "src": "contracts/access/MinimalAccessControlUpgradeable.sol:68"
+          },
+          {
+            "label": "_paused",
+            "offset": 0,
+            "slot": "151",
+            "type": "t_bool",
+            "contract": "LightweightGuardsUpgradeable",
+            "src": "contracts/security/LightweightGuardsUpgradeable.sol:10"
+          },
+          {
+            "label": "_reentrancyStatus",
+            "offset": 0,
+            "slot": "152",
+            "type": "t_uint256",
+            "contract": "LightweightGuardsUpgradeable",
+            "src": "contracts/security/LightweightGuardsUpgradeable.sol:11"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "153",
+            "type": "t_array(t_uint256)48_storage",
+            "contract": "LightweightGuardsUpgradeable",
+            "src": "contracts/security/LightweightGuardsUpgradeable.sol:55"
+          },
+          {
+            "label": "core",
+            "offset": 0,
+            "slot": "201",
+            "type": "t_contract(IDoudoCore)1470",
+            "contract": "DoudoRedrawModuleUpgradeable",
+            "src": "contracts/modules/DoudoRedrawModuleUpgradeable.sol:43"
+          },
+          {
+            "label": "router",
+            "offset": 0,
+            "slot": "202",
+            "type": "t_contract(IDoudoVRFRouter)1556",
+            "contract": "DoudoRedrawModuleUpgradeable",
+            "src": "contracts/modules/DoudoRedrawModuleUpgradeable.sol:44"
+          },
+          {
+            "label": "bundleModule",
+            "offset": 0,
+            "slot": "203",
+            "type": "t_address",
+            "contract": "DoudoRedrawModuleUpgradeable",
+            "src": "contracts/modules/DoudoRedrawModuleUpgradeable.sol:45"
+          },
+          {
+            "label": "redrawConfigs",
+            "offset": 0,
+            "slot": "204",
+            "type": "t_mapping(t_uint256,t_struct(RedrawConfig)1596_storage)",
+            "contract": "DoudoRedrawModuleUpgradeable",
+            "src": "contracts/modules/DoudoRedrawModuleUpgradeable.sol:47"
+          },
+          {
+            "label": "requestContexts",
+            "offset": 0,
+            "slot": "205",
+            "type": "t_mapping(t_uint256,t_struct(RequestContext)1603_storage)",
+            "contract": "DoudoRedrawModuleUpgradeable",
+            "src": "contracts/modules/DoudoRedrawModuleUpgradeable.sol:48"
+          },
+          {
+            "label": "consolationDrawBalances",
+            "offset": 0,
+            "slot": "206",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_uint256))",
+            "contract": "DoudoRedrawModuleUpgradeable",
+            "src": "contracts/modules/DoudoRedrawModuleUpgradeable.sol:49"
+          },
+          {
+            "label": "redrawEnabled",
+            "offset": 0,
+            "slot": "207",
+            "type": "t_mapping(t_uint256,t_bool)",
+            "contract": "DoudoRedrawModuleUpgradeable",
+            "src": "contracts/modules/DoudoRedrawModuleUpgradeable.sol:291"
+          },
+          {
+            "label": "consolationPrizes",
+            "offset": 0,
+            "slot": "208",
+            "type": "t_mapping(t_uint256,t_array(t_struct(SubPrize)1612_storage)dyn_storage)",
+            "contract": "DoudoRedrawModuleUpgradeable",
+            "src": "contracts/modules/DoudoRedrawModuleUpgradeable.sol:292"
+          },
+          {
+            "label": "redrawMainMintCounts",
+            "offset": 0,
+            "slot": "209",
+            "type": "t_mapping(t_uint256,t_uint16)",
+            "contract": "DoudoRedrawModuleUpgradeable",
+            "src": "contracts/modules/DoudoRedrawModuleUpgradeable.sol:293"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "210",
+            "type": "t_array(t_uint256)42_storage",
+            "contract": "DoudoRedrawModuleUpgradeable",
+            "src": "contracts/modules/DoudoRedrawModuleUpgradeable.sol:295"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_struct(SubPrize)1612_storage)dyn_storage": {
+            "label": "struct DoudoRedrawModuleUpgradeable.SubPrize[]",
+            "numberOfBytes": "32"
+          },
+          "t_array(t_uint256)42_storage": {
+            "label": "uint256[42]",
+            "numberOfBytes": "1344"
+          },
+          "t_array(t_uint256)48_storage": {
+            "label": "uint256[48]",
+            "numberOfBytes": "1536"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]",
+            "numberOfBytes": "1568"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]",
+            "numberOfBytes": "1600"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_bytes32": {
+            "label": "bytes32",
+            "numberOfBytes": "32"
+          },
+          "t_contract(IDoudoCore)1470": {
+            "label": "contract IDoudoCore",
+            "numberOfBytes": "20"
+          },
+          "t_contract(IDoudoVRFRouter)1556": {
+            "label": "contract IDoudoVRFRouter",
+            "numberOfBytes": "20"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_mapping(t_address,t_bool))": {
+            "label": "mapping(bytes32 => mapping(address => bool))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_array(t_struct(SubPrize)1612_storage)dyn_storage)": {
+            "label": "mapping(uint256 => struct DoudoRedrawModuleUpgradeable.SubPrize[])",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_bool)": {
+            "label": "mapping(uint256 => bool)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_mapping(t_address,t_uint256))": {
+            "label": "mapping(uint256 => mapping(address => uint256))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(RedrawConfig)1596_storage)": {
+            "label": "mapping(uint256 => struct DoudoRedrawModuleUpgradeable.RedrawConfig)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(RequestContext)1603_storage)": {
+            "label": "mapping(uint256 => struct DoudoRedrawModuleUpgradeable.RequestContext)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_uint16)": {
+            "label": "mapping(uint256 => uint16)",
+            "numberOfBytes": "32"
+          },
+          "t_string_storage": {
+            "label": "string",
+            "numberOfBytes": "32"
+          },
+          "t_struct(RedrawConfig)1596_storage": {
+            "label": "struct DoudoRedrawModuleUpgradeable.RedrawConfig",
+            "members": [
+              {
+                "label": "mainBurnCount",
+                "type": "t_uint16",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "consolationBurnCount",
+                "type": "t_uint16",
+                "offset": 2,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(RequestContext)1603_storage": {
+            "label": "struct DoudoRedrawModuleUpgradeable.RequestContext",
+            "members": [
+              {
+                "label": "seriesID",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "user",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "consolation",
+                "type": "t_bool",
+                "offset": 20,
+                "slot": "1"
+              }
+            ],
+            "numberOfBytes": "64"
+          },
+          "t_struct(SubPrize)1612_storage": {
+            "label": "struct DoudoRedrawModuleUpgradeable.SubPrize",
+            "members": [
+              {
+                "label": "subPrizeID",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "prizeGroup",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "subPrizeName",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "subPrizeRemainingQuantity",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "3"
+              }
+            ],
+            "numberOfBytes": "128"
+          },
+          "t_uint16": {
+            "label": "uint16",
+            "numberOfBytes": "2"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
           },
           "t_uint8": {
             "label": "uint8",
