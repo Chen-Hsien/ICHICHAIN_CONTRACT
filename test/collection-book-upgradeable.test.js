@@ -1,5 +1,6 @@
 const { expect } = require("chai");
 const { ethers, upgrades } = require("hardhat");
+const { time } = require("@nomicfoundation/hardhat-network-helpers");
 
 async function deployFixture() {
   const [admin, user, other] = await ethers.getSigners();
@@ -89,6 +90,79 @@ describe("CollectionBookUpgradeable events and flows", function () {
     expect(firstSlot.seriesID).to.equal(0);
     expect(firstSlot.prizeId).to.equal(1);
     expect(await book.totalRequired(0)).to.equal(3);
+    expect(await book.bookExpiresAt(0)).to.equal(0);
+  });
+
+  it("creates expiring books and publishes the chain deadline for indexing", async function () {
+    const { source, book } = await deployFixture();
+    const expiresAt = (await time.latest()) + 3600;
+    const slots = [
+      { sourceContract: await source.getAddress(), seriesID: 0, prizeId: 1, quantity: 1 },
+    ];
+
+    await expect(
+      book.createBookWithExpiration("Timed Book", slots, 1, ethers.parseEther("10"), true, expiresAt)
+    )
+      .to.emit(book, "CollectionBookExpirationUpdated")
+      .withArgs(0, expiresAt);
+
+    expect(await book.bookExpiresAt(0)).to.equal(expiresAt);
+  });
+
+  it("blocks deposits and claims after expiry while always allowing withdrawals", async function () {
+    const { user, source, book } = await deployFixture();
+    const expiresAt = (await time.latest()) + 3600;
+    await book.createBookWithExpiration(
+      "Timed Book",
+      [{ sourceContract: await source.getAddress(), seriesID: 0, prizeId: 1, quantity: 1 }],
+      1,
+      ethers.parseEther("10"),
+      true,
+      expiresAt
+    );
+    const tokenId = await mintAndApprove(source, book, user);
+    await book.connect(user).depositToBook(0, [tokenId]);
+
+    await time.increaseTo(expiresAt);
+
+    await expect(book.connect(user).claimBook(0)).to.be.revertedWithCustomError(
+      book,
+      "BookExpired"
+    );
+    await expect(
+      book.connect(user).withdrawDeposited(0, await source.getAddress(), [tokenId])
+    )
+      .to.emit(book, "CollectionBookSlotEmptied")
+      .withArgs(user.address, 0, 0, await source.getAddress(), tokenId, 0);
+
+    const nextTokenId = await mintAndApprove(source, book, user);
+    await expect(book.connect(user).depositToBook(0, [nextTokenId])).to.be.revertedWithCustomError(
+      book,
+      "BookExpired"
+    );
+  });
+
+  it("can remove a deadline by setting it back to zero", async function () {
+    const { user, source, book } = await deployFixture();
+    const expiresAt = (await time.latest()) + 60;
+    await book.createBookWithExpiration(
+      "Reopened Book",
+      [{ sourceContract: await source.getAddress(), seriesID: 0, prizeId: 1, quantity: 1 }],
+      1,
+      ethers.parseEther("10"),
+      true,
+      expiresAt
+    );
+    await time.increaseTo(expiresAt);
+    const tokenId = await mintAndApprove(source, book, user);
+
+    await expect(book.setBookExpiration(0, 0))
+      .to.emit(book, "CollectionBookExpirationUpdated")
+      .withArgs(0, 0);
+    await expect(book.connect(user).depositToBook(0, [tokenId])).to.emit(
+      book,
+      "CollectionBookSlotFilled"
+    );
   });
 
   it("updates book active status with a subgraph-specific event", async function () {

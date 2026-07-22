@@ -16292,7 +16292,7 @@
             "label": "doudoPoints",
             "offset": 0,
             "slot": "201",
-            "type": "t_contract(IDoudoPoints)9309",
+            "type": "t_contract(IDoudoPoints)29007",
             "contract": "CollectionBookUpgradeable",
             "src": "contracts/CollectionBookUpgradeable.sol:47"
           },
@@ -16316,7 +16316,7 @@
             "label": "books",
             "offset": 0,
             "slot": "204",
-            "type": "t_mapping(t_uint256,t_struct(Book)5999_storage)",
+            "type": "t_mapping(t_uint256,t_struct(Book)8611_storage)",
             "contract": "CollectionBookUpgradeable",
             "src": "contracts/CollectionBookUpgradeable.sol:51"
           },
@@ -16324,7 +16324,7 @@
             "label": "bookSlots",
             "offset": 0,
             "slot": "205",
-            "type": "t_mapping(t_uint256,t_array(t_struct(Slot)5989_storage)dyn_storage)",
+            "type": "t_mapping(t_uint256,t_array(t_struct(Slot)8601_storage)dyn_storage)",
             "contract": "CollectionBookUpgradeable",
             "src": "contracts/CollectionBookUpgradeable.sol:52"
           },
@@ -16398,7 +16398,7 @@
             "label": "address",
             "numberOfBytes": "20"
           },
-          "t_array(t_struct(Slot)5989_storage)dyn_storage": {
+          "t_array(t_struct(Slot)8601_storage)dyn_storage": {
             "label": "struct CollectionBookUpgradeable.Slot[]",
             "numberOfBytes": "32"
           },
@@ -16426,11 +16426,11 @@
             "label": "bytes32",
             "numberOfBytes": "32"
           },
-          "t_contract(IDoudoPoints)9309": {
+          "t_contract(IDoudoPoints)29007": {
             "label": "contract IDoudoPoints",
             "numberOfBytes": "20"
           },
-          "t_enum(RewardKind)5980": {
+          "t_enum(RewardKind)8592": {
             "label": "enum CollectionBookUpgradeable.RewardKind",
             "members": [
               "NftPrize",
@@ -16471,7 +16471,7 @@
             "label": "mapping(uint256 => address)",
             "numberOfBytes": "32"
           },
-          "t_mapping(t_uint256,t_array(t_struct(Slot)5989_storage)dyn_storage)": {
+          "t_mapping(t_uint256,t_array(t_struct(Slot)8601_storage)dyn_storage)": {
             "label": "mapping(uint256 => struct CollectionBookUpgradeable.Slot[])",
             "numberOfBytes": "32"
           },
@@ -16483,7 +16483,7 @@
             "label": "mapping(uint256 => mapping(uint256 => uint32))",
             "numberOfBytes": "32"
           },
-          "t_mapping(t_uint256,t_struct(Book)5999_storage)": {
+          "t_mapping(t_uint256,t_struct(Book)8611_storage)": {
             "label": "mapping(uint256 => struct CollectionBookUpgradeable.Book)",
             "numberOfBytes": "32"
           },
@@ -16499,7 +16499,7 @@
             "label": "string",
             "numberOfBytes": "32"
           },
-          "t_struct(Book)5999_storage": {
+          "t_struct(Book)8611_storage": {
             "label": "struct CollectionBookUpgradeable.Book",
             "members": [
               {
@@ -16510,7 +16510,7 @@
               },
               {
                 "label": "rewardKind",
-                "type": "t_enum(RewardKind)5980",
+                "type": "t_enum(RewardKind)8592",
                 "offset": 0,
                 "slot": "1"
               },
@@ -16529,7 +16529,7 @@
             ],
             "numberOfBytes": "128"
           },
-          "t_struct(Slot)5989_storage": {
+          "t_struct(Slot)8601_storage": {
             "label": "struct CollectionBookUpgradeable.Slot",
             "members": [
               {
@@ -17096,6 +17096,1030 @@
           "t_uint256": {
             "label": "uint256",
             "numberOfBytes": "32"
+          },
+          "t_uint8": {
+            "label": "uint8",
+            "numberOfBytes": "1"
+          }
+        },
+        "namespaces": {}
+      }
+    },
+    "2df1b71f6de4437f449d19f887dce76009c4a0f67317c2c2bed60f88aa645ab9": {
+      "address": "0x73a3e3d2f632500aA034b68Df86249B011c24B06",
+      "txHash": "0xed667fdda5c710312955f9012519d9a7b9ca94bb2dcb49833014a727908e2c3d",
+      "layout": {
+        "solcVersion": "0.8.20",
+        "storage": [
+          {
+            "label": "_initialized",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint8",
+            "contract": "Initializable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:63",
+            "retypedFrom": "bool"
+          },
+          {
+            "label": "_initializing",
+            "offset": 1,
+            "slot": "0",
+            "type": "t_bool",
+            "contract": "Initializable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:68"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "ERC1967UpgradeUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/ERC1967/ERC1967UpgradeUpgradeable.sol:169"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "51",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "UUPSUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol:111"
+          },
+          {
+            "label": "_roles",
+            "offset": 0,
+            "slot": "101",
+            "type": "t_mapping(t_bytes32,t_mapping(t_address,t_bool))",
+            "contract": "MinimalAccessControlUpgradeable",
+            "src": "contracts/access/MinimalAccessControlUpgradeable.sol:9"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "102",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "MinimalAccessControlUpgradeable",
+            "src": "contracts/access/MinimalAccessControlUpgradeable.sol:68"
+          },
+          {
+            "label": "_paused",
+            "offset": 0,
+            "slot": "151",
+            "type": "t_bool",
+            "contract": "LightweightGuardsUpgradeable",
+            "src": "contracts/security/LightweightGuardsUpgradeable.sol:10"
+          },
+          {
+            "label": "_reentrancyStatus",
+            "offset": 0,
+            "slot": "152",
+            "type": "t_uint256",
+            "contract": "LightweightGuardsUpgradeable",
+            "src": "contracts/security/LightweightGuardsUpgradeable.sol:11"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "153",
+            "type": "t_array(t_uint256)48_storage",
+            "contract": "LightweightGuardsUpgradeable",
+            "src": "contracts/security/LightweightGuardsUpgradeable.sol:55"
+          },
+          {
+            "label": "doudoPoints",
+            "offset": 0,
+            "slot": "201",
+            "type": "t_contract(IDoudoPoints)5165",
+            "contract": "DOUDOCHAINV2CoreUpgradeable",
+            "src": "contracts/DOUDOCHAINV2CoreUpgradeable.sol:93"
+          },
+          {
+            "label": "vrfRouter",
+            "offset": 0,
+            "slot": "202",
+            "type": "t_address",
+            "contract": "DOUDOCHAINV2CoreUpgradeable",
+            "src": "contracts/DOUDOCHAINV2CoreUpgradeable.sol:94"
+          },
+          {
+            "label": "defaultLockDuration",
+            "offset": 0,
+            "slot": "203",
+            "type": "t_uint256",
+            "contract": "DOUDOCHAINV2CoreUpgradeable",
+            "src": "contracts/DOUDOCHAINV2CoreUpgradeable.sol:95"
+          },
+          {
+            "label": "seriesData",
+            "offset": 0,
+            "slot": "204",
+            "type": "t_mapping(t_uint256,t_struct(Series)1257_storage)",
+            "contract": "DOUDOCHAINV2CoreUpgradeable",
+            "src": "contracts/DOUDOCHAINV2CoreUpgradeable.sol:97"
+          },
+          {
+            "label": "seriesSubPrizes",
+            "offset": 0,
+            "slot": "205",
+            "type": "t_mapping(t_uint256,t_array(t_struct(SubPrize)4801_storage)dyn_storage)",
+            "contract": "DOUDOCHAINV2CoreUpgradeable",
+            "src": "contracts/DOUDOCHAINV2CoreUpgradeable.sol:98"
+          },
+          {
+            "label": "ticketStatusDetail",
+            "offset": 0,
+            "slot": "206",
+            "type": "t_mapping(t_uint256,t_struct(TicketStatus)1270_storage)",
+            "contract": "DOUDOCHAINV2CoreUpgradeable",
+            "src": "contracts/DOUDOCHAINV2CoreUpgradeable.sol:99"
+          },
+          {
+            "label": "luckyNumberUsed",
+            "offset": 0,
+            "slot": "207",
+            "type": "t_mapping(t_uint256,t_mapping(t_uint16,t_bool))",
+            "contract": "DOUDOCHAINV2CoreUpgradeable",
+            "src": "contracts/DOUDOCHAINV2CoreUpgradeable.sol:100"
+          },
+          {
+            "label": "mintedPerWallet",
+            "offset": 0,
+            "slot": "208",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_uint256))",
+            "contract": "DOUDOCHAINV2CoreUpgradeable",
+            "src": "contracts/DOUDOCHAINV2CoreUpgradeable.sol:101"
+          },
+          {
+            "label": "mintLockOwner",
+            "offset": 0,
+            "slot": "209",
+            "type": "t_mapping(t_uint256,t_address)",
+            "contract": "DOUDOCHAINV2CoreUpgradeable",
+            "src": "contracts/DOUDOCHAINV2CoreUpgradeable.sol:102"
+          },
+          {
+            "label": "mintLockUntil",
+            "offset": 0,
+            "slot": "210",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "contract": "DOUDOCHAINV2CoreUpgradeable",
+            "src": "contracts/DOUDOCHAINV2CoreUpgradeable.sol:103"
+          },
+          {
+            "label": "pointsPaid",
+            "offset": 0,
+            "slot": "211",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "contract": "DOUDOCHAINV2CoreUpgradeable",
+            "src": "contracts/DOUDOCHAINV2CoreUpgradeable.sol:104"
+          },
+          {
+            "label": "seriesRanges",
+            "offset": 0,
+            "slot": "212",
+            "type": "t_mapping(t_uint256,t_array(t_struct(TokenRange)1275_storage)dyn_storage)",
+            "contract": "DOUDOCHAINV2CoreUpgradeable",
+            "src": "contracts/DOUDOCHAINV2CoreUpgradeable.sol:105"
+          },
+          {
+            "label": "totalMintedInSeries",
+            "offset": 0,
+            "slot": "213",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "contract": "DOUDOCHAINV2CoreUpgradeable",
+            "src": "contracts/DOUDOCHAINV2CoreUpgradeable.sol:106"
+          },
+          {
+            "label": "requestKind",
+            "offset": 0,
+            "slot": "214",
+            "type": "t_mapping(t_uint256,t_enum(RequestKind)1191)",
+            "contract": "DOUDOCHAINV2CoreUpgradeable",
+            "src": "contracts/DOUDOCHAINV2CoreUpgradeable.sol:107"
+          },
+          {
+            "label": "requestToRevealToken",
+            "offset": 0,
+            "slot": "215",
+            "type": "t_mapping(t_uint256,t_array(t_uint256)dyn_storage)",
+            "contract": "DOUDOCHAINV2CoreUpgradeable",
+            "src": "contracts/DOUDOCHAINV2CoreUpgradeable.sol:108"
+          },
+          {
+            "label": "requestToSeries",
+            "offset": 0,
+            "slot": "216",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "contract": "DOUDOCHAINV2CoreUpgradeable",
+            "src": "contracts/DOUDOCHAINV2CoreUpgradeable.sol:109"
+          },
+          {
+            "label": "lastPrizeOwners",
+            "offset": 0,
+            "slot": "217",
+            "type": "t_mapping(t_uint256,t_array(t_address)dyn_storage)",
+            "contract": "DOUDOCHAINV2CoreUpgradeable",
+            "src": "contracts/DOUDOCHAINV2CoreUpgradeable.sol:110"
+          },
+          {
+            "label": "lastPrizeRequestPending",
+            "offset": 0,
+            "slot": "218",
+            "type": "t_mapping(t_uint256,t_bool)",
+            "contract": "DOUDOCHAINV2CoreUpgradeable",
+            "src": "contracts/DOUDOCHAINV2CoreUpgradeable.sol:111"
+          },
+          {
+            "label": "seriesUnlockUntil",
+            "offset": 0,
+            "slot": "219",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_uint256))",
+            "contract": "DOUDOCHAINV2CoreUpgradeable",
+            "src": "contracts/DOUDOCHAINV2CoreUpgradeable.sol:112"
+          },
+          {
+            "label": "seriesCounter",
+            "offset": 0,
+            "slot": "220",
+            "type": "t_uint256",
+            "contract": "DOUDOCHAINV2CoreUpgradeable",
+            "src": "contracts/DOUDOCHAINV2CoreUpgradeable.sol:114"
+          },
+          {
+            "label": "seriesLockDuration",
+            "offset": 0,
+            "slot": "221",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "contract": "DOUDOCHAINV2CoreUpgradeable",
+            "src": "contracts/DOUDOCHAINV2CoreUpgradeable.sol:977"
+          },
+          {
+            "label": "revealRequestPending",
+            "offset": 0,
+            "slot": "222",
+            "type": "t_mapping(t_uint256,t_bool)",
+            "contract": "DOUDOCHAINV2CoreUpgradeable",
+            "src": "contracts/DOUDOCHAINV2CoreUpgradeable.sol:978"
+          },
+          {
+            "label": "seriesNextLuckyNumberCandidate",
+            "offset": 0,
+            "slot": "223",
+            "type": "t_mapping(t_uint256,t_uint16)",
+            "contract": "DOUDOCHAINV2CoreUpgradeable",
+            "src": "contracts/DOUDOCHAINV2CoreUpgradeable.sol:979"
+          },
+          {
+            "label": "seriesRevealDisabled",
+            "offset": 0,
+            "slot": "224",
+            "type": "t_mapping(t_uint256,t_bool)",
+            "contract": "DOUDOCHAINV2CoreUpgradeable",
+            "src": "contracts/DOUDOCHAINV2CoreUpgradeable.sol:980"
+          },
+          {
+            "label": "seriesOpsModule",
+            "offset": 0,
+            "slot": "225",
+            "type": "t_contract(IDoudoSeriesOps)5211",
+            "contract": "DOUDOCHAINV2CoreUpgradeable",
+            "src": "contracts/DOUDOCHAINV2CoreUpgradeable.sol:981"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "226",
+            "type": "t_array(t_uint256)35_storage",
+            "contract": "DOUDOCHAINV2CoreUpgradeable",
+            "src": "contracts/DOUDOCHAINV2CoreUpgradeable.sol:983"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_address)dyn_storage": {
+            "label": "address[]",
+            "numberOfBytes": "32"
+          },
+          "t_array(t_struct(SubPrize)4801_storage)dyn_storage": {
+            "label": "struct DoudoCoreTypes.SubPrize[]",
+            "numberOfBytes": "32"
+          },
+          "t_array(t_struct(TokenRange)1275_storage)dyn_storage": {
+            "label": "struct DOUDOCHAINV2CoreUpgradeable.TokenRange[]",
+            "numberOfBytes": "32"
+          },
+          "t_array(t_uint256)35_storage": {
+            "label": "uint256[35]",
+            "numberOfBytes": "1120"
+          },
+          "t_array(t_uint256)48_storage": {
+            "label": "uint256[48]",
+            "numberOfBytes": "1536"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]",
+            "numberOfBytes": "1568"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]",
+            "numberOfBytes": "1600"
+          },
+          "t_array(t_uint256)dyn_storage": {
+            "label": "uint256[]",
+            "numberOfBytes": "32"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_bytes32": {
+            "label": "bytes32",
+            "numberOfBytes": "32"
+          },
+          "t_contract(IDoudoPoints)5165": {
+            "label": "contract IDoudoPoints",
+            "numberOfBytes": "20"
+          },
+          "t_contract(IDoudoSeriesOps)5211": {
+            "label": "contract IDoudoSeriesOps",
+            "numberOfBytes": "20"
+          },
+          "t_enum(RequestKind)1191": {
+            "label": "enum DOUDOCHAINV2CoreUpgradeable.RequestKind",
+            "members": [
+              "None",
+              "Reveal",
+              "LastPrize"
+            ],
+            "numberOfBytes": "1"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_mapping(t_address,t_bool))": {
+            "label": "mapping(bytes32 => mapping(address => bool))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint16,t_bool)": {
+            "label": "mapping(uint16 => bool)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_address)": {
+            "label": "mapping(uint256 => address)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_array(t_address)dyn_storage)": {
+            "label": "mapping(uint256 => address[])",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_array(t_struct(SubPrize)4801_storage)dyn_storage)": {
+            "label": "mapping(uint256 => struct DoudoCoreTypes.SubPrize[])",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_array(t_struct(TokenRange)1275_storage)dyn_storage)": {
+            "label": "mapping(uint256 => struct DOUDOCHAINV2CoreUpgradeable.TokenRange[])",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_array(t_uint256)dyn_storage)": {
+            "label": "mapping(uint256 => uint256[])",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_bool)": {
+            "label": "mapping(uint256 => bool)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_enum(RequestKind)1191)": {
+            "label": "mapping(uint256 => enum DOUDOCHAINV2CoreUpgradeable.RequestKind)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_mapping(t_address,t_uint256))": {
+            "label": "mapping(uint256 => mapping(address => uint256))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_mapping(t_uint16,t_bool))": {
+            "label": "mapping(uint256 => mapping(uint16 => bool))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(Series)1257_storage)": {
+            "label": "mapping(uint256 => struct DOUDOCHAINV2CoreUpgradeable.Series)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(TicketStatus)1270_storage)": {
+            "label": "mapping(uint256 => struct DOUDOCHAINV2CoreUpgradeable.TicketStatus)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_uint16)": {
+            "label": "mapping(uint256 => uint16)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "label": "mapping(uint256 => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_string_storage": {
+            "label": "string",
+            "numberOfBytes": "32"
+          },
+          "t_struct(Series)1257_storage": {
+            "label": "struct DOUDOCHAINV2CoreUpgradeable.Series",
+            "members": [
+              {
+                "label": "seriesName",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "totalTicketNumbers",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "remainingTicketNumbers",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "priceInPoints",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "isGoodsArrived",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "estimateDeliverTime",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "5"
+              },
+              {
+                "label": "exchangeExpireTime",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "6"
+              },
+              {
+                "label": "exchangeTokenURI",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "7"
+              },
+              {
+                "label": "unrevealTokenURI",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "8"
+              },
+              {
+                "label": "revealTokenURI",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "9"
+              },
+              {
+                "label": "seriesMetaDataURI",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "10"
+              },
+              {
+                "label": "priceInTWD",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "11"
+              },
+              {
+                "label": "isRefund",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "12"
+              },
+              {
+                "label": "isPreOrder",
+                "type": "t_bool",
+                "offset": 1,
+                "slot": "12"
+              },
+              {
+                "label": "useLuckyNumber",
+                "type": "t_bool",
+                "offset": 2,
+                "slot": "12"
+              },
+              {
+                "label": "maxPerWallet",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "13"
+              },
+              {
+                "label": "seriesSourceTag",
+                "type": "t_uint8",
+                "offset": 0,
+                "slot": "14"
+              },
+              {
+                "label": "lastPrizeQuantity",
+                "type": "t_uint32",
+                "offset": 1,
+                "slot": "14"
+              }
+            ],
+            "numberOfBytes": "480"
+          },
+          "t_struct(SubPrize)4801_storage": {
+            "label": "struct DoudoCoreTypes.SubPrize",
+            "members": [
+              {
+                "label": "subPrizeID",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "prizeGroup",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "subPrizeName",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "subPrizeRemainingQuantity",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "3"
+              }
+            ],
+            "numberOfBytes": "128"
+          },
+          "t_struct(TicketStatus)1270_storage": {
+            "label": "struct DOUDOCHAINV2CoreUpgradeable.TicketStatus",
+            "members": [
+              {
+                "label": "seriesID",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "tokenRevealedPrize",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "tokenExchange",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "tokenRevealed",
+                "type": "t_bool",
+                "offset": 1,
+                "slot": "2"
+              },
+              {
+                "label": "luckyNumber",
+                "type": "t_uint16",
+                "offset": 2,
+                "slot": "2"
+              },
+              {
+                "label": "tokenRevealTimestamp",
+                "type": "t_uint64",
+                "offset": 4,
+                "slot": "2"
+              }
+            ],
+            "numberOfBytes": "96"
+          },
+          "t_struct(TokenRange)1275_storage": {
+            "label": "struct DOUDOCHAINV2CoreUpgradeable.TokenRange",
+            "members": [
+              {
+                "label": "start",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "end",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              }
+            ],
+            "numberOfBytes": "64"
+          },
+          "t_uint16": {
+            "label": "uint16",
+            "numberOfBytes": "2"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint32": {
+            "label": "uint32",
+            "numberOfBytes": "4"
+          },
+          "t_uint64": {
+            "label": "uint64",
+            "numberOfBytes": "8"
+          },
+          "t_uint8": {
+            "label": "uint8",
+            "numberOfBytes": "1"
+          }
+        },
+        "namespaces": {}
+      }
+    },
+    "9d7e9b4973092e695e9d355fc470171918ffb7011e354477399c63abd27e6e14": {
+      "address": "0x712357CE959DD055500D4a44BB33eFe41073d5A0",
+      "txHash": "0x9147ce4cc789a96d216680cf5b1131132ae034a26f90850af3e8f04114693469",
+      "layout": {
+        "solcVersion": "0.8.20",
+        "storage": [
+          {
+            "label": "_initialized",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint8",
+            "contract": "Initializable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:63",
+            "retypedFrom": "bool"
+          },
+          {
+            "label": "_initializing",
+            "offset": 1,
+            "slot": "0",
+            "type": "t_bool",
+            "contract": "Initializable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:68"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "ERC1967UpgradeUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/ERC1967/ERC1967UpgradeUpgradeable.sol:169"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "51",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "UUPSUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol:111"
+          },
+          {
+            "label": "_roles",
+            "offset": 0,
+            "slot": "101",
+            "type": "t_mapping(t_bytes32,t_mapping(t_address,t_bool))",
+            "contract": "MinimalAccessControlUpgradeable",
+            "src": "contracts/access/MinimalAccessControlUpgradeable.sol:9"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "102",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "MinimalAccessControlUpgradeable",
+            "src": "contracts/access/MinimalAccessControlUpgradeable.sol:68"
+          },
+          {
+            "label": "_paused",
+            "offset": 0,
+            "slot": "151",
+            "type": "t_bool",
+            "contract": "LightweightGuardsUpgradeable",
+            "src": "contracts/security/LightweightGuardsUpgradeable.sol:10"
+          },
+          {
+            "label": "_reentrancyStatus",
+            "offset": 0,
+            "slot": "152",
+            "type": "t_uint256",
+            "contract": "LightweightGuardsUpgradeable",
+            "src": "contracts/security/LightweightGuardsUpgradeable.sol:11"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "153",
+            "type": "t_array(t_uint256)48_storage",
+            "contract": "LightweightGuardsUpgradeable",
+            "src": "contracts/security/LightweightGuardsUpgradeable.sol:55"
+          },
+          {
+            "label": "doudoPoints",
+            "offset": 0,
+            "slot": "201",
+            "type": "t_contract(IDoudoPoints)2866",
+            "contract": "CollectionBookUpgradeable",
+            "src": "contracts/CollectionBookUpgradeable.sol:47"
+          },
+          {
+            "label": "doudochainV2RewardTarget",
+            "offset": 0,
+            "slot": "202",
+            "type": "t_address",
+            "contract": "CollectionBookUpgradeable",
+            "src": "contracts/CollectionBookUpgradeable.sol:48"
+          },
+          {
+            "label": "bookCounter",
+            "offset": 0,
+            "slot": "203",
+            "type": "t_uint256",
+            "contract": "CollectionBookUpgradeable",
+            "src": "contracts/CollectionBookUpgradeable.sol:50"
+          },
+          {
+            "label": "books",
+            "offset": 0,
+            "slot": "204",
+            "type": "t_mapping(t_uint256,t_struct(Book)1198_storage)",
+            "contract": "CollectionBookUpgradeable",
+            "src": "contracts/CollectionBookUpgradeable.sol:51"
+          },
+          {
+            "label": "bookSlots",
+            "offset": 0,
+            "slot": "205",
+            "type": "t_mapping(t_uint256,t_array(t_struct(Slot)1188_storage)dyn_storage)",
+            "contract": "CollectionBookUpgradeable",
+            "src": "contracts/CollectionBookUpgradeable.sol:52"
+          },
+          {
+            "label": "totalRequired",
+            "offset": 0,
+            "slot": "206",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "contract": "CollectionBookUpgradeable",
+            "src": "contracts/CollectionBookUpgradeable.sol:53"
+          },
+          {
+            "label": "filledCount",
+            "offset": 0,
+            "slot": "207",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_uint32))",
+            "contract": "CollectionBookUpgradeable",
+            "src": "contracts/CollectionBookUpgradeable.sol:54"
+          },
+          {
+            "label": "filledPerSlot",
+            "offset": 0,
+            "slot": "208",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_mapping(t_uint256,t_uint32)))",
+            "contract": "CollectionBookUpgradeable",
+            "src": "contracts/CollectionBookUpgradeable.sol:55"
+          },
+          {
+            "label": "claimed",
+            "offset": 0,
+            "slot": "209",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_bool))",
+            "contract": "CollectionBookUpgradeable",
+            "src": "contracts/CollectionBookUpgradeable.sol:56"
+          },
+          {
+            "label": "depositedTokenBook",
+            "offset": 0,
+            "slot": "210",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_uint256))",
+            "contract": "CollectionBookUpgradeable",
+            "src": "contracts/CollectionBookUpgradeable.sol:57"
+          },
+          {
+            "label": "depositedTokenSlotPlusOne",
+            "offset": 0,
+            "slot": "211",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_uint256))",
+            "contract": "CollectionBookUpgradeable",
+            "src": "contracts/CollectionBookUpgradeable.sol:58"
+          },
+          {
+            "label": "depositedTokenOwner",
+            "offset": 0,
+            "slot": "212",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_address))",
+            "contract": "CollectionBookUpgradeable",
+            "src": "contracts/CollectionBookUpgradeable.sol:59"
+          },
+          {
+            "label": "bookExpiresAt",
+            "offset": 0,
+            "slot": "213",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "contract": "CollectionBookUpgradeable",
+            "src": "contracts/CollectionBookUpgradeable.sol:60"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "214",
+            "type": "t_array(t_uint256)40_storage",
+            "contract": "CollectionBookUpgradeable",
+            "src": "contracts/CollectionBookUpgradeable.sol:402"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_struct(Slot)1188_storage)dyn_storage": {
+            "label": "struct CollectionBookUpgradeable.Slot[]",
+            "numberOfBytes": "32"
+          },
+          "t_array(t_uint256)40_storage": {
+            "label": "uint256[40]",
+            "numberOfBytes": "1280"
+          },
+          "t_array(t_uint256)48_storage": {
+            "label": "uint256[48]",
+            "numberOfBytes": "1536"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]",
+            "numberOfBytes": "1568"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]",
+            "numberOfBytes": "1600"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_bytes32": {
+            "label": "bytes32",
+            "numberOfBytes": "32"
+          },
+          "t_contract(IDoudoPoints)2866": {
+            "label": "contract IDoudoPoints",
+            "numberOfBytes": "20"
+          },
+          "t_enum(RewardKind)1179": {
+            "label": "enum CollectionBookUpgradeable.RewardKind",
+            "members": [
+              "NftPrize",
+              "Points",
+              "UnlockSeries"
+            ],
+            "numberOfBytes": "1"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_mapping(t_uint256,t_address))": {
+            "label": "mapping(address => mapping(uint256 => address))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_mapping(t_uint256,t_bool))": {
+            "label": "mapping(address => mapping(uint256 => bool))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_mapping(t_uint256,t_mapping(t_uint256,t_uint32)))": {
+            "label": "mapping(address => mapping(uint256 => mapping(uint256 => uint32)))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_mapping(t_uint256,t_uint256))": {
+            "label": "mapping(address => mapping(uint256 => uint256))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_mapping(t_uint256,t_uint32))": {
+            "label": "mapping(address => mapping(uint256 => uint32))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_mapping(t_address,t_bool))": {
+            "label": "mapping(bytes32 => mapping(address => bool))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_address)": {
+            "label": "mapping(uint256 => address)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_array(t_struct(Slot)1188_storage)dyn_storage)": {
+            "label": "mapping(uint256 => struct CollectionBookUpgradeable.Slot[])",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_bool)": {
+            "label": "mapping(uint256 => bool)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_mapping(t_uint256,t_uint32))": {
+            "label": "mapping(uint256 => mapping(uint256 => uint32))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(Book)1198_storage)": {
+            "label": "mapping(uint256 => struct CollectionBookUpgradeable.Book)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "label": "mapping(uint256 => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_uint32)": {
+            "label": "mapping(uint256 => uint32)",
+            "numberOfBytes": "32"
+          },
+          "t_string_storage": {
+            "label": "string",
+            "numberOfBytes": "32"
+          },
+          "t_struct(Book)1198_storage": {
+            "label": "struct CollectionBookUpgradeable.Book",
+            "members": [
+              {
+                "label": "name",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "rewardKind",
+                "type": "t_enum(RewardKind)1179",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "rewardData",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "active",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "3"
+              }
+            ],
+            "numberOfBytes": "128"
+          },
+          "t_struct(Slot)1188_storage": {
+            "label": "struct CollectionBookUpgradeable.Slot",
+            "members": [
+              {
+                "label": "sourceContract",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "seriesID",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "prizeId",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "quantity",
+                "type": "t_uint32",
+                "offset": 0,
+                "slot": "3"
+              }
+            ],
+            "numberOfBytes": "128"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint32": {
+            "label": "uint32",
+            "numberOfBytes": "4"
           },
           "t_uint8": {
             "label": "uint8",

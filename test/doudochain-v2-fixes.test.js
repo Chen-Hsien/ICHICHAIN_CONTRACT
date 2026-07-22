@@ -592,6 +592,63 @@ describe("DOUDOCHAIN V2 fixes", function () {
     await expect(core.connect(user).exchangePrize([1])).to.be.reverted;
   });
 
+  it("uses the later of reveal time and estimated delivery time for the exchange deadline", async function () {
+    const suite = await deploySplitSuite();
+    const { user, points, core } = suite;
+    const latestBlock = await ethers.provider.getBlock("latest");
+    const estimateDeliverTime = latestBlock.timestamp + 30 * 24 * 60 * 60;
+    await createSeries(core, {
+      totalTicketNumbers: 3,
+      estimateDeliverTime,
+      useLuckyNumber: false,
+      maxPerWallet: 0,
+    });
+    await issuePoints(points, user.address);
+    await core.connect(user).mint(0, [0, 0]);
+    await revealTickets(suite, 0, [0, 1], 1n);
+    const prizeID = (await core.ticketStatusDetail(0)).tokenRevealedPrize;
+    const deadline = estimateDeliverTime + 60 * 24 * 60 * 60;
+
+    await ethers.provider.send("evm_setNextBlockTimestamp", [deadline]);
+    await expect(core.connect(user).exchangePrize([0]))
+      .to.emit(core, "UpdateTicketStatus")
+      .withArgs(0, 0, prizeID, true, true);
+
+    await ethers.provider.send("evm_setNextBlockTimestamp", [deadline + 1]);
+    await expect(core.connect(user).exchangePrize([1])).to.be.reverted;
+  });
+
+  it("extends the exchange deadline when actual arrival is later than the estimate", async function () {
+    const suite = await deploySplitSuite();
+    const { user, points, core } = suite;
+    const latestBlock = await ethers.provider.getBlock("latest");
+    const estimateDeliverTime = latestBlock.timestamp + 10 * 24 * 60 * 60;
+    const actualArrivalTime = latestBlock.timestamp + 20 * 24 * 60 * 60;
+    await createSeries(core, {
+      totalTicketNumbers: 3,
+      estimateDeliverTime,
+      useLuckyNumber: false,
+      maxPerWallet: 0,
+    });
+    await issuePoints(points, user.address);
+    await core.connect(user).mint(0, [0, 0]);
+    await revealTickets(suite, 0, [0, 1], 1n);
+    const prizeID = (await core.ticketStatusDetail(0)).tokenRevealedPrize;
+
+    await ethers.provider.send("evm_setNextBlockTimestamp", [actualArrivalTime]);
+    await core.setGoodsArrived(0);
+
+    const originalDeadline = estimateDeliverTime + 60 * 24 * 60 * 60;
+    await ethers.provider.send("evm_setNextBlockTimestamp", [originalDeadline + 1]);
+    await expect(core.connect(user).exchangePrize([0]))
+      .to.emit(core, "UpdateTicketStatus")
+      .withArgs(0, 0, prizeID, true, true);
+
+    const updatedDeadline = actualArrivalTime + 60 * 24 * 60 * 60;
+    await ethers.provider.send("evm_setNextBlockTimestamp", [updatedDeadline + 1]);
+    await expect(core.connect(user).exchangePrize([1])).to.be.reverted;
+  });
+
   it("refunds the actual pointsPaid for paid and bundle tickets", async function () {
     const { user, points, core, bundle, refund } = await deploySplitSuite();
     await createSeries(core, { totalTicketNumbers: 3, priceInPoints: ethers.parseEther("7"), useLuckyNumber: false, maxPerWallet: 0 });

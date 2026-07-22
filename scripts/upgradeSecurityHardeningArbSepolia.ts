@@ -93,6 +93,19 @@ async function main() {
 
   const core: any = await ethers.getContractAt(CORE_FQN, coreProxy);
   const book: any = await ethers.getContractAt(BOOK_FQN, bookProxy);
+  const [coreUpgraderRole, bookUpgraderRole] = await Promise.all([
+    core.UPGRADER_ROLE(),
+    book.UPGRADER_ROLE(),
+  ]);
+  const [canUpgradeCore, canUpgradeBook] = await Promise.all([
+    core.hasRole(coreUpgraderRole, deployerAddress),
+    book.hasRole(bookUpgraderRole, deployerAddress),
+  ]);
+  console.log("Core UPGRADER_ROLE:", canUpgradeCore);
+  console.log("CollectionBook UPGRADER_ROLE:", canUpgradeBook);
+  if (!canUpgradeCore || !canUpgradeBook) {
+    throw new Error("Official ops wallet is missing an UPGRADER_ROLE");
+  }
   const before = {
     paused: await core.paused(),
     router: await core.vrfRouter(),

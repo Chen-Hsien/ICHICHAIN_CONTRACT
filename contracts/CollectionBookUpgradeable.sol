@@ -57,10 +57,12 @@ contract CollectionBookUpgradeable is
     mapping(address => mapping(uint256 => uint256)) public depositedTokenBook;
     mapping(address => mapping(uint256 => uint256)) public depositedTokenSlotPlusOne;
     mapping(address => mapping(uint256 => address)) public depositedTokenOwner;
+    mapping(uint256 => uint256) public bookExpiresAt;
 
     error InvalidBookDefinition();
     error BookDoesNotExist();
     error BookInactive();
+    error BookExpired();
     error BookAlreadyClaimed();
     error TokenDoesNotMatchAnyOpenSlot();
     error TokenNotRevealed();
@@ -89,6 +91,7 @@ contract CollectionBookUpgradeable is
         uint32 quantity
     );
     event CollectionBookStatusUpdated(uint256 indexed bookId, bool active);
+    event CollectionBookExpirationUpdated(uint256 indexed bookId, uint256 expiresAt);
     event CollectionBookRewardTargetUpdated(address doudochainV2RewardTarget);
     event CollectionBookSlotFilled(
         address indexed user,
@@ -136,6 +139,28 @@ contract CollectionBookUpgradeable is
         uint256 rewardData,
         bool active
     ) external onlyRole(OPERATION_ROLE) returns (uint256 bookId) {
+        return _createBook(name, slots, rewardKind, rewardData, active, 0);
+    }
+
+    function createBookWithExpiration(
+        string calldata name,
+        Slot[] calldata slots,
+        RewardKind rewardKind,
+        uint256 rewardData,
+        bool active,
+        uint256 expiresAt
+    ) external onlyRole(OPERATION_ROLE) returns (uint256 bookId) {
+        return _createBook(name, slots, rewardKind, rewardData, active, expiresAt);
+    }
+
+    function _createBook(
+        string calldata name,
+        Slot[] calldata slots,
+        RewardKind rewardKind,
+        uint256 rewardData,
+        bool active,
+        uint256 expiresAt
+    ) internal returns (uint256 bookId) {
         if (bytes(name).length == 0 || slots.length == 0) revert InvalidBookDefinition();
         bookId = bookCounter++;
         books[bookId] = Book({
@@ -162,13 +187,21 @@ contract CollectionBookUpgradeable is
             );
         }
         totalRequired[bookId] = required;
+        bookExpiresAt[bookId] = expiresAt;
         emit CollectionBookCreated(bookId, name, rewardKind, rewardData, active);
+        emit CollectionBookExpirationUpdated(bookId, expiresAt);
     }
 
     function setBookActive(uint256 bookId, bool active) external onlyRole(OPERATION_ROLE) {
         if (totalRequired[bookId] == 0) revert InvalidBookDefinition();
         books[bookId].active = active;
         emit CollectionBookStatusUpdated(bookId, active);
+    }
+
+    function setBookExpiration(uint256 bookId, uint256 expiresAt) external onlyRole(OPERATION_ROLE) {
+        if (bookId >= bookCounter) revert BookDoesNotExist();
+        bookExpiresAt[bookId] = expiresAt;
+        emit CollectionBookExpirationUpdated(bookId, expiresAt);
     }
 
     function setDoudochainV2RewardTarget(address doudochainV2RewardTarget_) external onlyRole(OPERATION_ROLE) {
@@ -179,6 +212,7 @@ contract CollectionBookUpgradeable is
     function depositToBook(uint256 bookId, uint256[] calldata tokenIds) external nonReentrant {
         Book storage book = books[bookId];
         if (!book.active) revert BookInactive();
+        if (_isBookExpired(bookId)) revert BookExpired();
         if (claimed[msg.sender][bookId]) revert BookAlreadyClaimed();
         if (tokenIds.length == 0) revert TokenDoesNotMatchAnyOpenSlot();
 
@@ -218,6 +252,7 @@ contract CollectionBookUpgradeable is
     function claimBook(uint256 bookId) external nonReentrant {
         if (bookId >= bookCounter) revert BookDoesNotExist();
         Book storage book = books[bookId];
+        if (_isBookExpired(bookId)) revert BookExpired();
         if (claimed[msg.sender][bookId]) revert BookAlreadyClaimed();
         if (filledCount[msg.sender][bookId] != totalRequired[bookId]) revert BookIncomplete();
 
@@ -347,6 +382,11 @@ contract CollectionBookUpgradeable is
         (seriesID, prizeId, tokenExchange, tokenRevealed, ) = source.ticketStatusDetail(tokenId);
     }
 
+    function _isBookExpired(uint256 bookId) internal view returns (bool) {
+        uint256 expiresAt = bookExpiresAt[bookId];
+        return expiresAt != 0 && block.timestamp >= expiresAt;
+    }
+
     function onERC721Received(
         address operator,
         address,
@@ -359,5 +399,5 @@ contract CollectionBookUpgradeable is
 
     function _authorizeUpgrade(address) internal override onlyRole(UPGRADER_ROLE) {}
 
-    uint256[41] private __gap;
+    uint256[40] private __gap;
 }

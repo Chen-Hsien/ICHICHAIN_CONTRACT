@@ -499,9 +499,10 @@ contract DOUDOCHAINV2CoreUpgradeable is
             TicketStatus storage status = ticketStatusDetail[tokenID];
             if (!status.tokenRevealed) revert TokenNotRevealed();
             if (status.tokenExchange) revert TokenAlreadyExchanged();
-            _requireExchangeDeadlineOpen(status);
+            uint256 seriesID = status.seriesID;
+            _requireExchangeDeadlineOpen(status.tokenRevealTimestamp, seriesID);
             status.tokenExchange = true;
-            emit UpdateTicketStatus(tokenID, status.seriesID, status.tokenRevealedPrize, true, true);
+            emit UpdateTicketStatus(tokenID, seriesID, status.tokenRevealedPrize, true, true);
         }
     }
 
@@ -897,8 +898,18 @@ contract DOUDOCHAINV2CoreUpgradeable is
         emit UpdateTicketStatus(tokenId, seriesID, prizeID, false, true);
     }
 
-    function _requireExchangeDeadlineOpen(TicketStatus storage status) internal view {
-        if (block.timestamp > uint256(status.tokenRevealTimestamp) + 60 days) revert();
+    function _requireExchangeDeadlineOpen(uint64 revealTime, uint256 seriesID) internal view {
+        assembly {
+            // Series.exchangeExpireTime is slot 6 and already equals
+            // estimateDeliverTime + 60 days. Expiration requires both the
+            // per-token reveal deadline and the series delivery deadline to pass.
+            mstore(0, seriesID)
+            mstore(0x20, seriesData.slot)
+            let deliveryDeadline := sload(add(keccak256(0, 0x40), 6))
+            if and(gt(timestamp(), add(revealTime, 5184000)), gt(timestamp(), deliveryDeadline)) {
+                revert(0, 0)
+            }
+        }
     }
 
     function _selectExistingTokenFromSeries(

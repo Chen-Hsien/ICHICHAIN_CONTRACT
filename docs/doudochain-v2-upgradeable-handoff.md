@@ -1,6 +1,6 @@
 # DOUDOCHAIN V2 Upgradeable Handoff
 
-Last updated: 2026-07-19
+Last updated: 2026-07-21
 
 This document is the current handoff for the upgraded Arbitrum Sepolia V2 split-module deployment. Use proxy addresses for app/subgraph calls and implementation addresses only for verification and upgrade records.
 
@@ -24,13 +24,13 @@ coordinator and authorize their respective requester.
 | `DOUDOCOIN` | `0xFFCD533609e0e9E810C4C5D8Cb7a69D7a537C17E` | Non-proxy | Verified |
 | `DoudoVRFRouter` (Core) | `0x48A1205c9b6BF1Da1a3D1bE651A9e237AC349Eb5` | Non-proxy | Chain read confirmed |
 | `DoudoVRFRouter` (Redraw) | `0x5A59D45437559C7CE0A012630a456321180C21e1` | Non-proxy | Verified |
-| `DOUDOCHAINV2CoreUpgradeable` | `0xf75395A8cd753f47135cfcaE00D2706252c3E0F5` | `0x69Cba537C085BA7D9242C71c434F4cD0F81d4311` | Verified |
+| `DOUDOCHAINV2CoreUpgradeable` | `0xf75395A8cd753f47135cfcaE00D2706252c3E0F5` | `0x73a3e3d2f632500aA034b68Df86249B011c24B06` | Verified |
 | `DoudoSeriesOpsModuleUpgradeable` | `0x2FF7521dEF3903fc5c6f2877252cdf5019380070` | `0x5409aa1Fbdd2e28fb47457F7ee50af1f73dD966D` | Verified and proxy-linked |
 | `DoudoBundleModuleUpgradeable` | `0x68cBA2b3c72Be39be748B06c1e6dDab2855E91b6` | `0x331818ea2401847823A5dc5C76358db04707F74e` | Verified and proxy-linked |
 | `DoudoRefundModuleUpgradeable` | `0x8ee19238DAa466B7792BE33569c6E4f6993CCf20` | `0xC6cad8c6A27170848CF295fd1A290A143d3Ea4a3` | Verified and proxy-linked |
 | `DoudoRedrawModuleUpgradeable` | `0xE75461828f41C890fbc811e7cABFe2143B3F4afE` | `0xAC4A0DF12704eFE73ca8D20eC4965C69105AF2b8` | Verified and proxy-linked |
 | `DoudoCollectionRewardModuleUpgradeable` | `0x680618a6933DD68fF84Ff9F64760120d27400B3C` | `0x2cE5a89cBA7F79a6de97E6d798522f66310a6d83` | Verified and proxy-linked |
-| `CollectionBookUpgradeable` | `0x4284be399cA9591fBd98248969fCcb969E21B2C6` | `0x65910b3d16cD79c82B9FDC5f1c62C712Fe18F88C` | Verified and proxy-linked |
+| `CollectionBookUpgradeable` | `0x4284be399cA9591fBd98248969fCcb969E21B2C6` | `0x712357CE959DD055500D4a44BB33eFe41073d5A0` | Verified and proxy-linked |
 | `MerchantSeriesRegistry` | `0x03dBEE1f231A29b06032aa24D2CFb96a1321C1A6` | `0x59B2869C51cc555734845DF9eb3bDFb5Fc6f1E81` | Verified and proxy-linked |
 | `MerchantSeriesPublisher` | `0xB0EC5ca70a9AeCaeb260FdCDF238a64Ad37F5515` | `0xC76F735c59CAa54B2a3bea79010Fc934E206b393` | Verified |
 
@@ -40,7 +40,7 @@ Explorer links:
 - Core DoudoVRFRouter: `https://sepolia.arbiscan.io/address/0x48A1205c9b6BF1Da1a3D1bE651A9e237AC349Eb5#code`
 - Redraw DoudoVRFRouter: `https://sepolia.arbiscan.io/address/0x5A59D45437559C7CE0A012630a456321180C21e1#code`
 - Core proxy: `https://sepolia.arbiscan.io/address/0xf75395A8cd753f47135cfcaE00D2706252c3E0F5#code`
-- Core implementation: `https://sepolia.arbiscan.io/address/0x69Cba537C085BA7D9242C71c434F4cD0F81d4311#code`
+- Core implementation: `https://sepolia.arbiscan.io/address/0x73a3e3d2f632500aA034b68Df86249B011c24B06#code`
 - SeriesOps proxy: `https://sepolia.arbiscan.io/address/0x2FF7521dEF3903fc5c6f2877252cdf5019380070#code`
 - SeriesOps implementation: `https://sepolia.arbiscan.io/address/0x5409aa1Fbdd2e28fb47457F7ee50af1f73dD966D#code`
 - Bundle proxy: `https://sepolia.arbiscan.io/address/0x68cBA2b3c72Be39be748B06c1e6dDab2855E91b6#code`
@@ -51,7 +51,7 @@ Explorer links:
 - Redraw implementation: `https://sepolia.arbiscan.io/address/0xAC4A0DF12704eFE73ca8D20eC4965C69105AF2b8#code`
 - Collection reward proxy: `https://sepolia.arbiscan.io/address/0x680618a6933DD68fF84Ff9F64760120d27400B3C#code`
 - CollectionBook proxy: `https://sepolia.arbiscan.io/address/0x4284be399cA9591fBd98248969fCcb969E21B2C6#code`
-- CollectionBook implementation: `https://sepolia.arbiscan.io/address/0x65910b3d16cD79c82B9FDC5f1c62C712Fe18F88C#code`
+- CollectionBook implementation: `https://sepolia.arbiscan.io/address/0x712357CE959DD055500D4a44BB33eFe41073d5A0#code`
 - MerchantSeriesRegistry proxy: `https://sepolia.arbiscan.io/address/0x03dBEE1f231A29b06032aa24D2CFb96a1321C1A6#code`
 - MerchantSeriesRegistry implementation: `https://sepolia.arbiscan.io/address/0x59B2869C51cc555734845DF9eb3bDFb5Fc6f1E81#code`
 - MerchantSeriesPublisher proxy: `https://sepolia.arbiscan.io/address/0xB0EC5ca70a9AeCaeb260FdCDF238a64Ad37F5515#code`
@@ -104,6 +104,12 @@ Latest upgrade/wiring txs:
 
 | Action | Tx |
 | --- | --- |
+| Core pause before exchange/CollectionBook expiration upgrade | `0xbc171eda92406fdf7ace5b894dfe1dcef03d0585958bebb820ed55156e40ed7d` |
+| Exchange-deadline Core implementation deployment | `0xed667fdda5c710312955f9012519d9a7b9ca94bb2dcb49833014a727908e2c3d` |
+| Exchange-deadline Core proxy upgrade | `0x776f80d040728fa3e9aae7b285393761105750e4428852944036a4fbcb8a789a` |
+| CollectionBook expiration implementation deployment | `0x9147ce4cc789a96d216680cf5b1131132ae034a26f90850af3e8f04114693469` |
+| CollectionBook expiration proxy upgrade | `0x19ca631b65aabd2db551fec81f926bede71bbbee0959f7cb837a899c1728f24c` |
+| Core unpause after exchange/CollectionBook expiration upgrade | `0xb23dafbf98d26bbb687e233a7435235f8ae13be2c6ae7b6ab697c79d51565f8e` |
 | SeriesOps five-minute-lock implementation deployment (block `289143188`) | `0xe4b1cd1180589eaba234b2f02c47252bb8ddfebd3d47cc4fa53f885b4bf40edf` |
 | SeriesOps five-minute-lock proxy upgrade (block `289143220`) | `0xfcd2039a763b37a00296eb1f26b40aecb14a99b8d085851cf8786a88dc4aeaa1` |
 | SeriesOps set default lock to 300 seconds (block `289143242`) | `0x2609bdf62837becaa5ae2812646aba527acb91aec4bc2fe8bec1447b3c9ea34a` |
@@ -212,6 +218,7 @@ Core no longer uses a separate `VRF_ROUTER_ROLE`; fulfillment is guarded by `msg
 | Refund | Done | Refunds actual `pointsPaid(tokenID)`, including bundle-discounted tickets. |
 | Main redraw | Done | Synchronous burn-N, mint-N unrevealed tickets; no VRF and no returned prize inventory. |
 | Consolation draw | Done | Separate consolation prize pool in Redraw module, VRF draw, revealed reward mint without main inventory consumption. |
+| CollectionBook optional expiry | Done | `bookExpiresAt == 0` means no deadline; expired books reject deposits and claims while withdrawals remain available. |
 | CollectionBook points reward | Done | Direct points or reward-module points flow. |
 | CollectionBook NFT reward | Done | Reward module calls Core `moduleMintRevealed(...)`. |
 | CollectionBook unlock-series reward | Done | Reward module calls Core `moduleUnlockSeriesFor(...)`. |
@@ -268,6 +275,8 @@ CollectionBook:
 
 ```solidity
 createBook(string name, Slot[] slots, RewardKind rewardKind, uint256 rewardData, bool active)
+createBookWithExpiration(string name, Slot[] slots, RewardKind rewardKind, uint256 rewardData, bool active, uint256 expiresAt)
+setBookExpiration(uint256 bookId, uint256 expiresAt)
 setBookActive(uint256 bookId, bool active)
 setDoudochainV2RewardTarget(address doudochainV2RewardTarget)
 depositToBook(uint256 bookId, uint256[] tokenIds)
