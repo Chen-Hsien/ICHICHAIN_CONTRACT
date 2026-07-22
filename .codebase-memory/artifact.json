@@ -1,0 +1,11 @@
+{
+    "schema_version": 2,
+    "commit": "78ea0481a12139f319c9d150cee65a896e890a4d",
+    "indexed_at": "2026-07-11T08:12:33Z",
+    "project": "ICHICHAIN_CONTRACT",
+    "nodes": 3296,
+    "edges": 7010,
+    "original_size": 5767168,
+    "compressed_size": 956870,
+    "compression_level": 9
+}

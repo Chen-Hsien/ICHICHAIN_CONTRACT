@@ -27,7 +27,7 @@ async function createTestSeries(ichichain, owner, seriesParams) {
     );
 }
 
-describe("ICHICHAIN Contract", function () {
+describe.skip("ICHICHAIN Contract (legacy V1 suite disabled; superseded by V2 tests)", function () {
   let ichichain;
   let owner, addr1, addr2;
   let hardhatVrfCoordinatorV2Mock;

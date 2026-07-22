@@ -21,7 +21,7 @@ contract DOUDOCHAIN is
     uint256 s_subscriptionId;
     bytes32 immutable s_keyHash;
     uint32 callbackGasLimit = 2500000;
-    uint16 requestConfirmations = 3;
+    uint16 requestConfirmations;
 
     // Define roles
     bytes32 public constant OPERATION_ROLE = keccak256("OPERATION_ROLE");
@@ -204,15 +204,17 @@ contract DOUDOCHAIN is
 
     // Constructor for setting up the DOUDOCHAIN contract
     constructor(
-        uint256 subscriptionId
+        uint256 subscriptionId,
+        address vrfCoordinator,
+        bytes32 keyHash,
+        uint16 minimumRequestConfirmations
     )
         ERC721A("DOUDOCHAIN", "DOUDO")
-        VRFConsumerBaseV2Plus(0xec0Ed46f36576541C75739E915ADbCb3DE24bD77)
+        VRFConsumerBaseV2Plus(vrfCoordinator)
     {
         s_subscriptionId = subscriptionId;
-        s_keyHash = 0x192234a5cda4cc07c0b66dfbcfbb785341cc790edc50032e842667dbb506cada;
-        // 0x192234a5cda4cc07c0b66dfbcfbb785341cc790edc50032e842667dbb506cada
-        // 0x8596b430971ac45bdf6088665b9ad8e8630c9d5049ab54b14dff711bee7c0e26 testnet hash
+        s_keyHash = keyHash;
+        requestConfirmations = minimumRequestConfirmations;
         // Set up roles
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender); // Grant the contract deployer the default admin role
         _setupRole(OPERATION_ROLE, msg.sender); // Grant the contract deployer the withdraw role
