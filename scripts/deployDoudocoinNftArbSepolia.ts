@@ -1,6 +1,8 @@
-import { ethers } from "hardhat";
+import { ethers, upgrades } from "hardhat";
 
-const DOUDOCOIN = "0x032A95BBc436dDE16E7aBcDF01e454fB34743Ea9";
+const DOUDOCOIN =
+  process.env.DOUDO_POINTS_ADDRESS ||
+  "0xFFCD533609e0e9E810C4C5D8Cb7a69D7a537C17E";
 
 const DOUDOCOIN_ABI = [
   "function MINTER_ROLE() external view returns (bytes32)",
@@ -31,18 +33,19 @@ async function main() {
   const factory = await ethers.getContractFactory(
     "contracts/DOUDOCOINNFT.sol:DOUDOCOINNFT"
   );
-  const doudocoinNft = await factory.deploy(
-    DOUDOCOIN,
-    deployerAddress,
-    deployerAddress
+  const doudocoinNft = await upgrades.deployProxy(
+    factory,
+    [DOUDOCOIN, deployerAddress, deployerAddress],
+    { initializer: "initialize", kind: "uups" }
   );
-  const deployTx = doudocoinNft.deploymentTransaction();
-
-  console.log("DOUDOCOINNFT deploy tx:", deployTx?.hash);
   await doudocoinNft.waitForDeployment();
 
   const doudocoinNftAddress = await doudocoinNft.getAddress();
-  console.log("DOUDOCOINNFT deployed to:", doudocoinNftAddress);
+  console.log("DOUDOCOINNFT UUPS proxy deployed to:", doudocoinNftAddress);
+  console.log(
+    "Implementation:",
+    await upgrades.erc1967.getImplementationAddress(doudocoinNftAddress)
+  );
 
   const doudocoin = await ethers.getContractAt(DOUDOCOIN_ABI, DOUDOCOIN);
   const doudocoinMinterRole = await doudocoin.MINTER_ROLE();

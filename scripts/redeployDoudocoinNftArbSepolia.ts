@@ -1,6 +1,6 @@
-import { ethers } from "hardhat";
+import { ethers, upgrades } from "hardhat";
 
-// Redeploys the corrected DOUDOCOINNFT (reason-coded soulbound minting + tokenURI fix),
+// Redeploys the corrected DOUDOCOINNFT as a UUPS proxy,
 // grants it MINTER_ROLE on the soulbound DOUDO points token, and recreates the 14
 // voucher types. Run with: npx hardhat run scripts/redeployDoudocoinNftArbSepolia.ts --network arbitrumSepolia
 //
@@ -49,12 +49,18 @@ async function main() {
 
   // 1) Deploy the corrected NFT (rewardToken, defaultAdmin, minter).
   const factory = await ethers.getContractFactory("DOUDOCOINNFT");
-  const nft = await factory.deploy(DOUDOCOIN, deployerAddress, deployerAddress);
-  const deployTx = nft.deploymentTransaction();
-  console.log("DOUDOCOINNFT deploy tx:", deployTx?.hash);
+  const nft = await upgrades.deployProxy(
+    factory,
+    [DOUDOCOIN, deployerAddress, deployerAddress],
+    { initializer: "initialize", kind: "uups" }
+  );
   await nft.waitForDeployment();
   const nftAddress = await nft.getAddress();
-  console.log("DOUDOCOINNFT deployed to:", nftAddress);
+  console.log("DOUDOCOINNFT UUPS proxy deployed to:", nftAddress);
+  console.log(
+    "Implementation:",
+    await upgrades.erc1967.getImplementationAddress(nftAddress)
+  );
 
   // 2) Grant the new NFT MINTER_ROLE on the soulbound DOUDO points token.
   const coin = await ethers.getContractAt(COIN_ABI, DOUDOCOIN);

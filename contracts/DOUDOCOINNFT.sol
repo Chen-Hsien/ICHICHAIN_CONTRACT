@@ -2,21 +2,27 @@
 // Compatible with OpenZeppelin Contracts ^4.9.0
 pragma solidity ^0.8.20;
 
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
-import "@openzeppelin/contracts/access/AccessControl.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721BurnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/IAccessControlUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
+import "./access/MinimalAccessControlUpgradeable.sol";
 import "./interfaces/IDoudoPoints.sol";
 
 contract DOUDOCOINNFT is
-    ERC721,
-    ERC721Enumerable,
-    ERC721Burnable,
-    AccessControl,
-    ReentrancyGuard
+    Initializable,
+    ERC721Upgradeable,
+    ERC721EnumerableUpgradeable,
+    ERC721BurnableUpgradeable,
+    MinimalAccessControlUpgradeable,
+    ReentrancyGuardUpgradeable,
+    UUPSUpgradeable
 {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
@@ -43,7 +49,7 @@ contract DOUDOCOINNFT is
     }
 
     // Membership expiration period (e.g., 6 months = 180 days * 24 hours * 60 minutes * 60 seconds)
-    uint256 public membershipExpirationPeriod = 180 days;
+    uint256 public membershipExpirationPeriod;
 
     // Mapping of token ID to voucher type ID
     mapping(uint256 => uint256) public voucherTypeIds;
@@ -63,17 +69,19 @@ contract DOUDOCOINNFT is
     // List of membership levels and their thresholds
     MembershipLevel[] public membershipLevels;
 
-    uint256 public nextVoucherTypeId = 0;
+    uint256 public nextVoucherTypeId;
 
     // Roles
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
+    bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
+    bytes32 public constant MIGRATOR_ROLE = keccak256("MIGRATOR_ROLE");
 
     // Reason code emitted on DOUDO points minted from voucher redemption
     bytes32 public constant VOUCHER_REDEEM = keccak256("VOUCHER_REDEEM");
 
     // Membership NFT metadata base (Pinata dedicated gateway + IPFS directory CID)
     string private constant MEMBERSHIP_METADATA_BASE =
-        "https://lime-basic-thrush-351.mypinata.cloud/ipfs/bafybeifydnzvcfadln226n63fqow3xrlhqhrbmvuphokyysgzkhcnsxvwe/";
+        "https://lime-basic-thrush-351.mypinata.cloud/ipfs/bafybeigarayofyyqxamwhx6mzy4cwxlw57sfrtfaz3iauxtfrdg7gymh6q/";
 
     event VoucherTypeCreated(
         uint256 voucherTypeId,
@@ -137,15 +145,53 @@ contract DOUDOCOINNFT is
         uint256[] amounts,
         uint256 totalAmount
     );
+    event LegacyVoucherMigrated(
+        uint256 indexed tokenId,
+        address indexed owner,
+        uint256 indexed voucherTypeId
+    );
+    event LegacyMembershipMigrated(
+        uint256 indexed tokenId,
+        address indexed owner,
+        uint256 indexed membershipLevel,
+        uint256 totalRedeemed,
+        uint256 currentRoundRedeemed,
+        uint256 lastActiveTimestamp
+    );
 
-    constructor(
+    error InvalidAddress();
+    error InvalidMembershipLevel();
+    error InvalidMembershipThreshold();
+    error InvalidRewardBasisPoints();
+
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() {
+        _disableInitializers();
+    }
+
+    function initialize(
         address rewardTokenAddress,
         address defaultAdmin,
         address minter
-    ) ERC721("DOUDOCOINNFT", "DOUDO") {
+    ) public initializer {
+        if (
+            rewardTokenAddress == address(0) ||
+            defaultAdmin == address(0) ||
+            minter == address(0)
+        ) revert InvalidAddress();
+
+        __ERC721_init("DOUDOCOINNFT", "DOUDO");
+        __ERC721Enumerable_init();
+        __ERC721Burnable_init();
+        __MinimalAccessControl_init(defaultAdmin);
+        __ReentrancyGuard_init();
+        __UUPSUpgradeable_init();
+
+        membershipExpirationPeriod = 180 days;
         rewardToken = IDoudoPoints(rewardTokenAddress);
-        _grantRole(DEFAULT_ADMIN_ROLE, defaultAdmin);
         _grantRole(MINTER_ROLE, minter);
+        _grantRole(UPGRADER_ROLE, defaultAdmin);
+        _grantRole(MIGRATOR_ROLE, defaultAdmin);
 
         // Add a "No Membership" level
         _addMembershipLevel("NonMembership", 0, "", 0);
@@ -160,22 +206,28 @@ contract DOUDOCOINNFT is
         // Now add the other levels
         _addMembershipLevel(
             "Silver",
-            15000 ether,
+            9000 ether,
             string.concat(MEMBERSHIP_METADATA_BASE, "sliver.json"),
-            100
-        ); // 1% additional reward (100 basis points)
+            25
+        ); // 0.25% additional reward (25 basis points)
         _addMembershipLevel(
             "Gold",
-            80000 ether,
+            48000 ether,
             string.concat(MEMBERSHIP_METADATA_BASE, "gold.json"),
+            75
+        ); // 0.75% additional reward (75 basis points)
+        _addMembershipLevel(
+            "Platinum",
+            90000 ether,
+            string.concat(MEMBERSHIP_METADATA_BASE, "Platinum.json"),
             150
         ); // 1.5% additional reward (150 basis points)
         _addMembershipLevel(
-            "Platinum",
-            150000 ether,
-            string.concat(MEMBERSHIP_METADATA_BASE, "Platinum.json"),
-            300
-        ); // 3% additional reward (300 basis points)
+            "Emerald",
+            180000 ether,
+            "https://lime-basic-thrush-351.mypinata.cloud/ipfs/bafybeifydnzvcfadln226n63fqow3xrlhqhrbmvuphokyysgzkhcnsxvwe/Emerald.json",
+            250
+        ); // 2.5% additional reward (250 basis points)
     }
 
     // Admin function to create a new voucher type with specific amount, purchase limit, and tokenURI
@@ -295,6 +347,64 @@ contract DOUDOCOINNFT is
         );
     }
 
+    function migrateLegacyVoucher(
+        address to,
+        uint256 tokenId,
+        uint256 voucherTypeId
+    ) external onlyRole(MIGRATOR_ROLE) nonReentrant {
+        if (to == address(0)) revert InvalidAddress();
+        require(voucherTypeId < nextVoucherTypeId, "Invalid voucher type");
+        _advanceTokenId(tokenId);
+        voucherTypeIds[tokenId] = voucherTypeId;
+        userVoucherCounts[to][voucherTypeId] += 1;
+        _safeMint(to, tokenId);
+        emit LegacyVoucherMigrated(tokenId, to, voucherTypeId);
+    }
+
+    function migrateLegacyMembership(
+        address to,
+        uint256 tokenId,
+        uint256 totalRedeemed,
+        uint256 currentRoundRedeemed,
+        uint256 membershipLevel,
+        uint256 lastActiveTimestamp
+    ) external onlyRole(MIGRATOR_ROLE) nonReentrant {
+        if (to == address(0)) revert InvalidAddress();
+        if (
+            membershipLevel == 0 ||
+            membershipLevel >= membershipLevels.length
+        ) revert InvalidMembershipLevel();
+        require(
+            userInfo[to].membershipNFT == 0,
+            "User already owns a membership NFT"
+        );
+        _advanceTokenId(tokenId);
+        userInfo[to] = UserInfo({
+            totalRedeemed: totalRedeemed,
+            currentRoundRedeemed: currentRoundRedeemed,
+            membershipLevel: membershipLevel,
+            membershipNFT: tokenId,
+            lastActiveTimestamp: lastActiveTimestamp
+        });
+        isMembershipNFT[tokenId] = true;
+        _safeMint(to, tokenId);
+        emit LegacyMembershipMigrated(
+            tokenId,
+            to,
+            membershipLevel,
+            totalRedeemed,
+            currentRoundRedeemed,
+            lastActiveTimestamp
+        );
+    }
+
+    function _advanceTokenId(uint256 targetTokenId) internal {
+        require(targetTokenId > _tokenIds.current(), "Token ID not increasing");
+        while (_tokenIds.current() < targetTokenId) {
+            _tokenIds.increment();
+        }
+    }
+
     // 輔助函數
     function getUserVoucherCount(
         address user,
@@ -320,7 +430,7 @@ contract DOUDOCOINNFT is
         address to,
         uint256 tokenId,
         bytes memory _data
-    ) public override(ERC721, IERC721) nonReentrant {
+    ) public override(ERC721Upgradeable, IERC721Upgradeable) nonReentrant {
         bool membershipToken = isMembershipNFT[tokenId];
         super.transferFrom(from, to, tokenId);
 
@@ -351,7 +461,12 @@ contract DOUDOCOINNFT is
         address from,
         address to,
         uint256 tokenId
-    ) public virtual override(ERC721, IERC721) nonReentrant {
+    )
+        public
+        virtual
+        override(ERC721Upgradeable, IERC721Upgradeable)
+        nonReentrant
+    {
         // 保存原始的 packed ownership 數據
         require(
             ownerOf(tokenId) == from,
@@ -594,11 +709,41 @@ contract DOUDOCOINNFT is
         string memory newTokenURI,
         uint256 newRewardBasisPoints
     ) external onlyRole(DEFAULT_ADMIN_ROLE) {
-        require(
-            levelIndex < membershipLevels.length,
-            "Invalid membership level"
+        _setMembershipLevel(
+            levelIndex,
+            newThreshold,
+            newTokenURI,
+            newRewardBasisPoints
         );
-        require(newRewardBasisPoints <= 10000, "Invalid reward basis points");
+    }
+
+    function setMembershipLevelConfig(
+        uint256 levelIndex,
+        uint256 newThreshold,
+        uint256 newRewardBasisPoints
+    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        if (levelIndex >= membershipLevels.length) {
+            revert InvalidMembershipLevel();
+        }
+        _setMembershipLevel(
+            levelIndex,
+            newThreshold,
+            membershipLevels[levelIndex].membershipTokenURI,
+            newRewardBasisPoints
+        );
+    }
+
+    function _setMembershipLevel(
+        uint256 levelIndex,
+        uint256 newThreshold,
+        string memory newTokenURI,
+        uint256 newRewardBasisPoints
+    ) internal {
+        _validateMembershipLevelConfig(
+            levelIndex,
+            newThreshold,
+            newRewardBasisPoints
+        );
         membershipLevels[levelIndex].threshold = newThreshold;
         membershipLevels[levelIndex].membershipTokenURI = newTokenURI;
         membershipLevels[levelIndex].rewardBasisPoints = newRewardBasisPoints;
@@ -617,7 +762,15 @@ contract DOUDOCOINNFT is
         string memory _membershipTokenURI,
         uint256 rewardBasisPoints
     ) internal {
-        require(rewardBasisPoints <= 10000, "Invalid reward basis points");
+        uint256 levelIndex = membershipLevels.length;
+        if (rewardBasisPoints > 10000) revert InvalidRewardBasisPoints();
+        if (levelIndex == 0) {
+            if (threshold != 0) revert InvalidMembershipThreshold();
+        } else if (
+            threshold <= membershipLevels[levelIndex - 1].threshold
+        ) {
+            revert InvalidMembershipThreshold();
+        }
         membershipLevels.push(
             MembershipLevel(
                 name,
@@ -639,7 +792,32 @@ contract DOUDOCOINNFT is
     function setRewardToken(
         address _rewardToken
     ) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        if (_rewardToken == address(0)) revert InvalidAddress();
         rewardToken = IDoudoPoints(_rewardToken);
+    }
+
+    function _validateMembershipLevelConfig(
+        uint256 levelIndex,
+        uint256 threshold,
+        uint256 rewardBasisPoints
+    ) internal view {
+        if (levelIndex >= membershipLevels.length) {
+            revert InvalidMembershipLevel();
+        }
+        if (rewardBasisPoints > 10000) revert InvalidRewardBasisPoints();
+        if (levelIndex == 0) {
+            if (threshold != 0) revert InvalidMembershipThreshold();
+            return;
+        }
+        if (threshold <= membershipLevels[levelIndex - 1].threshold) {
+            revert InvalidMembershipThreshold();
+        }
+        if (
+            levelIndex + 1 < membershipLevels.length &&
+            threshold >= membershipLevels[levelIndex + 1].threshold
+        ) {
+            revert InvalidMembershipThreshold();
+        }
     }
 
     // Function for subscription contract to mint multiple types of vouchers for users
@@ -735,10 +913,12 @@ contract DOUDOCOINNFT is
     )
         public
         view
-        override(ERC721, ERC721Enumerable, AccessControl)
+        override(ERC721Upgradeable, ERC721EnumerableUpgradeable)
         returns (bool)
     {
-        return super.supportsInterface(interfaceId);
+        return
+            interfaceId == type(IAccessControlUpgradeable).interfaceId ||
+            super.supportsInterface(interfaceId);
     }
 
     function _beforeTokenTransfer(
@@ -746,7 +926,13 @@ contract DOUDOCOINNFT is
         address to,
         uint256 tokenId,
         uint256 batchSize
-    ) internal override(ERC721, ERC721Enumerable) {
+    ) internal override(ERC721Upgradeable, ERC721EnumerableUpgradeable) {
         super._beforeTokenTransfer(from, to, tokenId, batchSize);
     }
+
+    function _authorizeUpgrade(
+        address
+    ) internal override onlyRole(UPGRADER_ROLE) {}
+
+    uint256[50] private __gap;
 }

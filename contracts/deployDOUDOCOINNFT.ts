@@ -1,5 +1,5 @@
 // deploy fakeUSDT contract
-import { ethers } from "hardhat";
+import { ethers, upgrades } from "hardhat";
 
 const voucherData = [
   {
@@ -76,7 +76,11 @@ const voucherData = [
 
 async function main() {
   const doudoCoinNFTFactory = await ethers.getContractFactory("DOUDOCOINNFT");
-  const doudoCoinNFTContract = await doudoCoinNFTFactory.deploy('0xc156b5a299FBf556d5652F7FddeBAb27815F1342', '0xaf48208B55e4F21AEa32aa2E3ffa09284270E0f2', '0xaf48208B55e4F21AEa32aa2E3ffa09284270E0f2');
+  const doudoCoinNFTContract = await upgrades.deployProxy(
+    doudoCoinNFTFactory,
+    ['0xc156b5a299FBf556d5652F7FddeBAb27815F1342', '0xaf48208B55e4F21AEa32aa2E3ffa09284270E0f2', '0xaf48208B55e4F21AEa32aa2E3ffa09284270E0f2'],
+    { initializer: "initialize", kind: "uups" }
+  );
   await doudoCoinNFTContract.waitForDeployment();
   console.log("Contract deployed to:", doudoCoinNFTContract.target);
   // create voucher types

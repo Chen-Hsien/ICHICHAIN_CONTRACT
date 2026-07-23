@@ -1,5 +1,5 @@
 const { expect } = require("chai");
-const { ethers } = require("hardhat");
+const { ethers, upgrades } = require("hardhat");
 
 describe("DOUDOCOINNFT callback safety", function () {
   async function deployFixture() {
@@ -10,7 +10,11 @@ describe("DOUDOCOINNFT callback safety", function () {
     await points.waitForDeployment();
 
     const NFT = await ethers.getContractFactory("contracts/DOUDOCOINNFT.sol:DOUDOCOINNFT");
-    const nft = await NFT.deploy(await points.getAddress(), admin.address, admin.address);
+    const nft = await upgrades.deployProxy(
+      NFT,
+      [await points.getAddress(), admin.address, admin.address],
+      { initializer: "initialize", kind: "uups" }
+    );
     await nft.waitForDeployment();
 
     const Receiver = await ethers.getContractFactory(
@@ -121,7 +125,7 @@ describe("DOUDOCOINNFT callback safety", function () {
     const { nft } = await deployFixture();
 
     await expect(nft.tokenURI(999)).to.be.revertedWith("ERC721: invalid token ID");
-    await expect(nft.addMembershipLevel("Unsafe", 1, "ipfs://unsafe", 10001))
-      .to.be.revertedWith("Invalid reward basis points");
+    await expect(nft.addMembershipLevel("Unsafe", ethers.MaxUint256, "ipfs://unsafe", 10001))
+      .to.be.revertedWithCustomError(nft, "InvalidRewardBasisPoints");
   });
 });

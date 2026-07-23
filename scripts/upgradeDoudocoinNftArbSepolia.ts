@@ -27,23 +27,31 @@ const membershipUpdates = [
   {
     levelIndex: 2,
     name: "Silver",
-    threshold: ethers.parseEther("15000"),
+    threshold: ethers.parseEther("9000"),
     tokenURI: `${MEMBERSHIP_METADATA_BASE}sliver.json`,
-    rewardBasisPoints: 100n,
+    rewardBasisPoints: 25n,
   },
   {
     levelIndex: 3,
     name: "Gold",
-    threshold: ethers.parseEther("80000"),
+    threshold: ethers.parseEther("48000"),
     tokenURI: `${MEMBERSHIP_METADATA_BASE}gold.json`,
-    rewardBasisPoints: 150n,
+    rewardBasisPoints: 75n,
   },
   {
     levelIndex: 4,
     name: "Platinum",
-    threshold: ethers.parseEther("150000"),
+    threshold: ethers.parseEther("90000"),
     tokenURI: `${MEMBERSHIP_METADATA_BASE}Platinum.json`,
-    rewardBasisPoints: 300n,
+    rewardBasisPoints: 150n,
+  },
+  {
+    levelIndex: 5,
+    name: "Emerald",
+    threshold: ethers.parseEther("180000"),
+    tokenURI:
+      "https://lime-basic-thrush-351.mypinata.cloud/ipfs/bafybeifydnzvcfadln226n63fqow3xrlhqhrbmvuphokyysgzkhcnsxvwe/Emerald.json",
+    rewardBasisPoints: 250n,
   },
 ];
 

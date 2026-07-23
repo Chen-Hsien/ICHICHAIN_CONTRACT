@@ -15,12 +15,12 @@ const DOUDOCOINNFT =
 
 const NEW_LEVEL = {
   name: "Emerald",
-  // 300000 DOUDO (300000e18)
-  threshold: 300000000000000000000000n,
+  // 180000 DOUDO (180000e18)
+  threshold: 180000000000000000000000n,
   tokenURI:
     "https://lime-basic-thrush-351.mypinata.cloud/ipfs/bafybeifydnzvcfadln226n63fqow3xrlhqhrbmvuphokyysgzkhcnsxvwe/Emerald.json",
-  // 4% = 400 basis points
-  rewardBasisPoints: 400n,
+  // 2.5% = 250 basis points
+  rewardBasisPoints: 250n,
 };
 
 const NFT_ABI = [
