@@ -15,6 +15,9 @@ const accounts = (privateKey?: string) => {
   return /^0x[0-9a-fA-F]{64}$/.test(normalized) ? [normalized] : [];
 };
 
+const arbitrumOneRpcUrl =
+  process.env.ARB_MAINNET_RPC_URL || "https://arb1.arbitrum.io/rpc";
+
 const config: HardhatUserConfig = {
   solidity: {
     compilers: [
@@ -52,7 +55,9 @@ const config: HardhatUserConfig = {
     },
     sepolia: {
       chainId: 11155111,
-      url: process.env.MAINNET_URL || "https://ethereum-sepolia-rpc.publicnode.com",
+      url:
+        process.env.MAINNET_URL ||
+        "https://ethereum-sepolia-rpc.publicnode.com",
       accounts: accounts(process.env.PRIVATE_KEY),
     },
     bscTestnet: {
@@ -67,9 +72,21 @@ const config: HardhatUserConfig = {
       accounts: accounts(process.env.PRIVATE_KEY),
     },
     arbitrumSepolia: {
-      url: process.env.ARB_SEPOLIA_RPC_URL || "https://sepolia-rollup.arbitrum.io/rpc",
+      url:
+        process.env.ARB_SEPOLIA_RPC_URL ||
+        "https://sepolia-rollup.arbitrum.io/rpc",
       chainId: 421614,
       accounts: accounts(process.env.ARB_TESTNET_PK),
+    },
+    arbitrumOne: {
+      url: arbitrumOneRpcUrl,
+      chainId: 42161,
+      accounts: accounts(process.env.ARB_MAINNET_PK),
+    },
+    arbitrumOneFork: {
+      url: "http://127.0.0.1:8545",
+      chainId: 31337,
+      accounts: "remote",
     },
   },
 
@@ -86,6 +103,14 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: "https://api.etherscan.io/v2/api",
           browserURL: "https://sepolia.arbiscan.io",
+        },
+      },
+      {
+        network: "arbitrumOne",
+        chainId: 42161,
+        urls: {
+          apiURL: "https://api.etherscan.io/v2/api",
+          browserURL: "https://arbiscan.io",
         },
       },
     ],
