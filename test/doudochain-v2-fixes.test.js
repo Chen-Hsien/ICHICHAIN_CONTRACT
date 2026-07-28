@@ -808,6 +808,7 @@ describe("DOUDOCHAIN V2 fixes", function () {
     await createSeries(core, { totalTicketNumbers: 2, useLuckyNumber: false, maxPerWallet: 0, isPreOrder: false });
     await issuePoints(points, user.address);
     await issuePoints(points, other.address);
+    await core.setSeriesLastPrizeQuantity(0, 1);
     await core.connect(user).mint(0, [0]);
     await ethers.provider.send("evm_increaseTime", [901]);
     await ethers.provider.send("evm_mine", []);
@@ -818,7 +819,7 @@ describe("DOUDOCHAIN V2 fixes", function () {
     expect((await core.ticketStatusDetail(2)).tokenRevealedPrize).to.equal(999);
   });
 
-  it("automatically assigns non-preorder last-prize winner when the final ticket sells", async function () {
+  it("does not assign a non-preorder last prize when its quantity is unset", async function () {
     const { user, other, points, core } = await deploySplitSuite();
     await createSeries(core, { totalTicketNumbers: 2, useLuckyNumber: false, maxPerWallet: 0, isPreOrder: false });
     await issuePoints(points, user.address);
@@ -828,13 +829,10 @@ describe("DOUDOCHAIN V2 fixes", function () {
     await ethers.provider.send("evm_mine", []);
 
     await expect(core.connect(other).mint(0, [0]))
-      .to.emit(core, "LastPrizeWinner")
-      .withArgs(0, [1])
-      .and.to.emit(core, "UpdateSeriesLastPrizeOwner")
-      .withArgs(0, [other.address]);
+      .not.to.emit(core, "LastPrizeWinner");
 
-    expect(await core.ownerOf(2)).to.equal(other.address);
-    expect((await core.ticketStatusDetail(2)).tokenRevealedPrize).to.equal(999);
+    expect(await core.totalSupply()).to.equal(2);
+    await expect(core.ownerOf(2)).to.be.reverted;
   });
 
   it("uses configured non-preorder last-prize quantity when the final ticket sells", async function () {
@@ -859,25 +857,18 @@ describe("DOUDOCHAIN V2 fixes", function () {
     expect((await core.ticketStatusDetail(3)).tokenRevealedPrize).to.equal(999);
   });
 
-  it("automatically requests preorder last-prize draw when the final ticket sells", async function () {
+  it("does not request a preorder last-prize draw when its quantity is unset", async function () {
     const { user, points, vrf, router, core } = await deploySplitSuite();
     await createSeries(core, { totalTicketNumbers: 2, useLuckyNumber: false, maxPerWallet: 0, isPreOrder: true }, false);
     await issuePoints(points, user.address);
 
     await core.connect(user).mint(0, [0]);
     await expect(core.connect(user).mint(0, [0]))
-      .to.emit(router, "VrfRandomWordsRequested")
-      .withArgs(1, await core.getAddress(), await core.getAddress(), 1)
-      .and.to.emit(core, "LastPrizeDraw")
-      .withArgs(1, 0, 1);
+      .not.to.emit(core, "LastPrizeDraw");
 
-    expect(await router.pendingRequests()).to.equal(1);
-    await expect(vrf.fulfill(await router.getAddress(), 1, [0]))
-      .to.emit(core, "LastPrizeWinner")
-      .withArgs(1, [0]);
-
-    expect(await core.ownerOf(2)).to.equal(user.address);
-    expect((await core.ticketStatusDetail(2)).tokenRevealedPrize).to.equal(999);
+    expect(await router.pendingRequests()).to.equal(0);
+    expect(await core.totalSupply()).to.equal(2);
+    await expect(vrf.fulfill(await router.getAddress(), 1, [0])).to.be.reverted;
   });
 
   it("uses configured preorder last-prize quantity for the automatic VRF draw", async function () {
@@ -914,9 +905,23 @@ describe("DOUDOCHAIN V2 fixes", function () {
     await createSeries(core, { totalTicketNumbers: 2, useLuckyNumber: false, maxPerWallet: 0, isPreOrder: false });
     await createSeries(core, { totalTicketNumbers: 2, useLuckyNumber: false, maxPerWallet: 0, isPreOrder: false });
     await issuePoints(points, other.address);
+    await core.setSeriesLastPrizeQuantity(1, 1);
     await expect(core.connect(other).mint(1, [0, 0]))
       .to.emit(core, "LastPrizeWinner")
       .withArgs(0, [1]);
+  });
+
+  it("allows a configured last prize to be disabled before sellout", async function () {
+    const { user, points, core } = await deploySplitSuite();
+    await createSeries(core, { totalTicketNumbers: 2, useLuckyNumber: false, maxPerWallet: 0, isPreOrder: false });
+    await issuePoints(points, user.address);
+    await core.setSeriesLastPrizeQuantity(0, 2);
+    await core.setSeriesLastPrizeQuantity(0, 0);
+
+    await expect(core.connect(user).mint(0, [0, 0]))
+      .not.to.emit(core, "LastPrizeWinner");
+
+    expect(await core.totalSupply()).to.equal(2);
   });
 
   it("supports adjustable mint locks and maxPerWallet updates", async function () {
@@ -1245,7 +1250,7 @@ describe("DOUDOCHAIN V2 fixes", function () {
       active: true,
     });
 
-    const rewardTokenId = 3n; // tokens 0 and 1 were sold, token 2 is the automatic last-prize token
+    const rewardTokenId = 2n; // tokens 0 and 1 were sold; unset last prize mints no extra token
     await expect(reward.connect(other).mintCollectionReward(user.address, 1))
       .to.emit(reward, "CollectionRewardMinted")
       .withArgs(1, user.address, 0, 1, rewardTokenId);

@@ -30,7 +30,6 @@ contract DOUDOCHAINV2CoreUpgradeable is
     bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
     uint256 private constant MAX_REVEAL_BATCH = 20;
     uint256 private constant LAST_PRIZE_ID = 999;
-    uint32 private constant DEFAULT_LAST_PRIZE_QUANTITY = 1;
 
     enum RequestKind {
         None,
@@ -301,7 +300,7 @@ contract DOUDOCHAINV2CoreUpgradeable is
 
     function setSeriesLastPrizeQuantity(uint256 seriesID, uint32 quantity) external onlyRole(OPERATION_ROLE) {
         Series storage series = seriesData[seriesID];
-        if (series.totalTicketNumbers == 0 || quantity == 0) revert InvalidSeriesInput();
+        if (series.totalTicketNumbers == 0) revert InvalidSeriesInput();
         if (lastPrizeOwners[seriesID].length != 0) revert AlreadyChoseWinner();
         if (lastPrizeRequestPending[seriesID]) revert AlreadyChoseWinner();
         if (series.remainingTicketNumbers == 0) revert AlreadyChoseWinner();
@@ -663,12 +662,8 @@ contract DOUDOCHAINV2CoreUpgradeable is
         }
         emit UpdateSeriesRemainingTicketNumbers(seriesID, series.remainingTicketNumbers);
         SafeERC721AReceiver.notify(msg.sender, to, startTokenId, quantity);
-        if (series.remainingTicketNumbers == 0) {
-            uint32 lastPrizeQuantity = series.lastPrizeQuantity;
-            if (lastPrizeQuantity == 0) {
-                lastPrizeQuantity = DEFAULT_LAST_PRIZE_QUANTITY;
-            }
-            _chooseLastPrizeWinner(seriesID, lastPrizeQuantity);
+        if (series.remainingTicketNumbers == 0 && series.lastPrizeQuantity != 0) {
+            _chooseLastPrizeWinner(seriesID, series.lastPrizeQuantity);
         }
     }
 
