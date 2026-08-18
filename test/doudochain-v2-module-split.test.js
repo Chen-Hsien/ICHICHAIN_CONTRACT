@@ -329,6 +329,147 @@ describe("DOUDOCHAIN V2 split module suite", function () {
     expect(await points.balanceOf(user.address)).to.equal(ethers.parseEther("2920"));
   });
 
+  it("applies opening prices first and activates quantity rebates for the regular-price segment", async function () {
+    const { user, points, core, bundle, refund } = await deploySplitSuite();
+    await createSeries(core);
+    await issuePoints(points, user.address);
+
+    await bundle.setSeriesRebateTiers(0, [
+      { minimumTicketQuantity: 3, rebatePoints: ethers.parseEther("5") },
+    ]);
+    await expect(bundle.setSeriesOpeningDiscount(0, 10, ethers.parseEther("7")))
+      .to.emit(bundle, "OpeningDiscountConfigured")
+      .withArgs(0, 10, ethers.parseEther("7"));
+
+    expect(await bundle.quoteTicketPurchase(0, 8)).to.deep.equal([
+      8n,
+      0n,
+      ethers.parseEther("56"),
+      0n,
+    ]);
+    await expect(bundle.connect(user).mintTickets(0, zeroLuckyNumbers(1), false))
+      .to.be.revertedWithCustomError(bundle, "PriceLimitRequired");
+
+    await expect(
+      bundle
+        .connect(user)
+        .mintTicketsWithPriceLimit(0, zeroLuckyNumbers(8), false, ethers.parseEther("56"))
+    )
+      .to.emit(bundle, "OpeningDiscountApplied")
+      .withArgs(0, user.address, 8, 0, ethers.parseEther("7"), ethers.parseEther("56"), 0)
+      .and.to.emit(bundle, "TicketPurchaseMinted")
+      .withArgs(0, user.address, 8, ethers.parseEther("56"), false, 0);
+
+    expect(await bundle.quoteTicketPurchase(0, 5)).to.deep.equal([
+      2n,
+      3n,
+      ethers.parseEther("44"),
+      ethers.parseEther("5"),
+    ]);
+    await expect(
+      bundle
+        .connect(user)
+        .mintTicketsWithPriceLimit(0, zeroLuckyNumbers(5), false, ethers.parseEther("44"))
+    )
+      .to.emit(bundle, "OpeningDiscountApplied")
+      .withArgs(
+        0,
+        user.address,
+        2,
+        3,
+        ethers.parseEther("7"),
+        ethers.parseEther("44"),
+        ethers.parseEther("5")
+      )
+      .and.to.emit(bundle, "TicketPurchaseRebatePaid")
+      .withArgs(0, user.address, 3, ethers.parseEther("5"));
+
+    expect(await bundle.openingDiscountUsed(0)).to.equal(10);
+    expect(await bundle.quoteTicketPurchase(0, 3)).to.deep.equal([
+      0n,
+      3n,
+      ethers.parseEther("30"),
+      ethers.parseEther("5"),
+    ]);
+    expect(await points.balanceOf(user.address)).to.equal(ethers.parseEther("905"));
+
+    for (const tokenID of Array.from({ length: 10 }, (_, i) => i)) {
+      expect(await core.pointsPaid(tokenID)).to.equal(ethers.parseEther("7"));
+    }
+    const regularPaidPerTicket =
+      ethers.parseEther("10") - ethers.parseEther("5") / 3n;
+    expect(await core.pointsPaid(10)).to.equal(regularPaidPerTicket - 1n);
+    expect(await core.pointsPaid(11)).to.equal(regularPaidPerTicket - 1n);
+    expect(await core.pointsPaid(12)).to.equal(regularPaidPerTicket);
+    expect(
+      (await core.pointsPaid(10)) +
+        (await core.pointsPaid(11)) +
+        (await core.pointsPaid(12))
+    ).to.equal(ethers.parseEther("25"));
+
+    await expect(bundle.connect(user).mintTickets(0, zeroLuckyNumbers(3), false))
+      .to.emit(bundle, "TicketPurchaseRebatePaid")
+      .withArgs(0, user.address, 3, ethers.parseEther("5"));
+
+    await refund.setSeriesRefund(0, true, 0);
+    await expect(refund.connect(user).claimRefund([8, 9, 10, 11, 12]))
+      .to.emit(refund, "RefundClaimed")
+      .withArgs(0, user.address, [8, 9, 10, 11, 12], ethers.parseEther("39"));
+
+  });
+
+  it("reverts when opening inventory moves beyond the buyer's confirmed price", async function () {
+    const { user, other, points, core, bundle } = await deploySplitSuite();
+    await createSeries(core);
+    await issuePoints(points, user.address);
+    await issuePoints(points, other.address);
+    await bundle.setSeriesRebateTiers(0, [
+      { minimumTicketQuantity: 3, rebatePoints: ethers.parseEther("5") },
+    ]);
+    await bundle.setSeriesOpeningDiscount(0, 10, ethers.parseEther("7"));
+
+    await bundle
+      .connect(user)
+      .mintTicketsWithPriceLimit(0, zeroLuckyNumbers(8), false, ethers.parseEther("56"));
+    const staleQuote = await bundle.quoteTicketPurchase(0, 5);
+    expect(staleQuote.grossPriceInPoints).to.equal(ethers.parseEther("44"));
+
+    await ethers.provider.send("evm_increaseTime", [301]);
+    await ethers.provider.send("evm_mine");
+    await bundle
+      .connect(other)
+      .mintTicketsWithPriceLimit(0, zeroLuckyNumbers(2), false, ethers.parseEther("14"));
+
+    await expect(
+      bundle
+        .connect(user)
+        .mintTicketsWithPriceLimit(0, zeroLuckyNumbers(5), false, staleQuote.grossPriceInPoints)
+    )
+      .to.be.revertedWithCustomError(bundle, "PriceExceedsLimit")
+      .withArgs(ethers.parseEther("50"), ethers.parseEther("44"));
+    expect(await core.balanceOf(user.address)).to.equal(8);
+  });
+
+  it("allows an unused opening discount to be cleared and rejects invalid prices", async function () {
+    const { user, points, core, bundle } = await deploySplitSuite();
+    await createSeries(core);
+    await issuePoints(points, user.address);
+
+    await expect(bundle.connect(user).setSeriesOpeningDiscount(0, 10, ethers.parseEther("7")))
+      .to.be.reverted;
+    await expect(bundle.setSeriesOpeningDiscount(0, 0, ethers.parseEther("7")))
+      .to.be.revertedWithCustomError(bundle, "InvalidConfig");
+    await expect(bundle.setSeriesOpeningDiscount(0, 10, ethers.parseEther("10")))
+      .to.be.revertedWithCustomError(bundle, "InvalidConfig");
+
+    await bundle.setSeriesOpeningDiscount(0, 10, ethers.parseEther("7"));
+    await expect(bundle.clearSeriesOpeningDiscount(0))
+      .to.emit(bundle, "OpeningDiscountCleared")
+      .withArgs(0);
+    await expect(bundle.connect(user).mintTickets(0, zeroLuckyNumbers(1), false))
+      .to.emit(bundle, "TicketPurchaseMinted");
+  });
+
   it("does not pay ticket purchase rebates when no floor tiers are configured", async function () {
     const { user, points, core, bundle } = await deploySplitSuite();
     await createSeries(core);

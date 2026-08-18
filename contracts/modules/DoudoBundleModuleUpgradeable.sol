@@ -38,15 +38,34 @@ contract DoudoBundleModuleUpgradeable is
         uint256 rebatePoints;
     }
 
+    struct OpeningDiscountConfig {
+        uint256 ticketLimit;
+        uint256 priceInPoints;
+        bool active;
+    }
+
+    struct TicketPurchaseQuote {
+        uint256 basePriceInPoints;
+        uint256 openingPriceInPoints;
+        uint256 openingQuantity;
+        uint256 regularQuantity;
+        uint256 grossPriceInPoints;
+        uint256 rebatePoints;
+    }
+
     IDoudoCore public core;
     IDoudoPoints public doudoPoints;
     address public redrawModule;
 
     mapping(uint256 => mapping(uint256 => BundleConfig)) private seriesBundles;
     mapping(uint256 => RebateTier[]) public seriesRebateTiers;
+    mapping(uint256 => OpeningDiscountConfig) public seriesOpeningDiscounts;
+    mapping(uint256 => uint256) public openingDiscountUsed;
 
     error InvalidConfig();
     error RevealBatchTooLarge();
+    error PriceLimitRequired();
+    error PriceExceedsLimit(uint256 actualPriceInPoints, uint256 maxPriceInPoints);
 
     event RedrawModuleUpdated(address indexed redrawModule);
     event TicketPurchaseMinted(
@@ -68,6 +87,21 @@ contract DoudoBundleModuleUpgradeable is
         uint256 indexed seriesID,
         address indexed buyer,
         uint256 ticketQuantity,
+        uint256 rebatePoints
+    );
+    event OpeningDiscountConfigured(
+        uint256 indexed seriesID,
+        uint256 ticketLimit,
+        uint256 priceInPoints
+    );
+    event OpeningDiscountCleared(uint256 indexed seriesID);
+    event OpeningDiscountApplied(
+        uint256 indexed seriesID,
+        address indexed buyer,
+        uint256 openingQuantity,
+        uint256 regularQuantity,
+        uint256 openingPriceInPoints,
+        uint256 grossPriceInPoints,
         uint256 rebatePoints
     );
 
@@ -124,18 +158,98 @@ contract DoudoBundleModuleUpgradeable is
         return seriesRebateTiers[seriesID].length;
     }
 
+    function setSeriesOpeningDiscount(
+        uint256 seriesID,
+        uint256 ticketLimit,
+        uint256 priceInPoints
+    ) external onlyRole(OPERATION_ROLE) {
+        (uint256 basePriceInPoints, ) = core.seriesMintConfig(seriesID);
+        if (
+            basePriceInPoints == 0 ||
+            ticketLimit == 0 ||
+            priceInPoints == 0 ||
+            priceInPoints >= basePriceInPoints ||
+            openingDiscountUsed[seriesID] != 0
+        ) {
+            revert InvalidConfig();
+        }
+
+        seriesOpeningDiscounts[seriesID] = OpeningDiscountConfig({
+            ticketLimit: ticketLimit,
+            priceInPoints: priceInPoints,
+            active: true
+        });
+        emit OpeningDiscountConfigured(seriesID, ticketLimit, priceInPoints);
+    }
+
+    function clearSeriesOpeningDiscount(uint256 seriesID) external onlyRole(OPERATION_ROLE) {
+        OpeningDiscountConfig storage config = seriesOpeningDiscounts[seriesID];
+        if (!config.active || openingDiscountUsed[seriesID] != 0) {
+            revert InvalidConfig();
+        }
+
+        delete seriesOpeningDiscounts[seriesID];
+        emit OpeningDiscountCleared(seriesID);
+    }
+
+    function quoteTicketPurchase(
+        uint256 seriesID,
+        uint256 ticketQuantity
+    )
+        external
+        view
+        returns (
+            uint256 openingQuantity,
+            uint256 regularQuantity,
+            uint256 grossPriceInPoints,
+            uint256 rebatePoints
+        )
+    {
+        TicketPurchaseQuote memory quote = _quoteTicketPurchase(seriesID, ticketQuantity);
+        return (
+            quote.openingQuantity,
+            quote.regularQuantity,
+            quote.grossPriceInPoints,
+            quote.rebatePoints
+        );
+    }
+
     function mintTickets(
         uint256 seriesID,
         uint16[] calldata luckyNumbers,
         bool revealImmediately
     ) external nonReentrant returns (uint256 firstTokenID) {
-        firstTokenID = _mintTickets(seriesID, luckyNumbers, revealImmediately);
+        OpeningDiscountConfig storage config = seriesOpeningDiscounts[seriesID];
+        if (config.active && openingDiscountUsed[seriesID] < config.ticketLimit) {
+            revert PriceLimitRequired();
+        }
+        firstTokenID = _mintTickets(
+            seriesID,
+            luckyNumbers,
+            revealImmediately,
+            type(uint256).max
+        );
+    }
+
+    function mintTicketsWithPriceLimit(
+        uint256 seriesID,
+        uint16[] calldata luckyNumbers,
+        bool revealImmediately,
+        uint256 maxTotalPriceInPoints
+    ) external nonReentrant returns (uint256 firstTokenID) {
+        firstTokenID = _mintTickets(
+            seriesID,
+            luckyNumbers,
+            revealImmediately,
+            maxTotalPriceInPoints
+        );
     }
 
     function _mintTickets(
         uint256 seriesID,
         uint16[] calldata luckyNumbers,
-        bool revealImmediately
+        bool revealImmediately,
+        uint256 maxTotalPriceInPoints
     ) internal returns (uint256 firstTokenID) {
         uint256 ticketQuantity = luckyNumbers.length;
         if (ticketQuantity == 0) revert InvalidConfig();
@@ -143,31 +257,23 @@ contract DoudoBundleModuleUpgradeable is
             revert RevealBatchTooLarge();
         }
 
-        (uint256 pointsPerTicket, bool useLuckyNumber) = core.seriesMintConfig(seriesID);
+        (, bool useLuckyNumber) = core.seriesMintConfig(seriesID);
         for (uint256 i = 0; i < ticketQuantity; i++) {
             if (useLuckyNumber ? luckyNumbers[i] == 0 : luckyNumbers[i] != 0) {
                 revert InvalidConfig();
             }
         }
 
-        if (pointsPerTicket == 0) revert InvalidConfig();
-        uint256 priceInPoints = pointsPerTicket * ticketQuantity;
-        uint256 rebate = _rebateFor(seriesID, ticketQuantity);
-        uint256 paidPointsPerTicket = pointsPerTicket;
-        if (rebate >= priceInPoints) {
-            paidPointsPerTicket = 0;
-        } else if (rebate != 0) {
-            paidPointsPerTicket = (priceInPoints - rebate) / ticketQuantity;
+        TicketPurchaseQuote memory quote = _quoteTicketPurchase(seriesID, ticketQuantity);
+        if (quote.grossPriceInPoints > maxTotalPriceInPoints) {
+            revert PriceExceedsLimit(quote.grossPriceInPoints, maxTotalPriceInPoints);
+        }
+        if (quote.openingQuantity != 0) {
+            openingDiscountUsed[seriesID] += quote.openingQuantity;
         }
 
-        doudoPoints.burnFromWithReason(msg.sender, priceInPoints, BUNDLE_MINT);
-        firstTokenID = core.moduleMintUnrevealed(
-            msg.sender,
-            seriesID,
-            luckyNumbers,
-            paidPointsPerTicket,
-            true
-        );
+        doudoPoints.burnFromWithReason(msg.sender, quote.grossPriceInPoints, BUNDLE_MINT);
+        firstTokenID = _mintPricedSegments(seriesID, luckyNumbers, quote);
 
         if (revealImmediately) {
             uint256[] memory tokenIDs = new uint256[](ticketQuantity);
@@ -179,19 +285,124 @@ contract DoudoBundleModuleUpgradeable is
             core.reveal(seriesID, tokenIDs);
         }
 
-        if (rebate != 0) {
-            doudoPoints.mintWithReason(msg.sender, rebate, BUNDLE_REBATE);
-            emit TicketPurchaseRebatePaid(seriesID, msg.sender, ticketQuantity, rebate);
+        if (quote.rebatePoints != 0) {
+            doudoPoints.mintWithReason(msg.sender, quote.rebatePoints, BUNDLE_REBATE);
+            emit TicketPurchaseRebatePaid(
+                seriesID,
+                msg.sender,
+                quote.regularQuantity,
+                quote.rebatePoints
+            );
+        }
+
+        if (quote.openingQuantity != 0) {
+            emit OpeningDiscountApplied(
+                seriesID,
+                msg.sender,
+                quote.openingQuantity,
+                quote.regularQuantity,
+                quote.openingPriceInPoints,
+                quote.grossPriceInPoints,
+                quote.rebatePoints
+            );
         }
 
         emit TicketPurchaseMinted(
             seriesID,
             msg.sender,
             ticketQuantity,
-            priceInPoints,
+            quote.grossPriceInPoints,
             revealImmediately,
             firstTokenID
         );
+    }
+
+    function _quoteTicketPurchase(
+        uint256 seriesID,
+        uint256 ticketQuantity
+    ) internal view returns (TicketPurchaseQuote memory quote) {
+        if (ticketQuantity == 0) revert InvalidConfig();
+        (quote.basePriceInPoints, ) = core.seriesMintConfig(seriesID);
+        if (quote.basePriceInPoints == 0) revert InvalidConfig();
+
+        OpeningDiscountConfig storage config = seriesOpeningDiscounts[seriesID];
+        quote.openingPriceInPoints = config.priceInPoints;
+        uint256 used = openingDiscountUsed[seriesID];
+        if (config.active && used < config.ticketLimit) {
+            uint256 openingRemaining = config.ticketLimit - used;
+            quote.openingQuantity = ticketQuantity < openingRemaining
+                ? ticketQuantity
+                : openingRemaining;
+        }
+        quote.regularQuantity = ticketQuantity - quote.openingQuantity;
+        quote.rebatePoints = _rebateFor(seriesID, quote.regularQuantity);
+        quote.grossPriceInPoints =
+            quote.openingQuantity * config.priceInPoints +
+            quote.regularQuantity * quote.basePriceInPoints;
+    }
+
+    function _mintPricedSegments(
+        uint256 seriesID,
+        uint16[] calldata luckyNumbers,
+        TicketPurchaseQuote memory quote
+    ) internal returns (uint256 firstTokenID) {
+        uint256 cursor;
+        if (quote.openingQuantity != 0) {
+            firstTokenID = core.moduleMintUnrevealed(
+                msg.sender,
+                seriesID,
+                _sliceLuckyNumbers(luckyNumbers, 0, quote.openingQuantity),
+                quote.openingPriceInPoints,
+                true
+            );
+            cursor = quote.openingQuantity;
+        }
+
+        uint256 refundableRebate = quote.rebatePoints;
+        uint256 regularGrossPrice = quote.regularQuantity * quote.basePriceInPoints;
+        if (refundableRebate > regularGrossPrice) {
+            refundableRebate = regularGrossPrice;
+        }
+        if (quote.regularQuantity != 0) {
+            uint256 discountPerRegularTicket = refundableRebate / quote.regularQuantity;
+            uint256 discountRemainder = refundableRebate % quote.regularQuantity;
+            uint256 paidPerRegularTicket = quote.basePriceInPoints - discountPerRegularTicket;
+
+            if (discountRemainder != 0) {
+                uint256 tokenID = core.moduleMintUnrevealed(
+                    msg.sender,
+                    seriesID,
+                    _sliceLuckyNumbers(luckyNumbers, cursor, discountRemainder),
+                    paidPerRegularTicket - 1,
+                    true
+                );
+                if (cursor == 0) firstTokenID = tokenID;
+                cursor += discountRemainder;
+            }
+
+            uint256 regularRemainder = quote.regularQuantity - discountRemainder;
+            if (regularRemainder != 0) {
+                uint256 tokenID = core.moduleMintUnrevealed(
+                    msg.sender,
+                    seriesID,
+                    _sliceLuckyNumbers(luckyNumbers, cursor, regularRemainder),
+                    paidPerRegularTicket,
+                    true
+                );
+                if (cursor == 0) firstTokenID = tokenID;
+            }
+        }
+    }
+
+    function _sliceLuckyNumbers(
+        uint16[] calldata luckyNumbers,
+        uint256 start,
+        uint256 length
+    ) internal pure returns (uint16[] memory sliced) {
+        sliced = new uint16[](length);
+        for (uint256 i = 0; i < length; i++) {
+            sliced[i] = luckyNumbers[start + i];
+        }
     }
 
     function _rebateFor(
@@ -212,5 +423,5 @@ contract DoudoBundleModuleUpgradeable is
 
     function _authorizeUpgrade(address) internal override onlyRole(UPGRADER_ROLE) {}
 
-    uint256[44] private __gap;
+    uint256[42] private __gap;
 }
