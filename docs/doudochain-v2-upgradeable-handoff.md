@@ -1,6 +1,6 @@
 # DOUDOCHAIN V2 Upgradeable Handoff
 
-Last updated: 2026-07-21
+Last updated: 2026-08-18
 
 This document is the current handoff for the upgraded Arbitrum Sepolia V2 split-module deployment. Use proxy addresses for app/subgraph calls and implementation addresses only for verification and upgrade records.
 
@@ -26,7 +26,7 @@ coordinator and authorize their respective requester.
 | `DoudoVRFRouter` (Redraw) | `0x5A59D45437559C7CE0A012630a456321180C21e1` | Non-proxy | Verified |
 | `DOUDOCHAINV2CoreUpgradeable` | `0xf75395A8cd753f47135cfcaE00D2706252c3E0F5` | `0x73a3e3d2f632500aA034b68Df86249B011c24B06` | Verified |
 | `DoudoSeriesOpsModuleUpgradeable` | `0x2FF7521dEF3903fc5c6f2877252cdf5019380070` | `0x5409aa1Fbdd2e28fb47457F7ee50af1f73dD966D` | Verified and proxy-linked |
-| `DoudoBundleModuleUpgradeable` | `0x68cBA2b3c72Be39be748B06c1e6dDab2855E91b6` | `0x331818ea2401847823A5dc5C76358db04707F74e` | Verified and proxy-linked |
+| `DoudoBundleModuleUpgradeable` | `0x68cBA2b3c72Be39be748B06c1e6dDab2855E91b6` | `0xe7d827BA73a70da0b90d7D82ff253Be0252799fa` | Verified and proxy-linked |
 | `DoudoRefundModuleUpgradeable` | `0x8ee19238DAa466B7792BE33569c6E4f6993CCf20` | `0xC6cad8c6A27170848CF295fd1A290A143d3Ea4a3` | Verified and proxy-linked |
 | `DoudoRedrawModuleUpgradeable` | `0xE75461828f41C890fbc811e7cABFe2143B3F4afE` | `0xAC4A0DF12704eFE73ca8D20eC4965C69105AF2b8` | Verified and proxy-linked |
 | `DoudoCollectionRewardModuleUpgradeable` | `0x680618a6933DD68fF84Ff9F64760120d27400B3C` | `0x2cE5a89cBA7F79a6de97E6d798522f66310a6d83` | Verified and proxy-linked |
@@ -44,7 +44,7 @@ Explorer links:
 - SeriesOps proxy: `https://sepolia.arbiscan.io/address/0x2FF7521dEF3903fc5c6f2877252cdf5019380070#code`
 - SeriesOps implementation: `https://sepolia.arbiscan.io/address/0x5409aa1Fbdd2e28fb47457F7ee50af1f73dD966D#code`
 - Bundle proxy: `https://sepolia.arbiscan.io/address/0x68cBA2b3c72Be39be748B06c1e6dDab2855E91b6#code`
-- Bundle implementation: `https://sepolia.arbiscan.io/address/0x331818ea2401847823A5dc5C76358db04707F74e#code`
+- Bundle implementation: `https://sepolia.arbiscan.io/address/0xe7d827BA73a70da0b90d7D82ff253Be0252799fa#code`
 - Refund proxy: `https://sepolia.arbiscan.io/address/0x8ee19238DAa466B7792BE33569c6E4f6993CCf20#code`
 - Refund implementation: `https://sepolia.arbiscan.io/address/0xC6cad8c6A27170848CF295fd1A290A143d3Ea4a3#code`
 - Redraw proxy: `https://sepolia.arbiscan.io/address/0xE75461828f41C890fbc811e7cABFe2143B3F4afE#code`
@@ -104,6 +104,8 @@ Latest upgrade/wiring txs:
 
 | Action | Tx |
 | --- | --- |
+| Bundle opening-discount implementation deployment (block `299343988`) | `0xd681cf63d765602f91960f1771508e246cdf269e5d18b62a6dad0f092e89380e` |
+| Bundle opening-discount proxy upgrade (block `299344016`) | `0xe899bfd700de280aca4f861a27ac61aeca4ae3f7cce64f083a2b9747c5522a96` |
 | Core pause before exchange/CollectionBook expiration upgrade | `0xbc171eda92406fdf7ace5b894dfe1dcef03d0585958bebb820ed55156e40ed7d` |
 | Exchange-deadline Core implementation deployment | `0xed667fdda5c710312955f9012519d9a7b9ca94bb2dcb49833014a727908e2c3d` |
 | Exchange-deadline Core proxy upgrade | `0x776f80d040728fa3e9aae7b285393761105750e4428852944036a4fbcb8a789a` |
@@ -153,7 +155,7 @@ Index these addresses. For UUPS contracts, index the proxy address.
 | Core | `0xf75395A8cd753f47135cfcaE00D2706252c3E0F5` | Series, tickets, reveal, main prizes, last prize, canonical events |
 | Core VRF Router | `0x48A1205c9b6BF1Da1a3D1bE651A9e237AC349Eb5` | Core reveal request and fulfillment status |
 | Redraw VRF Router | `0x5A59D45437559C7CE0A012630a456321180C21e1` | Redraw request and fulfillment status |
-| Bundle Module | `0x68cBA2b3c72Be39be748B06c1e6dDab2855E91b6` | Ticket quantity mints and floor-tier rebates |
+| Bundle Module | `0x68cBA2b3c72Be39be748B06c1e6dDab2855E91b6` | Ticket quantity mints, opening discounts, and floor-tier rebates |
 | Refund Module | `0x8ee19238DAa466B7792BE33569c6E4f6993CCf20` | Refund config and claims |
 | Redraw Module | `0xE75461828f41C890fbc811e7cABFe2143B3F4afE` | Redraw config, synchronous redraw mints, consolation requests |
 | Collection Reward Module | `0x680618a6933DD68fF84Ff9F64760120d27400B3C` | Collection reward config, reward mints, unlock events |
