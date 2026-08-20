@@ -461,6 +461,8 @@ describe("DOUDOCHAIN V2 split module suite", function () {
       .to.be.revertedWithCustomError(bundle, "InvalidConfig");
     await expect(bundle.setSeriesOpeningDiscount(0, 10, ethers.parseEther("10")))
       .to.be.revertedWithCustomError(bundle, "InvalidConfig");
+    await expect(bundle.setSeriesOpeningDiscount(0, 10, ethers.parseEther("11")))
+      .to.be.revertedWithCustomError(bundle, "InvalidConfig");
 
     await bundle.setSeriesOpeningDiscount(0, 10, ethers.parseEther("7"));
     await expect(bundle.clearSeriesOpeningDiscount(0))

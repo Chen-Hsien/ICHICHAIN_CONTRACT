@@ -21,7 +21,7 @@
   "implementations": {
     "DOUDO_CORE": "0xFBE57533e226D832fe7503A6fd04206dcf03010C",
     "DOUDO_SERIES_OPS_MODULE": "0x105dcf76D53923b02eB878F4F57819ec1e8b9574",
-    "DOUDO_BUNDLE_MODULE": "0x2cB0Eb0360e4f53fEB626961251BEf0c73ADF61e",
+    "DOUDO_BUNDLE_MODULE": "0x319D35A811f5e8e3E948d2bB9A1E1Fa727d57036",
     "DOUDO_REFUND_MODULE": "0x257f3388a28b5e572931507cb0cB87D1f3Ca810D",
     "DOUDO_REDRAW_MODULE": "0x3246B28F6Cb04B6c37C74c3Aeadf744Be5c690ff",
     "DOUDO_COLLECTION_REWARD_MODULE": "0x925Be035E9110035f2217e6dc616E22d3628324c",
@@ -89,7 +89,8 @@
     "voucher:12": "0x04cda79f44d52537f24371188c19d1ca77abaa01bce7305baed3efa1031437cd",
     "voucher:13": "0xd2c282c6090e06060ad4bc99fee3c6b24360b6ffaabe987966f19689c7362f31",
     "vrf:addConsumer": "0x32940449d6b8dacce08e61beb47f94dd7c464542bf170a76b9a585bbaf8e722a",
-    "vrf:config:confirmations:1": "0xd297628e208c1017529aca47f0b2c4ab99ac4146c135fa5b1c7163ad6937ef12"
+    "vrf:config:confirmations:1": "0xd297628e208c1017529aca47f0b2c4ab99ac4146c135fa5b1c7163ad6937ef12",
+    "upgrade:DOUDO_BUNDLE_MODULE:openingDiscount": "0xde216c5754fbb0b1736fab955cb672d2013f5c651ad361d2e87ce9b5d478cbae"
   },
   "completed": [
     "wire:core:seriesOps",
@@ -115,7 +116,8 @@
     "voucher:13",
     "vrf:addConsumer",
     "POST_DEPLOY_VERIFIED",
-    "vrf:config:confirmations:1"
+    "vrf:config:confirmations:1",
+    "upgrade:bundle:openingDiscount"
   ],
   "startBlock": 488650621,
   "vrf": {
