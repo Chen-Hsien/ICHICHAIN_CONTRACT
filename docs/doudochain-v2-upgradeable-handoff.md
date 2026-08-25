@@ -1,6 +1,6 @@
 # DOUDOCHAIN V2 Upgradeable Handoff
 
-Last updated: 2026-08-18
+Last updated: 2026-08-25
 
 This document is the current handoff for the upgraded Arbitrum Sepolia V2 split-module deployment. Use proxy addresses for app/subgraph calls and implementation addresses only for verification and upgrade records.
 
@@ -24,7 +24,7 @@ coordinator and authorize their respective requester.
 | `DOUDOCOIN` | `0xFFCD533609e0e9E810C4C5D8Cb7a69D7a537C17E` | Non-proxy | Verified |
 | `DoudoVRFRouter` (Core) | `0x48A1205c9b6BF1Da1a3D1bE651A9e237AC349Eb5` | Non-proxy | Chain read confirmed |
 | `DoudoVRFRouter` (Redraw) | `0x5A59D45437559C7CE0A012630a456321180C21e1` | Non-proxy | Verified |
-| `DOUDOCHAINV2CoreUpgradeable` | `0xf75395A8cd753f47135cfcaE00D2706252c3E0F5` | `0x73a3e3d2f632500aA034b68Df86249B011c24B06` | Verified |
+| `DOUDOCHAINV2CoreUpgradeable` | `0xf75395A8cd753f47135cfcaE00D2706252c3E0F5` | `0x9648a54614bD6ebB7B5d337c570DBC628F528eE8` | Verified |
 | `DoudoSeriesOpsModuleUpgradeable` | `0x2FF7521dEF3903fc5c6f2877252cdf5019380070` | `0x5409aa1Fbdd2e28fb47457F7ee50af1f73dD966D` | Verified and proxy-linked |
 | `DoudoBundleModuleUpgradeable` | `0x68cBA2b3c72Be39be748B06c1e6dDab2855E91b6` | `0xe7d827BA73a70da0b90d7D82ff253Be0252799fa` | Verified and proxy-linked |
 | `DoudoRefundModuleUpgradeable` | `0x8ee19238DAa466B7792BE33569c6E4f6993CCf20` | `0xC6cad8c6A27170848CF295fd1A290A143d3Ea4a3` | Verified and proxy-linked |
@@ -32,7 +32,7 @@ coordinator and authorize their respective requester.
 | `DoudoCollectionRewardModuleUpgradeable` | `0x680618a6933DD68fF84Ff9F64760120d27400B3C` | `0x2cE5a89cBA7F79a6de97E6d798522f66310a6d83` | Verified and proxy-linked |
 | `CollectionBookUpgradeable` | `0x4284be399cA9591fBd98248969fCcb969E21B2C6` | `0x712357CE959DD055500D4a44BB33eFe41073d5A0` | Verified and proxy-linked |
 | `MerchantSeriesRegistry` | `0x03dBEE1f231A29b06032aa24D2CFb96a1321C1A6` | `0x59B2869C51cc555734845DF9eb3bDFb5Fc6f1E81` | Verified and proxy-linked |
-| `MerchantSeriesPublisher` | `0xB0EC5ca70a9AeCaeb260FdCDF238a64Ad37F5515` | `0xC76F735c59CAa54B2a3bea79010Fc934E206b393` | Verified |
+| `MerchantSeriesPublisher` | `0xB0EC5ca70a9AeCaeb260FdCDF238a64Ad37F5515` | `0xe787DD97F42Aa467A3A74CBc995c789794eC6f55` | Verified |
 
 Explorer links:
 
@@ -40,7 +40,7 @@ Explorer links:
 - Core DoudoVRFRouter: `https://sepolia.arbiscan.io/address/0x48A1205c9b6BF1Da1a3D1bE651A9e237AC349Eb5#code`
 - Redraw DoudoVRFRouter: `https://sepolia.arbiscan.io/address/0x5A59D45437559C7CE0A012630a456321180C21e1#code`
 - Core proxy: `https://sepolia.arbiscan.io/address/0xf75395A8cd753f47135cfcaE00D2706252c3E0F5#code`
-- Core implementation: `https://sepolia.arbiscan.io/address/0x73a3e3d2f632500aA034b68Df86249B011c24B06#code`
+- Core implementation: `https://sepolia.arbiscan.io/address/0x9648a54614bD6ebB7B5d337c570DBC628F528eE8#code`
 - SeriesOps proxy: `https://sepolia.arbiscan.io/address/0x2FF7521dEF3903fc5c6f2877252cdf5019380070#code`
 - SeriesOps implementation: `https://sepolia.arbiscan.io/address/0x5409aa1Fbdd2e28fb47457F7ee50af1f73dD966D#code`
 - Bundle proxy: `https://sepolia.arbiscan.io/address/0x68cBA2b3c72Be39be748B06c1e6dDab2855E91b6#code`
@@ -55,7 +55,7 @@ Explorer links:
 - MerchantSeriesRegistry proxy: `https://sepolia.arbiscan.io/address/0x03dBEE1f231A29b06032aa24D2CFb96a1321C1A6#code`
 - MerchantSeriesRegistry implementation: `https://sepolia.arbiscan.io/address/0x59B2869C51cc555734845DF9eb3bDFb5Fc6f1E81#code`
 - MerchantSeriesPublisher proxy: `https://sepolia.arbiscan.io/address/0xB0EC5ca70a9AeCaeb260FdCDF238a64Ad37F5515#code`
-- MerchantSeriesPublisher implementation: `https://sepolia.arbiscan.io/address/0xC76F735c59CAa54B2a3bea79010Fc934E206b393#code`
+- MerchantSeriesPublisher implementation: `https://sepolia.arbiscan.io/address/0xe787DD97F42Aa467A3A74CBc995c789794eC6f55#code`
 
 ## ABI Paths
 
@@ -104,6 +104,12 @@ Latest upgrade/wiring txs:
 
 | Action | Tx |
 | --- | --- |
+| Temporarily revoke Publisher Core `OPERATION_ROLE` (block `301580631`) | `0x34e8e050e123c0504d8fa4969b38d1322044f2b1304f9c11a61da6cd65b6a45b` |
+| Merchant exchange-window Core implementation deployment (block `301580661`) | `0x0c94dd6fca8d95a287f5881b3554b0195ae5394e6e723c9949e5c87ababbe8ad` |
+| Merchant exchange-window Core proxy upgrade (block `301580685`) | `0x7135d580b289ca66d5f5e86d8d28beb920717f6729bdaa27aaa2ffbcdf5a552d` |
+| Merchant exchange-window Publisher implementation deployment (block `301580715`) | `0x3e109c0da132d657b1d5cf7d52d76758fa301f745a82224d22dc5c56034a9280` |
+| Merchant exchange-window Publisher proxy upgrade (block `301580740`) | `0x8284d122f24ab39982d7101d27df033b63685391eab12ae668face32f4a47262` |
+| Restore Publisher Core `OPERATION_ROLE` (block `301580758`) | `0x6092f200486ff81e4712be8347078f62112fd256ec9ff5c47c0de3c871214e1b` |
 | Bundle opening-discount implementation deployment (block `299343988`) | `0xd681cf63d765602f91960f1771508e246cdf269e5d18b62a6dad0f092e89380e` |
 | Bundle opening-discount proxy upgrade (block `299344016`) | `0xe899bfd700de280aca4f861a27ac61aeca4ae3f7cce64f083a2b9747c5522a96` |
 | Core pause before exchange/CollectionBook expiration upgrade | `0xbc171eda92406fdf7ace5b894dfe1dcef03d0585958bebb820ed55156e40ed7d` |
@@ -214,7 +220,7 @@ Core no longer uses a separate `VRF_ROUTER_ROLE`; fulfillment is guarded by `msg
 | Mint lock and wallet cap | Done | `setDefaultLockDuration`, `setSeriesLockDuration`, `clearMintLock`, `setSeriesMaxPerWallet`. |
 | Reveal through Chainlink VRF | Done | Router keeps Chainlink base module and official guard. |
 | Last prize | Done | Non-preorder sold-out series picks last sold token synchronously; pre-order series uses VRF. |
-| Exchange prize | Done | `exchangePrize(...)` updates ticket exchange state and tokenURI branch. |
+| Exchange prize | Done | New series snapshot the merchant window through Publisher; missing/invalid input defaults to 14 days. Legacy series retain their stored window, and existing deadlines can only be extended. |
 | Token URI state | Done | Unrevealed, revealed, and exchanged states are supported. |
 | Bundle mint | Done | Burns bundle price, records per-ticket paid points, supports rebate and consolation credits. |
 | Refund | Done | Refunds actual `pointsPaid(tokenID)`, including bundle-discounted tickets. |
@@ -234,7 +240,7 @@ Core:
 ```solidity
 createSeriesWithSubPrizes(SeriesInput input, SubPrize[] subPrizes, bool markGoodsArrived)
 batchCreateSeriesWithSubPrizes(SeriesInput[] inputs, SubPrize[][] subPrizesList, bool[] markGoodsArrivedList)
-setSeriesMetadata(uint256 seriesID, string exchangeTokenURI, string unrevealTokenURI, string revealTokenURI, string seriesMetaDataURI)
+setSeriesMetadata(uint256 seriesID, string exchangeTokenURI, string unrevealTokenURI, string revealTokenURI, string seriesMetaDataURI, uint256 extendedExchangeExpireTime)
 setGoodsArrived(uint256 seriesID)
 setDefaultLockDuration(uint256 duration)
 setSeriesLockDuration(uint256 seriesID, uint256 duration)
@@ -289,7 +295,7 @@ claimBook(uint256 bookId)
 Merchant attribution:
 
 ```solidity
-publishSeriesWithMerchant(address core, SeriesInput input, SubPrize[] subPrizes, bool markGoodsArrived, bytes32 merchantRef)
+publishSeriesWithMerchant(address core, SeriesInput input, SubPrize[] subPrizes, bool revealEnabled, bytes32 merchantRef, uint256 exchangeExpireTime)
 linkSeries(address seriesContract, uint256 seriesID, bytes32 merchantRef)
 relinkSeries(address seriesContract, uint256 seriesID, bytes32 newMerchantRef)
 merchantOf(address seriesContract, uint256 seriesID)
@@ -431,7 +437,7 @@ Redraw: deployProxy(previous split-layout harness) -> upgradeProxy(current Redra
 Bytecode size snapshot:
 
 ```text
-DOUDOCHAINV2CoreUpgradeable: 24,201 bytes
+DOUDOCHAINV2CoreUpgradeable: 24,575 bytes
 DoudoBundleModuleUpgradeable: 6,919 bytes
 DoudoRefundModuleUpgradeable: 5,660 bytes
 DoudoRedrawModuleUpgradeable: 9,459 bytes

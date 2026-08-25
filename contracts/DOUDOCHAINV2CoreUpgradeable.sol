@@ -237,9 +237,17 @@ contract DOUDOCHAINV2CoreUpgradeable is
         string calldata exchangeTokenURI,
         string calldata unrevealTokenURI,
         string calldata revealTokenURI,
-        string calldata seriesMetaDataURI
+        string calldata seriesMetaDataURI,
+        uint256 extendedExchangeExpireTime
     ) external onlyRole(OPERATION_ROLE) {
         Series storage series = seriesData[seriesID];
+
+        assembly {
+            let exchangeExpireTimeSlot := add(series.slot, 6)
+            if gt(extendedExchangeExpireTime, sload(exchangeExpireTimeSlot)) {
+                sstore(exchangeExpireTimeSlot, extendedExchangeExpireTime)
+            }
+        }
 
         series.exchangeTokenURI = exchangeTokenURI;
         series.unrevealTokenURI = unrevealTokenURI;
@@ -485,9 +493,11 @@ contract DOUDOCHAINV2CoreUpgradeable is
     function setGoodsArrived(uint256 seriesID) external onlyRole(OPERATION_ROLE) {
         Series storage series = seriesData[seriesID];
         if (series.totalTicketNumbers == 0) revert InvalidSeriesInput();
-        series.isGoodsArrived = true;
-        series.estimateDeliverTime = block.timestamp;
-        series.exchangeExpireTime = block.timestamp + 60 days;
+        unchecked {
+            series.isGoodsArrived = true;
+            series.exchangeExpireTime = block.timestamp + series.exchangeExpireTime - series.estimateDeliverTime;
+            series.estimateDeliverTime = block.timestamp;
+        }
         _emitSeriesInformation(seriesID);
     }
 
@@ -549,7 +559,6 @@ contract DOUDOCHAINV2CoreUpgradeable is
         series.priceInPoints = input.priceInPoints;
         series.priceInTWD = input.priceInTWD;
         series.estimateDeliverTime = input.estimateDeliverTime;
-        series.exchangeExpireTime = input.estimateDeliverTime + 60 days;
         series.exchangeTokenURI = input.exchangeTokenURI;
         series.unrevealTokenURI = input.unrevealTokenURI;
         series.revealTokenURI = input.revealTokenURI;
@@ -895,13 +904,16 @@ contract DOUDOCHAINV2CoreUpgradeable is
 
     function _requireExchangeDeadlineOpen(uint64 revealTime, uint256 seriesID) internal view {
         assembly {
-            // Series.exchangeExpireTime is slot 6 and already equals
-            // estimateDeliverTime + 60 days. Expiration requires both the
-            // per-token reveal deadline and the series delivery deadline to pass.
+            // Derive the immutable per-series window from the stored delivery
+            // timestamp and deadline so legacy 60-day series retain their terms.
             mstore(0, seriesID)
             mstore(0x20, seriesData.slot)
-            let deliveryDeadline := sload(add(keccak256(0, 0x40), 6))
-            if and(gt(timestamp(), add(revealTime, 5184000)), gt(timestamp(), deliveryDeadline)) {
+            let seriesSlot := keccak256(0, 0x40)
+            let deliveryDeadline := sload(add(seriesSlot, 6))
+            if and(
+                gt(timestamp(), add(revealTime, sub(deliveryDeadline, sload(add(seriesSlot, 5))))),
+                gt(timestamp(), deliveryDeadline)
+            ) {
                 revert(0, 0)
             }
         }

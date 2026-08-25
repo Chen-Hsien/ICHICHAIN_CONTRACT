@@ -126,9 +126,29 @@ describe("Merchant publish - atomic flow", function () {
   it("publishes a series and links the merchant in one transaction", async function () {
     const { operator, core, registry, publisher } = await deployFullSuite();
     const coreAddr = await core.getAddress();
-    await publisher
-      .connect(operator)
-      .publishSeriesWithMerchant(coreAddr, seriesInput(), prizeTable(), false, MERCHANT_A);
+    await expect(
+      publisher
+        .connect(operator)
+        .publishSeriesWithMerchant(
+          coreAddr,
+          seriesInput(),
+          prizeTable(),
+          false,
+          MERCHANT_A,
+          0
+        )
+    )
+      .to.emit(core, "UpdateSeriesInformation")
+      .withArgs(
+        0,
+        true,
+        1780000000,
+        1780000000 + 14 * 24 * 60 * 60,
+        "ipfs://exchange/",
+        "ipfs://unreveal",
+        "ipfs://reveal/",
+        "ipfs://series"
+      );
     expect(await registry.merchantOf(coreAddr, 0)).to.equal(MERCHANT_A);
   });
 
@@ -144,7 +164,8 @@ describe("Merchant publish - atomic flow", function () {
           seriesInput({ packingType: 2, sourceType: 1 }),
           prizeTable(),
           false,
-          MERCHANT_A
+          MERCHANT_A,
+          1780000000 + 30 * 24 * 60 * 60
         )
     )
       .to.emit(core, "NewSeries")
@@ -160,11 +181,11 @@ describe("Merchant publish - atomic flow", function () {
     await expect(
       publisher
         .connect(operator)
-        .publishSeriesWithMerchant(coreAddr, seriesInput(), prizeTable(), false, ZERO32)
+        .publishSeriesWithMerchant(coreAddr, seriesInput(), prizeTable(), false, ZERO32, 1780000000 + 14 * 24 * 60 * 60)
     ).to.be.revertedWithCustomError(registry, "ZeroMerchantRef");
     await publisher
       .connect(operator)
-      .publishSeriesWithMerchant(coreAddr, seriesInput(), prizeTable(), false, MERCHANT_A);
+      .publishSeriesWithMerchant(coreAddr, seriesInput(), prizeTable(), false, MERCHANT_A, 1780000000 + 14 * 24 * 60 * 60);
     expect(await registry.merchantOf(coreAddr, 0)).to.equal(MERCHANT_A);
   });
 
@@ -173,10 +194,10 @@ describe("Merchant publish - atomic flow", function () {
     const coreAddr = await core.getAddress();
     await publisher
       .connect(operator)
-      .publishSeriesWithMerchant(coreAddr, seriesInput(), prizeTable(), false, MERCHANT_A);
+      .publishSeriesWithMerchant(coreAddr, seriesInput(), prizeTable(), false, MERCHANT_A, 1780000000 + 14 * 24 * 60 * 60);
     await publisher
       .connect(operator)
-      .publishSeriesWithMerchant(coreAddr, seriesInput(), prizeTable(), false, MERCHANT_A);
+      .publishSeriesWithMerchant(coreAddr, seriesInput(), prizeTable(), false, MERCHANT_A, 1780000000 + 14 * 24 * 60 * 60);
     expect(await registry.merchantOf(coreAddr, 0)).to.equal(MERCHANT_A);
     expect(await registry.merchantOf(coreAddr, 1)).to.equal(MERCHANT_A);
   });
@@ -188,7 +209,7 @@ describe("Publisher access control", function () {
     await expect(
       publisher
         .connect(human)
-        .publishSeriesWithMerchant(await core.getAddress(), seriesInput(), prizeTable(), false, MERCHANT_A)
+        .publishSeriesWithMerchant(await core.getAddress(), seriesInput(), prizeTable(), false, MERCHANT_A, 1780000000 + 14 * 24 * 60 * 60)
     ).to.be.revertedWithCustomError(publisher, "MissingRole");
   });
 

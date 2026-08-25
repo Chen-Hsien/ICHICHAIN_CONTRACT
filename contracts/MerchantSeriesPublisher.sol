@@ -54,12 +54,23 @@ contract MerchantSeriesPublisher is
         IDoudoSeriesPublishing.SeriesInput calldata input,
         IDoudoSeriesPublishing.SubPrize[] calldata subPrizes,
         bool revealEnabled,
-        bytes32 merchantRef
+        bytes32 merchantRef,
+        uint256 exchangeExpireTime
     ) external onlyRole(PUBLISHER_OPERATION_ROLE) returns (uint256 seriesID) {
         seriesID = IDoudoSeriesPublishing(core).createSeriesWithSubPrizes(
             input,
             subPrizes,
             revealEnabled
+        );
+        IDoudoSeriesPublishing(core).setSeriesMetadata(
+            seriesID,
+            input.exchangeTokenURI,
+            input.unrevealTokenURI,
+            input.revealTokenURI,
+            input.seriesMetaDataURI,
+            exchangeExpireTime > input.estimateDeliverTime
+                ? exchangeExpireTime
+                : input.estimateDeliverTime + 14 days
         );
         registry.linkSeries(core, seriesID, merchantRef);
         emit SeriesPublished(core, seriesID, merchantRef, msg.sender);
