@@ -1,6 +1,6 @@
 # DOUDOCHAIN V2 Upgradeable Handoff
 
-Last updated: 2026-08-25
+Last updated: 2026-08-28
 
 This document is the current handoff for the upgraded Arbitrum Sepolia V2 split-module deployment. Use proxy addresses for app/subgraph calls and implementation addresses only for verification and upgrade records.
 
@@ -24,9 +24,9 @@ coordinator and authorize their respective requester.
 | `DOUDOCOIN` | `0xFFCD533609e0e9E810C4C5D8Cb7a69D7a537C17E` | Non-proxy | Verified |
 | `DoudoVRFRouter` (Core) | `0x48A1205c9b6BF1Da1a3D1bE651A9e237AC349Eb5` | Non-proxy | Chain read confirmed |
 | `DoudoVRFRouter` (Redraw) | `0x5A59D45437559C7CE0A012630a456321180C21e1` | Non-proxy | Verified |
-| `DOUDOCHAINV2CoreUpgradeable` | `0xf75395A8cd753f47135cfcaE00D2706252c3E0F5` | `0x9648a54614bD6ebB7B5d337c570DBC628F528eE8` | Verified |
+| `DOUDOCHAINV2CoreUpgradeable` | `0xf75395A8cd753f47135cfcaE00D2706252c3E0F5` | `0x0acE3812DBE9BF82908Dae87bA9973f2d2e11500` | Verified |
 | `DoudoSeriesOpsModuleUpgradeable` | `0x2FF7521dEF3903fc5c6f2877252cdf5019380070` | `0x5409aa1Fbdd2e28fb47457F7ee50af1f73dD966D` | Verified and proxy-linked |
-| `DoudoBundleModuleUpgradeable` | `0x68cBA2b3c72Be39be748B06c1e6dDab2855E91b6` | `0xe7d827BA73a70da0b90d7D82ff253Be0252799fa` | Verified and proxy-linked |
+| `DoudoBundleModuleUpgradeable` | `0x68cBA2b3c72Be39be748B06c1e6dDab2855E91b6` | `0x10a2c76fde2053A6234658eA29208b2bDf7C97B6` | Verified and proxy-linked |
 | `DoudoRefundModuleUpgradeable` | `0x8ee19238DAa466B7792BE33569c6E4f6993CCf20` | `0xC6cad8c6A27170848CF295fd1A290A143d3Ea4a3` | Verified and proxy-linked |
 | `DoudoRedrawModuleUpgradeable` | `0xE75461828f41C890fbc811e7cABFe2143B3F4afE` | `0xAC4A0DF12704eFE73ca8D20eC4965C69105AF2b8` | Verified and proxy-linked |
 | `DoudoCollectionRewardModuleUpgradeable` | `0x680618a6933DD68fF84Ff9F64760120d27400B3C` | `0x2cE5a89cBA7F79a6de97E6d798522f66310a6d83` | Verified and proxy-linked |
@@ -40,11 +40,13 @@ Explorer links:
 - Core DoudoVRFRouter: `https://sepolia.arbiscan.io/address/0x48A1205c9b6BF1Da1a3D1bE651A9e237AC349Eb5#code`
 - Redraw DoudoVRFRouter: `https://sepolia.arbiscan.io/address/0x5A59D45437559C7CE0A012630a456321180C21e1#code`
 - Core proxy: `https://sepolia.arbiscan.io/address/0xf75395A8cd753f47135cfcaE00D2706252c3E0F5#code`
-- Core implementation: `https://sepolia.arbiscan.io/address/0x9648a54614bD6ebB7B5d337c570DBC628F528eE8#code`
+- Core implementation: `https://sepolia.arbiscan.io/address/0x0acE3812DBE9BF82908Dae87bA9973f2d2e11500#code`
+- Core DoudoPrizeDrawLib: `https://sepolia.arbiscan.io/address/0xbC269A4A26726b02DF521708b7a1Eb1949A25291#code`
+- Core DoudoTokenURILib: `https://sepolia.arbiscan.io/address/0x9Eda0b3b4f2f1E9b47539bcde02baEfeDdEbe25A#code`
 - SeriesOps proxy: `https://sepolia.arbiscan.io/address/0x2FF7521dEF3903fc5c6f2877252cdf5019380070#code`
 - SeriesOps implementation: `https://sepolia.arbiscan.io/address/0x5409aa1Fbdd2e28fb47457F7ee50af1f73dD966D#code`
 - Bundle proxy: `https://sepolia.arbiscan.io/address/0x68cBA2b3c72Be39be748B06c1e6dDab2855E91b6#code`
-- Bundle implementation: `https://sepolia.arbiscan.io/address/0xe7d827BA73a70da0b90d7D82ff253Be0252799fa#code`
+- Bundle implementation: `https://sepolia.arbiscan.io/address/0x10a2c76fde2053A6234658eA29208b2bDf7C97B6#code`
 - Refund proxy: `https://sepolia.arbiscan.io/address/0x8ee19238DAa466B7792BE33569c6E4f6993CCf20#code`
 - Refund implementation: `https://sepolia.arbiscan.io/address/0xC6cad8c6A27170848CF295fd1A290A143d3Ea4a3#code`
 - Redraw proxy: `https://sepolia.arbiscan.io/address/0xE75461828f41C890fbc811e7cABFe2143B3F4afE#code`
@@ -104,6 +106,12 @@ Latest upgrade/wiring txs:
 
 | Action | Tx |
 | --- | --- |
+| Core pause before free-order challenge upgrade | `0xd804ab49c0a0c73dd8a751a2a5ba27b30108bed7173604ecbbca5728e97e0d3a` |
+| Free-order Core implementation deployment | `0xfd9501b5ed8709cf5cd567f716db0d739acdafc5c971f9041f4e2b47b5fe7a7b` |
+| Free-order Core proxy upgrade | `0x45c45e686714f1855ccfd72663a5bd7ab5dcc3de352bc1e9bf54d9d5a1d34a89` |
+| Free-order Bundle implementation deployment | `0xa7312638e6b3c2f84af89bc4ddc6d1ede087e50909bf8d1876e7efce623b8ee1` |
+| Free-order Bundle proxy upgrade | `0x510c911ea5b4540e3a2c0ceb0fb7d07bb6cd07c67ee6aee00e8db7c20468aca6` |
+| Core unpause after free-order challenge upgrade | `0x591c2dbd3ff7ccc9a5068b5696a6cad134903e476b789bc9395df5ced96c6fe1` |
 | Temporarily revoke Publisher Core `OPERATION_ROLE` (block `301580631`) | `0x34e8e050e123c0504d8fa4969b38d1322044f2b1304f9c11a61da6cd65b6a45b` |
 | Merchant exchange-window Core implementation deployment (block `301580661`) | `0x0c94dd6fca8d95a287f5881b3554b0195ae5394e6e723c9949e5c87ababbe8ad` |
 | Merchant exchange-window Core proxy upgrade (block `301580685`) | `0x7135d580b289ca66d5f5e86d8d28beb920717f6729bdaa27aaa2ffbcdf5a552d` |
@@ -155,6 +163,15 @@ Latest upgrade/wiring txs:
 ## Subgraph Data Sources
 
 Index these addresses. For UUPS contracts, index the proxy address.
+
+Current Arbitrum Sepolia Studio deployment:
+
+- Project: `doudochain-arb-v-2`
+- Version: `v2.1.11`
+- Deployment: `QmTt3dTE2iyhQ7ssfw8CqeewTp4qcPvyvErudizgAotFcH`
+- Query endpoint: `https://api.studio.thegraph.com/query/79631/doudochain-arb-v-2/v2.1.11`
+- Published on `2026-08-28`; the deployment rebuilds from the existing start
+  blocks and must finish syncing before consumer endpoint cutover.
 
 | Data source | Address | Purpose |
 | --- | --- | --- |
@@ -391,6 +408,18 @@ npx hardhat run scripts/upgradeCoreAndBundleArbSepolia.ts --network arbitrumSepo
 
 The script validates and upgrades Core, Bundle, and Redraw together. A real run pauses all three proxies before the first upgrade and only unpauses proxies that it paused after every wiring assertion passes.
 
+Free-order challenge upgrade and post-deploy probe:
+
+```bash
+npx hardhat run scripts/upgradeFreeOrderChallengeArbSepolia.ts --network arbitrumSepolia
+EXECUTE_FREE_ORDER_CHALLENGE_UPGRADE=1 npx hardhat run scripts/upgradeFreeOrderChallengeArbSepolia.ts --network arbitrumSepolia
+npx hardhat run scripts/checkFreeOrderChallengeUpgradeArbSepolia.ts --network arbitrumSepolia
+```
+
+The feature is deployed but remains inactive until operations calls
+`setFreeOrderChallengeConfig` for a specific series with its eligible last-ticket
+count and trigger prize IDs.
+
 Verification script:
 
 ```bash
@@ -425,6 +454,9 @@ npm test
 
 npx hardhat run scripts/checkSplitModuleArbSepolia.ts --network arbitrumSepolia
 Split module wiring checks passed.
+
+npx hardhat run scripts/checkFreeOrderChallengeUpgradeArbSepolia.ts --network arbitrumSepolia
+Free-order challenge Sepolia post-deploy checks passed at block 302635039.
 ```
 
 Storage upgrade coverage:
@@ -437,8 +469,8 @@ Redraw: deployProxy(previous split-layout harness) -> upgradeProxy(current Redra
 Bytecode size snapshot:
 
 ```text
-DOUDOCHAINV2CoreUpgradeable: 24,575 bytes
-DoudoBundleModuleUpgradeable: 6,919 bytes
+DOUDOCHAINV2CoreUpgradeable: 24,574 bytes
+DoudoBundleModuleUpgradeable: 16,333 bytes
 DoudoRefundModuleUpgradeable: 5,660 bytes
 DoudoRedrawModuleUpgradeable: 9,459 bytes
 DoudoCollectionRewardModuleUpgradeable: 6,205 bytes

@@ -315,12 +315,15 @@ contract DOUDOCHAINV2CoreUpgradeable is
         series.lastPrizeQuantity = quantity;
     }
 
-    function reveal(uint256 seriesID, uint256[] calldata tokenIDs) external nonReentrant whenNotPaused {
+    function reveal(
+        uint256 seriesID,
+        uint256[] calldata tokenIDs
+    ) external nonReentrant whenNotPaused returns (uint256 requestId) {
         if (tokenIDs.length == 0) revert InvalidSeriesInput();
         if (tokenIDs.length > MAX_REVEAL_BATCH) revert RevealBatchTooLarge();
         if (!_seriesOps().revealEnabled(seriesID)) revert GoodsNotArrived();
         _validateRevealTokens(seriesID, tokenIDs);
-        _requestRevealRandomWords(seriesID, tokenIDs);
+        requestId = _requestRevealRandomWords(seriesID, tokenIDs);
     }
 
     function fulfillRandomWordsFromRouter(
@@ -539,9 +542,23 @@ contract DOUDOCHAINV2CoreUpgradeable is
 
     function seriesMintConfig(
         uint256 seriesID
-    ) external view returns (uint256 priceInPoints, bool useLuckyNumber) {
-        Series storage series = seriesData[seriesID];
-        return (series.priceInPoints, series.useLuckyNumber);
+    )
+        external
+        view
+        returns (
+            uint256 priceInPoints,
+            bool useLuckyNumber,
+            uint256 remainingTicketNumbers
+        )
+    {
+        assembly ("memory-safe") {
+            mstore(0, seriesID)
+            mstore(0x20, seriesData.slot)
+            let seriesSlot := keccak256(0, 0x40)
+            remainingTicketNumbers := sload(add(seriesSlot, 2))
+            priceInPoints := sload(add(seriesSlot, 3))
+            useLuckyNumber := shr(16, sload(add(seriesSlot, 12)))
+        }
     }
 
     function _createSeriesWithSubPrizes(

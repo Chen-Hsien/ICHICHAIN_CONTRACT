@@ -136,7 +136,7 @@ contract DoudoCollectionRewardModuleUpgradeable is
         if (config.rewardKind > uint8(RewardKind.UnlockSeries)) revert InvalidConfig();
         if (config.rewardKind == uint8(RewardKind.Points)) return;
 
-        (uint256 priceInPoints, ) = core.seriesMintConfig(config.seriesID);
+        (uint256 priceInPoints, , ) = core.seriesMintConfig(config.seriesID);
         if (priceInPoints == 0) revert InvalidConfig();
         if (config.rewardKind == uint8(RewardKind.UnlockSeries) && config.pointsAmount == 0) {
             revert InvalidConfig();

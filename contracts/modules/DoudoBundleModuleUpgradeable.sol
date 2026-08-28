@@ -18,6 +18,7 @@ contract DoudoBundleModuleUpgradeable is
     bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
     bytes32 private constant BUNDLE_MINT = keccak256("BUNDLE_MINT");
     bytes32 private constant BUNDLE_REBATE = keccak256("BUNDLE_REBATE");
+    bytes32 private constant FREE_ORDER_REFUND = keccak256("FREE_ORDER_REFUND");
     uint256 private constant MAX_BUNDLE_MINT_AND_REVEAL = 10;
 
     struct BundleConfig {
@@ -53,6 +54,24 @@ contract DoudoBundleModuleUpgradeable is
         uint256 rebatePoints;
     }
 
+    struct FreeOrderChallengeConfig {
+        uint256 eligibleLastTicketCount;
+        uint256 version;
+        bool active;
+    }
+
+    struct FreeOrderChallengeRound {
+        uint256 seriesID;
+        address buyer;
+        uint256 configVersion;
+        uint256 firstTokenID;
+        uint256 ticketQuantity;
+        uint256 refundPoints;
+        bool processed;
+        bool won;
+        bool claimed;
+    }
+
     IDoudoCore public core;
     IDoudoPoints public doudoPoints;
     address public redrawModule;
@@ -66,6 +85,10 @@ contract DoudoBundleModuleUpgradeable is
     error RevealBatchTooLarge();
     error PriceLimitRequired();
     error PriceExceedsLimit(uint256 actualPriceInPoints, uint256 maxPriceInPoints);
+    error InvalidFreeOrderChallenge();
+    error FreeOrderChallengeNotEligible();
+    error FreeOrderResultNotReady();
+    error FreeOrderRefundAlreadyClaimed();
 
     event RedrawModuleUpdated(address indexed redrawModule);
     event TicketPurchaseMinted(
@@ -104,6 +127,44 @@ contract DoudoBundleModuleUpgradeable is
         uint256 grossPriceInPoints,
         uint256 rebatePoints
     );
+    event FreeOrderChallengePurchased(
+        uint256 indexed requestId,
+        uint256 indexed seriesID,
+        address indexed buyer,
+        uint256 ticketQuantity,
+        uint256 grossPriceInPoints,
+        uint256 rebatePoints,
+        uint256 refundablePoints,
+        uint256 firstTokenID
+    );
+    event FreeOrderChallengeConfigured(
+        uint256 indexed seriesID,
+        uint256 indexed version,
+        uint256 eligibleLastTicketCount,
+        uint256[] triggerPrizeIDs
+    );
+    event FreeOrderChallengeCleared(uint256 indexed seriesID, uint256 indexed version);
+    event FreeOrderChallengeResult(
+        uint256 indexed requestId,
+        uint256 indexed seriesID,
+        address indexed buyer,
+        bool won,
+        uint256 refundPoints,
+        uint256 winningTokenID,
+        uint256 winningPrizeID
+    );
+    event FreeOrderChallengeRefunded(
+        uint256 indexed requestId,
+        uint256 indexed seriesID,
+        address indexed buyer,
+        uint256 refundPoints
+    );
+    event FreeOrderChallengeRefundDeferred(
+        uint256 indexed requestId,
+        uint256 indexed seriesID,
+        address indexed buyer,
+        uint256 refundPoints
+    );
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
@@ -137,7 +198,10 @@ contract DoudoBundleModuleUpgradeable is
         uint256 previousMinimum;
         for (uint256 i = 0; i < tiers.length; i++) {
             uint256 minimumTicketQuantity = tiers[i].minimumTicketQuantity;
-            if (minimumTicketQuantity == 0 || minimumTicketQuantity <= previousMinimum) revert InvalidConfig();
+            if (
+                minimumTicketQuantity == 0 ||
+                minimumTicketQuantity <= previousMinimum
+            ) revert InvalidConfig();
             seriesRebateTiers[seriesID].push(
                 RebateTier({
                     minimumTicketQuantity: minimumTicketQuantity,
@@ -158,12 +222,91 @@ contract DoudoBundleModuleUpgradeable is
         return seriesRebateTiers[seriesID].length;
     }
 
+    function setSeriesFreeOrderChallenge(
+        uint256 seriesID,
+        uint256 eligibleLastTicketCount,
+        uint256[] calldata triggerPrizeIDs
+    ) external onlyRole(OPERATION_ROLE) {
+        (
+            uint256 priceInPoints,
+            ,
+            uint256 remainingTicketNumbers
+        ) = core.seriesMintConfig(seriesID);
+        if (
+            priceInPoints == 0 ||
+            eligibleLastTicketCount == 0 ||
+            eligibleLastTicketCount > remainingTicketNumbers ||
+            triggerPrizeIDs.length == 0
+        ) {
+            revert InvalidFreeOrderChallenge();
+        }
+
+        FreeOrderChallengeConfig storage config = freeOrderChallengeConfigs[seriesID];
+        uint256 version = config.version + 1;
+        delete seriesFreeOrderTriggerPrizeIDs[seriesID];
+
+        for (uint256 i = 0; i < triggerPrizeIDs.length; i++) {
+            uint256 prizeID = triggerPrizeIDs[i];
+            if (
+                prizeID == 0 ||
+                freeOrderTriggerPrizeByVersion[seriesID][version][prizeID]
+            ) {
+                revert InvalidFreeOrderChallenge();
+            }
+            freeOrderTriggerPrizeByVersion[seriesID][version][prizeID] = true;
+            seriesFreeOrderTriggerPrizeIDs[seriesID].push(prizeID);
+        }
+
+        freeOrderChallengeConfigs[seriesID] = FreeOrderChallengeConfig({
+            eligibleLastTicketCount: eligibleLastTicketCount,
+            version: version,
+            active: true
+        });
+        emit FreeOrderChallengeConfigured(
+            seriesID,
+            version,
+            eligibleLastTicketCount,
+            triggerPrizeIDs
+        );
+    }
+
+    function clearSeriesFreeOrderChallenge(uint256 seriesID) external onlyRole(OPERATION_ROLE) {
+        (uint256 priceInPoints, , ) = core.seriesMintConfig(seriesID);
+        if (priceInPoints == 0) revert InvalidFreeOrderChallenge();
+
+        FreeOrderChallengeConfig storage config = freeOrderChallengeConfigs[seriesID];
+        uint256 version = config.version + 1;
+        delete seriesFreeOrderTriggerPrizeIDs[seriesID];
+        freeOrderChallengeConfigs[seriesID] = FreeOrderChallengeConfig({
+            eligibleLastTicketCount: 0,
+            version: version,
+            active: false
+        });
+        emit FreeOrderChallengeCleared(seriesID, version);
+    }
+
+    function getSeriesFreeOrderTriggerPrizeIDs(
+        uint256 seriesID
+    ) external view returns (uint256[] memory) {
+        return seriesFreeOrderTriggerPrizeIDs[seriesID];
+    }
+
+    function isSeriesFreeOrderTriggerPrize(
+        uint256 seriesID,
+        uint256 prizeID
+    ) external view returns (bool) {
+        FreeOrderChallengeConfig storage config = freeOrderChallengeConfigs[seriesID];
+        return
+            config.active &&
+            freeOrderTriggerPrizeByVersion[seriesID][config.version][prizeID];
+    }
+
     function setSeriesOpeningDiscount(
         uint256 seriesID,
         uint256 ticketLimit,
         uint256 priceInPoints
     ) external onlyRole(OPERATION_ROLE) {
-        (uint256 basePriceInPoints, ) = core.seriesMintConfig(seriesID);
+        (uint256 basePriceInPoints, , ) = core.seriesMintConfig(seriesID);
         if (
             basePriceInPoints == 0 ||
             ticketLimit == 0 ||
@@ -223,11 +366,12 @@ contract DoudoBundleModuleUpgradeable is
         if (config.active && openingDiscountUsed[seriesID] < config.ticketLimit) {
             revert PriceLimitRequired();
         }
-        firstTokenID = _mintTickets(
+        (firstTokenID, ) = _mintTickets(
             seriesID,
             luckyNumbers,
             revealImmediately,
-            type(uint256).max
+            type(uint256).max,
+            false
         );
     }
 
@@ -237,11 +381,61 @@ contract DoudoBundleModuleUpgradeable is
         bool revealImmediately,
         uint256 maxTotalPriceInPoints
     ) external nonReentrant returns (uint256 firstTokenID) {
-        firstTokenID = _mintTickets(
+        (firstTokenID, ) = _mintTickets(
             seriesID,
             luckyNumbers,
             revealImmediately,
-            maxTotalPriceInPoints
+            maxTotalPriceInPoints,
+            false
+        );
+    }
+
+    function mintFreeOrderChallenge(
+        uint256 seriesID,
+        uint16[] calldata luckyNumbers,
+        uint256 maxTotalPriceInPoints
+    ) external nonReentrant returns (uint256 firstTokenID, uint256 requestId) {
+        uint256 ticketQuantity = luckyNumbers.length;
+        if (ticketQuantity == 0 || ticketQuantity > MAX_BUNDLE_MINT_AND_REVEAL) {
+            revert InvalidFreeOrderChallenge();
+        }
+        FreeOrderChallengeConfig storage config = freeOrderChallengeConfigs[seriesID];
+        (, , uint256 remainingTicketNumbers) = core.seriesMintConfig(seriesID);
+        if (!config.active || remainingTicketNumbers > config.eligibleLastTicketCount) {
+            revert FreeOrderChallengeNotEligible();
+        }
+        TicketPurchaseQuote memory quote = _quoteTicketPurchase(seriesID, ticketQuantity);
+        (firstTokenID, requestId) = _mintTickets(
+            seriesID,
+            luckyNumbers,
+            true,
+            maxTotalPriceInPoints,
+            true
+        );
+
+        uint256 refundablePoints = quote.grossPriceInPoints > quote.rebatePoints
+            ? quote.grossPriceInPoints - quote.rebatePoints
+            : 0;
+        freeOrderChallengeRounds[requestId] = FreeOrderChallengeRound({
+            seriesID: seriesID,
+            buyer: msg.sender,
+            configVersion: config.version,
+            firstTokenID: firstTokenID,
+            ticketQuantity: ticketQuantity,
+            refundPoints: refundablePoints,
+            processed: false,
+            won: false,
+            claimed: false
+        });
+        emit FreeOrderChallengePurchased(
+            requestId,
+            seriesID,
+            msg.sender,
+            ticketQuantity,
+            quote.grossPriceInPoints,
+            quote.rebatePoints,
+            refundablePoints,
+            firstTokenID
         );
     }
 
@@ -249,15 +443,16 @@ contract DoudoBundleModuleUpgradeable is
         uint256 seriesID,
         uint16[] calldata luckyNumbers,
         bool revealImmediately,
-        uint256 maxTotalPriceInPoints
-    ) internal returns (uint256 firstTokenID) {
+        uint256 maxTotalPriceInPoints,
+        bool freeOrderChallenge
+    ) internal returns (uint256 firstTokenID, uint256 challengeRequestId) {
         uint256 ticketQuantity = luckyNumbers.length;
         if (ticketQuantity == 0) revert InvalidConfig();
         if (revealImmediately && ticketQuantity > MAX_BUNDLE_MINT_AND_REVEAL) {
             revert RevealBatchTooLarge();
         }
 
-        (, bool useLuckyNumber) = core.seriesMintConfig(seriesID);
+        (, bool useLuckyNumber, ) = core.seriesMintConfig(seriesID);
         for (uint256 i = 0; i < ticketQuantity; i++) {
             if (useLuckyNumber ? luckyNumbers[i] == 0 : luckyNumbers[i] != 0) {
                 revert InvalidConfig();
@@ -282,7 +477,11 @@ contract DoudoBundleModuleUpgradeable is
                     tokenIDs[i] = firstTokenID + i;
                 }
             }
-            core.reveal(seriesID, tokenIDs);
+            if (freeOrderChallenge) {
+                challengeRequestId = core.reveal(seriesID, tokenIDs);
+            } else {
+                core.reveal(seriesID, tokenIDs);
+            }
         }
 
         if (quote.rebatePoints != 0) {
@@ -317,12 +516,112 @@ contract DoudoBundleModuleUpgradeable is
         );
     }
 
+    function settleFreeOrderChallenge(uint256 requestId) external nonReentrant {
+        FreeOrderChallengeRound storage round = freeOrderChallengeRounds[requestId];
+        if (round.buyer == address(0) || round.processed) revert InvalidFreeOrderChallenge();
+        _processFreeOrderChallengeResult(requestId, round);
+        if (round.won) _trySettleFreeOrderRefund(requestId, round);
+    }
+
+    function _processFreeOrderChallengeResult(
+        uint256 requestId,
+        FreeOrderChallengeRound storage round
+    ) internal {
+        bool won;
+        uint256 winningTokenID;
+        uint256 winningPrizeID;
+        for (uint256 i = 0; i < round.ticketQuantity; i++) {
+            uint256 tokenID = round.firstTokenID + i;
+            (uint256 ticketSeriesID, uint256 prizeID, , bool revealed, ) = core
+                .ticketStatusDetail(tokenID);
+            if (ticketSeriesID != round.seriesID) revert InvalidFreeOrderChallenge();
+            if (!revealed) revert FreeOrderResultNotReady();
+            if (
+                !won &&
+                freeOrderTriggerPrizeByVersion[round.seriesID][round.configVersion][prizeID]
+            ) {
+                won = true;
+                winningTokenID = tokenID;
+                winningPrizeID = prizeID;
+            }
+        }
+
+        round.processed = true;
+        round.won = won;
+        emit FreeOrderChallengeResult(
+            requestId,
+            round.seriesID,
+            round.buyer,
+            won,
+            won ? round.refundPoints : 0,
+            winningTokenID,
+            winningPrizeID
+        );
+    }
+
+    function claimFreeOrderChallengeRefund(uint256 requestId) external nonReentrant {
+        FreeOrderChallengeRound storage round = freeOrderChallengeRounds[requestId];
+        if (round.buyer != msg.sender) revert InvalidFreeOrderChallenge();
+        if (!round.processed) {
+            _processFreeOrderChallengeResult(requestId, round);
+        }
+        if (!round.won) return;
+        if (round.claimed) revert FreeOrderRefundAlreadyClaimed();
+
+        round.claimed = true;
+        if (
+            round.refundPoints != 0 &&
+            !doudoPoints.mintWithReason(round.buyer, round.refundPoints, FREE_ORDER_REFUND)
+        ) {
+            revert InvalidFreeOrderChallenge();
+        }
+        emit FreeOrderChallengeRefunded(
+            requestId,
+            round.seriesID,
+            round.buyer,
+            round.refundPoints
+        );
+    }
+
+    function _trySettleFreeOrderRefund(
+        uint256 requestId,
+        FreeOrderChallengeRound storage round
+    ) internal {
+        if (round.refundPoints == 0) {
+            round.claimed = true;
+            emit FreeOrderChallengeRefunded(requestId, round.seriesID, round.buyer, 0);
+            return;
+        }
+
+        try
+            doudoPoints.mintWithReason(round.buyer, round.refundPoints, FREE_ORDER_REFUND)
+        returns (bool minted) {
+            if (minted) {
+                round.claimed = true;
+                emit FreeOrderChallengeRefunded(
+                    requestId,
+                    round.seriesID,
+                    round.buyer,
+                    round.refundPoints
+                );
+                return;
+            }
+        } catch {}
+
+        emit FreeOrderChallengeRefundDeferred(
+            requestId,
+            round.seriesID,
+            round.buyer,
+            round.refundPoints
+        );
+    }
+
     function _quoteTicketPurchase(
         uint256 seriesID,
         uint256 ticketQuantity
     ) internal view returns (TicketPurchaseQuote memory quote) {
         if (ticketQuantity == 0) revert InvalidConfig();
-        (quote.basePriceInPoints, ) = core.seriesMintConfig(seriesID);
+        (quote.basePriceInPoints, , ) = core.seriesMintConfig(seriesID);
         if (quote.basePriceInPoints == 0) revert InvalidConfig();
 
         OpeningDiscountConfig storage config = seriesOpeningDiscounts[seriesID];
@@ -423,5 +722,10 @@ contract DoudoBundleModuleUpgradeable is
 
     function _authorizeUpgrade(address) internal override onlyRole(UPGRADER_ROLE) {}
 
-    uint256[42] private __gap;
+    mapping(uint256 => FreeOrderChallengeConfig) public freeOrderChallengeConfigs;
+    mapping(uint256 => mapping(uint256 => mapping(uint256 => bool))) private freeOrderTriggerPrizeByVersion;
+    mapping(uint256 => uint256[]) private seriesFreeOrderTriggerPrizeIDs;
+    mapping(uint256 => FreeOrderChallengeRound) public freeOrderChallengeRounds;
+
+    uint256[38] private __gap;
 }

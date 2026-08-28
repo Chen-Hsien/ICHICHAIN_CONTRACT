@@ -497,6 +497,155 @@ describe("DOUDOCHAIN V2 split module suite", function () {
     expect(await points.balanceOf(user.address)).to.equal(ethers.parseEther("980"));
   });
 
+  it("runs a last-N free-order challenge and refunds the round net of its quantity rebate", async function () {
+    const { user, other, points, vrf, router, core, bundle } = await deploySplitSuite();
+    await createSeries(core);
+    await issuePoints(points, user.address, ethers.parseEther("2000"));
+
+    await expect(bundle.setSeriesFreeOrderChallenge(0, 10, [1, 2, 3, 4]))
+      .to.emit(bundle, "FreeOrderChallengeConfigured")
+      .withArgs(0, 1, 10, [1, 2, 3, 4]);
+    await bundle.setSeriesRebateTiers(0, [
+      { minimumTicketQuantity: 5, rebatePoints: ethers.parseEther("5") },
+    ]);
+
+    await core.connect(user).mint(0, zeroLuckyNumbers(49));
+    await expect(
+      bundle
+        .connect(user)
+        .mintFreeOrderChallenge(0, zeroLuckyNumbers(5), ethers.parseEther("50"))
+    ).to.be.revertedWithCustomError(bundle, "FreeOrderChallengeNotEligible");
+
+    await core.connect(user).mint(0, zeroLuckyNumbers(1));
+    expect(await points.balanceOf(user.address)).to.equal(ethers.parseEther("1500"));
+
+    await expect(
+      bundle
+        .connect(user)
+        .mintFreeOrderChallenge(0, zeroLuckyNumbers(5), ethers.parseEther("50"))
+    )
+      .to.emit(bundle, "FreeOrderChallengePurchased")
+      .withArgs(
+        1,
+        0,
+        user.address,
+        5,
+        ethers.parseEther("50"),
+        ethers.parseEther("5"),
+        ethers.parseEther("45"),
+        50
+      )
+      .and.to.emit(core, "RevealDrawSent")
+      .withArgs(1, [50, 51, 52, 53, 54]);
+
+    expect(await points.balanceOf(user.address)).to.equal(ethers.parseEther("1455"));
+
+    // A pending round keeps version 1 even if operations change the live trigger set.
+    await bundle.setSeriesFreeOrderChallenge(0, 5, [4]);
+    expect((await bundle.freeOrderChallengeConfigs(0)).version).to.equal(2);
+    await vrf.fulfill(await router.getAddress(), 1, [123456]);
+
+    // Settlement is permissionless, but the refund is always paid to the recorded buyer.
+    await expect(bundle.connect(other).settleFreeOrderChallenge(1))
+      .to.emit(bundle, "FreeOrderChallengeResult")
+      .withArgs(1, 0, user.address, true, ethers.parseEther("45"), anyValue, anyValue)
+      .and.to.emit(bundle, "FreeOrderChallengeRefunded")
+      .withArgs(1, 0, user.address, ethers.parseEther("45"));
+
+    expect(await points.balanceOf(user.address)).to.equal(ethers.parseEther("1500"));
+    const round = await bundle.freeOrderChallengeRounds(1);
+    expect(round.processed).to.equal(true);
+    expect(round.won).to.equal(true);
+    expect(round.claimed).to.equal(true);
+    await expect(bundle.settleFreeOrderChallenge(1)).to.be.revertedWithCustomError(
+      bundle,
+      "InvalidFreeOrderChallenge"
+    );
+  });
+
+  it("enforces 1-10 tickets and lets the buyer retry a deferred free-order refund", async function () {
+    const { admin, user, other, points, vrf, router, core, bundle } = await deploySplitSuite();
+    await createSeries(core);
+    await issuePoints(points, user.address);
+    await expect(
+      bundle.setSeriesFreeOrderChallenge(0, 61, [1])
+    ).to.be.revertedWithCustomError(bundle, "InvalidFreeOrderChallenge");
+    await bundle.setSeriesFreeOrderChallenge(0, 60, [1, 2, 3, 4]);
+
+    await expect(
+      bundle.connect(user).mintFreeOrderChallenge(0, [], ethers.parseEther("10"))
+    ).to.be.revertedWithCustomError(bundle, "InvalidFreeOrderChallenge");
+    await expect(
+      bundle
+        .connect(user)
+        .mintFreeOrderChallenge(0, zeroLuckyNumbers(11), ethers.parseEther("110"))
+    ).to.be.revertedWithCustomError(bundle, "InvalidFreeOrderChallenge");
+
+    await bundle
+      .connect(user)
+      .mintFreeOrderChallenge(0, zeroLuckyNumbers(1), ethers.parseEther("10"));
+    await vrf.fulfill(await router.getAddress(), 1, [987654]);
+
+    await points.revokeRole(await points.MINTER_ROLE(), await bundle.getAddress());
+    await expect(bundle.connect(other).settleFreeOrderChallenge(1))
+      .to.emit(bundle, "FreeOrderChallengeRefundDeferred")
+      .withArgs(1, 0, user.address, ethers.parseEther("10"));
+
+    let round = await bundle.freeOrderChallengeRounds(1);
+    expect(round.processed).to.equal(true);
+    expect(round.won).to.equal(true);
+    expect(round.claimed).to.equal(false);
+    expect(await points.balanceOf(user.address)).to.equal(ethers.parseEther("990"));
+
+    await points.connect(admin).grantRole(await points.MINTER_ROLE(), await bundle.getAddress());
+    await expect(bundle.connect(user).claimFreeOrderChallengeRefund(1))
+      .to.emit(bundle, "FreeOrderChallengeRefunded")
+      .withArgs(1, 0, user.address, ethers.parseEther("10"));
+    expect(await points.balanceOf(user.address)).to.equal(ethers.parseEther("1000"));
+
+    round = await bundle.freeOrderChallengeRounds(1);
+    expect(round.claimed).to.equal(true);
+    await expect(
+      bundle.connect(user).claimFreeOrderChallengeRefund(1)
+    ).to.be.revertedWithCustomError(bundle, "FreeOrderRefundAlreadyClaimed");
+  });
+
+  it("records a losing free-order round without refunding points", async function () {
+    const { user, points, vrf, router, core, bundle } = await deploySplitSuite();
+    await createSeries(core);
+    await issuePoints(points, user.address);
+    await bundle.setSeriesFreeOrderChallenge(0, 60, [1]);
+
+    await bundle
+      .connect(user)
+      .mintFreeOrderChallenge(0, zeroLuckyNumbers(1), ethers.parseEther("10"));
+
+    const coder = ethers.AbiCoder.defaultAbiCoder();
+    let randomWord = 0n;
+    while (
+      BigInt(
+        ethers.keccak256(
+          coder.encode(["uint256", "uint256", "uint256"], [randomWord, 0, 0])
+        )
+      ) % 60n <
+      10n
+    ) {
+      randomWord += 1n;
+    }
+    await vrf.fulfill(await router.getAddress(), 1, [randomWord]);
+
+    await expect(bundle.settleFreeOrderChallenge(1))
+      .to.emit(bundle, "FreeOrderChallengeResult")
+      .withArgs(1, 0, user.address, false, 0, 0, 0)
+      .and.to.not.emit(bundle, "FreeOrderChallengeRefunded");
+
+    expect(await points.balanceOf(user.address)).to.equal(ethers.parseEther("990"));
+    const round = await bundle.freeOrderChallengeRounds(1);
+    expect(round.processed).to.equal(true);
+    expect(round.won).to.equal(false);
+    expect(round.claimed).to.equal(false);
+  });
+
   it("rejects invalid ticket quantity purchases", async function () {
     const { user, core, bundle } = await deploySplitSuite();
 
