@@ -55,8 +55,9 @@ contract DoudoBundleModuleUpgradeable is
     }
 
     struct FreeOrderChallengeConfig {
-        /// @custom:oz-renamed-from eligibleLastTicketCount
-        uint256 eligibleFirstTicketCount;
+        // Keep the original storage member name so upgrades preserve the
+        // existing struct layout. Its value now represents the opening window.
+        uint256 eligibleLastTicketCount;
         uint256 version;
         bool active;
     }
@@ -239,7 +240,7 @@ contract DoudoBundleModuleUpgradeable is
             revert InvalidFreeOrderChallenge();
         }
 
-        FreeOrderChallengeConfig storage config = freeOrderChallengeConfigs[seriesID];
+        FreeOrderChallengeConfig storage config = _freeOrderChallengeConfigs[seriesID];
         uint256 version = config.version + 1;
         delete seriesFreeOrderTriggerPrizeIDs[seriesID];
 
@@ -255,8 +256,8 @@ contract DoudoBundleModuleUpgradeable is
             seriesFreeOrderTriggerPrizeIDs[seriesID].push(prizeID);
         }
 
-        freeOrderChallengeConfigs[seriesID] = FreeOrderChallengeConfig({
-            eligibleFirstTicketCount: eligibleFirstTicketCount,
+        _freeOrderChallengeConfigs[seriesID] = FreeOrderChallengeConfig({
+            eligibleLastTicketCount: eligibleFirstTicketCount,
             version: version,
             active: true
         });
@@ -272,11 +273,11 @@ contract DoudoBundleModuleUpgradeable is
         (uint256 priceInPoints, , , ) = core.seriesMintConfig(seriesID);
         if (priceInPoints == 0) revert InvalidFreeOrderChallenge();
 
-        FreeOrderChallengeConfig storage config = freeOrderChallengeConfigs[seriesID];
+        FreeOrderChallengeConfig storage config = _freeOrderChallengeConfigs[seriesID];
         uint256 version = config.version + 1;
         delete seriesFreeOrderTriggerPrizeIDs[seriesID];
-        freeOrderChallengeConfigs[seriesID] = FreeOrderChallengeConfig({
-            eligibleFirstTicketCount: 0,
+        _freeOrderChallengeConfigs[seriesID] = FreeOrderChallengeConfig({
+            eligibleLastTicketCount: 0,
             version: version,
             active: false
         });
@@ -289,11 +290,26 @@ contract DoudoBundleModuleUpgradeable is
         return seriesFreeOrderTriggerPrizeIDs[seriesID];
     }
 
+    function freeOrderChallengeConfigs(
+        uint256 seriesID
+    ) external view returns (
+        uint256 eligibleFirstTicketCount,
+        uint256 version,
+        bool active
+    ) {
+        FreeOrderChallengeConfig storage config = _freeOrderChallengeConfigs[seriesID];
+        return (
+            config.eligibleLastTicketCount,
+            config.version,
+            config.active
+        );
+    }
+
     function isSeriesFreeOrderTriggerPrize(
         uint256 seriesID,
         uint256 prizeID
     ) external view returns (bool) {
-        FreeOrderChallengeConfig storage config = freeOrderChallengeConfigs[seriesID];
+        FreeOrderChallengeConfig storage config = _freeOrderChallengeConfigs[seriesID];
         return
             config.active &&
             freeOrderTriggerPrizeByVersion[seriesID][config.version][prizeID];
@@ -397,7 +413,7 @@ contract DoudoBundleModuleUpgradeable is
         if (ticketQuantity == 0 || ticketQuantity > MAX_BUNDLE_MINT_AND_REVEAL) {
             revert InvalidFreeOrderChallenge();
         }
-        FreeOrderChallengeConfig storage config = freeOrderChallengeConfigs[seriesID];
+        FreeOrderChallengeConfig storage config = _freeOrderChallengeConfigs[seriesID];
         (
             ,
             ,
@@ -407,7 +423,7 @@ contract DoudoBundleModuleUpgradeable is
         uint256 soldTicketNumbers = totalTicketNumbers - remainingTicketNumbers;
         if (
             !config.active ||
-            soldTicketNumbers + ticketQuantity > config.eligibleFirstTicketCount
+            soldTicketNumbers + ticketQuantity > config.eligibleLastTicketCount
         ) {
             revert FreeOrderChallengeNotEligible();
         }
@@ -729,7 +745,8 @@ contract DoudoBundleModuleUpgradeable is
 
     function _authorizeUpgrade(address) internal override onlyRole(UPGRADER_ROLE) {}
 
-    mapping(uint256 => FreeOrderChallengeConfig) public freeOrderChallengeConfigs;
+    /// @custom:oz-renamed-from freeOrderChallengeConfigs
+    mapping(uint256 => FreeOrderChallengeConfig) private _freeOrderChallengeConfigs;
     mapping(uint256 => mapping(uint256 => mapping(uint256 => bool))) private freeOrderTriggerPrizeByVersion;
     mapping(uint256 => uint256[]) private seriesFreeOrderTriggerPrizeIDs;
     mapping(uint256 => FreeOrderChallengeRound) public freeOrderChallengeRounds;
