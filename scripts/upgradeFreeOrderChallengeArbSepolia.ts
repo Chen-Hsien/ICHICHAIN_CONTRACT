@@ -99,6 +99,9 @@ async function main() {
   const bundleCoreBefore = await bundle.core();
   const bundlePointsBefore = await bundle.doudoPoints();
   const bundleRedrawBefore = await bundle.redrawModule();
+  const freeOrderConfigBefore = await bundle.freeOrderChallengeConfigs(0);
+  const freeOrderTriggerPrizeIDsBefore =
+    await bundle.getSeriesFreeOrderTriggerPrizeIDs(0);
 
   console.log("Network:", network.name, network.chainId.toString());
   console.log("Execute upgrade:", execute);
@@ -246,14 +249,17 @@ async function main() {
 
     const config = await upgradedBundle.freeOrderChallengeConfigs(0);
     await requireTrue(
-      "New free-order storage starts inactive",
-      config.eligibleLastTicketCount === 0n &&
-        config.version === 0n &&
-        !config.active
+      "Free-order config storage preserved",
+      config.eligibleFirstTicketCount ===
+        freeOrderConfigBefore.eligibleFirstTicketCount &&
+        config.version === freeOrderConfigBefore.version &&
+        config.active === freeOrderConfigBefore.active
     );
     await requireTrue(
-      "New free-order trigger list starts empty",
-      (await upgradedBundle.getSeriesFreeOrderTriggerPrizeIDs(0)).length === 0
+      "Free-order trigger list preserved",
+      JSON.stringify(
+        (await upgradedBundle.getSeriesFreeOrderTriggerPrizeIDs(0)).map(String)
+      ) === JSON.stringify(freeOrderTriggerPrizeIDsBefore.map(String))
     );
   } finally {
     if (pausedByScript && (await core.paused())) {

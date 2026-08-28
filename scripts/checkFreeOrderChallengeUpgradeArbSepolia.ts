@@ -117,17 +117,16 @@ async function main() {
     priceInPoints: seriesMintConfig.priceInPoints.toString(),
     useLuckyNumber: seriesMintConfig.useLuckyNumber,
     remainingTicketNumbers: seriesMintConfig.remainingTicketNumbers.toString(),
+    totalTicketNumbers: seriesMintConfig.totalTicketNumbers.toString(),
   });
   const challenge = await bundle.freeOrderChallengeConfigs(0);
+  const triggerPrizeIDs = await bundle.getSeriesFreeOrderTriggerPrizeIDs(0);
   await requireTrue(
     "Free-order config getter",
-    challenge.eligibleLastTicketCount === 0n &&
-      challenge.version === 0n &&
-      challenge.active === false
-  );
-  await requireTrue(
-    "Free-order trigger getter",
-    (await bundle.getSeriesFreeOrderTriggerPrizeIDs(0)).length === 0
+    challenge.eligibleFirstTicketCount <= seriesMintConfig.totalTicketNumbers &&
+      (challenge.active
+        ? challenge.eligibleFirstTicketCount > 0n && triggerPrizeIDs.length > 0
+        : triggerPrizeIDs.length === 0)
   );
   console.log("Free-order challenge Sepolia post-deploy checks passed.");
 }

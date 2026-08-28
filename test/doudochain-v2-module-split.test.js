@@ -497,7 +497,7 @@ describe("DOUDOCHAIN V2 split module suite", function () {
     expect(await points.balanceOf(user.address)).to.equal(ethers.parseEther("980"));
   });
 
-  it("runs a last-N free-order challenge and refunds the round net of its quantity rebate", async function () {
+  it("runs a first-N free-order challenge and refunds the round net of its quantity rebate", async function () {
     const { user, other, points, vrf, router, core, bundle } = await deploySplitSuite();
     await createSeries(core);
     await issuePoints(points, user.address, ethers.parseEther("2000"));
@@ -508,16 +508,6 @@ describe("DOUDOCHAIN V2 split module suite", function () {
     await bundle.setSeriesRebateTiers(0, [
       { minimumTicketQuantity: 5, rebatePoints: ethers.parseEther("5") },
     ]);
-
-    await core.connect(user).mint(0, zeroLuckyNumbers(49));
-    await expect(
-      bundle
-        .connect(user)
-        .mintFreeOrderChallenge(0, zeroLuckyNumbers(5), ethers.parseEther("50"))
-    ).to.be.revertedWithCustomError(bundle, "FreeOrderChallengeNotEligible");
-
-    await core.connect(user).mint(0, zeroLuckyNumbers(1));
-    expect(await points.balanceOf(user.address)).to.equal(ethers.parseEther("1500"));
 
     await expect(
       bundle
@@ -533,12 +523,25 @@ describe("DOUDOCHAIN V2 split module suite", function () {
         ethers.parseEther("50"),
         ethers.parseEther("5"),
         ethers.parseEther("45"),
-        50
+        0
       )
       .and.to.emit(core, "RevealDrawSent")
-      .withArgs(1, [50, 51, 52, 53, 54]);
+      .withArgs(1, [0, 1, 2, 3, 4]);
 
-    expect(await points.balanceOf(user.address)).to.equal(ethers.parseEther("1455"));
+    expect(await points.balanceOf(user.address)).to.equal(ethers.parseEther("1955"));
+
+    // The entire round must fit inside the configured first N tickets.
+    await expect(
+      bundle
+        .connect(user)
+        .mintFreeOrderChallenge(0, zeroLuckyNumbers(6), ethers.parseEther("60"))
+    ).to.be.revertedWithCustomError(bundle, "FreeOrderChallengeNotEligible");
+    await core.connect(user).mint(0, zeroLuckyNumbers(5));
+    await expect(
+      bundle
+        .connect(user)
+        .mintFreeOrderChallenge(0, zeroLuckyNumbers(1), ethers.parseEther("10"))
+    ).to.be.revertedWithCustomError(bundle, "FreeOrderChallengeNotEligible");
 
     // A pending round keeps version 1 even if operations change the live trigger set.
     await bundle.setSeriesFreeOrderChallenge(0, 5, [4]);
@@ -552,7 +555,7 @@ describe("DOUDOCHAIN V2 split module suite", function () {
       .and.to.emit(bundle, "FreeOrderChallengeRefunded")
       .withArgs(1, 0, user.address, ethers.parseEther("45"));
 
-    expect(await points.balanceOf(user.address)).to.equal(ethers.parseEther("1500"));
+    expect(await points.balanceOf(user.address)).to.equal(ethers.parseEther("1950"));
     const round = await bundle.freeOrderChallengeRounds(1);
     expect(round.processed).to.equal(true);
     expect(round.won).to.equal(true);

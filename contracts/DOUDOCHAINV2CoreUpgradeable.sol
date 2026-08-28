@@ -548,16 +548,19 @@ contract DOUDOCHAINV2CoreUpgradeable is
         returns (
             uint256 priceInPoints,
             bool useLuckyNumber,
-            uint256 remainingTicketNumbers
+            uint256 remainingTicketNumbers,
+            uint256 totalTicketNumbers
         )
     {
         assembly ("memory-safe") {
             mstore(0, seriesID)
             mstore(0x20, seriesData.slot)
             let seriesSlot := keccak256(0, 0x40)
-            remainingTicketNumbers := sload(add(seriesSlot, 2))
-            priceInPoints := sload(add(seriesSlot, 3))
-            useLuckyNumber := shr(16, sload(add(seriesSlot, 12)))
+            mstore(0, sload(add(seriesSlot, 3)))
+            mstore(0x20, shr(16, sload(add(seriesSlot, 12))))
+            mstore(0x40, sload(add(seriesSlot, 2)))
+            mstore(0x60, sload(add(seriesSlot, 1)))
+            return(0, 0x80)
         }
     }
 

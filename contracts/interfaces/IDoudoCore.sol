@@ -33,7 +33,8 @@ interface IDoudoCore {
         returns (
             uint256 priceInPoints,
             bool useLuckyNumber,
-            uint256 remainingTicketNumbers
+            uint256 remainingTicketNumbers,
+            uint256 totalTicketNumbers
         );
 
     function moduleMintRevealed(
