@@ -24,9 +24,9 @@ coordinator and authorize their respective requester.
 | `DOUDOCOIN` | `0xFFCD533609e0e9E810C4C5D8Cb7a69D7a537C17E` | Non-proxy | Verified |
 | `DoudoVRFRouter` (Core) | `0x48A1205c9b6BF1Da1a3D1bE651A9e237AC349Eb5` | Non-proxy | Chain read confirmed |
 | `DoudoVRFRouter` (Redraw) | `0x5A59D45437559C7CE0A012630a456321180C21e1` | Non-proxy | Verified |
-| `DOUDOCHAINV2CoreUpgradeable` | `0xf75395A8cd753f47135cfcaE00D2706252c3E0F5` | `0x0acE3812DBE9BF82908Dae87bA9973f2d2e11500` | Verified |
+| `DOUDOCHAINV2CoreUpgradeable` | `0xf75395A8cd753f47135cfcaE00D2706252c3E0F5` | `0x2626d63bc4b9c3F90A3D277aFe4b814DdF73962E` | Verified |
 | `DoudoSeriesOpsModuleUpgradeable` | `0x2FF7521dEF3903fc5c6f2877252cdf5019380070` | `0x5409aa1Fbdd2e28fb47457F7ee50af1f73dD966D` | Verified and proxy-linked |
-| `DoudoBundleModuleUpgradeable` | `0x68cBA2b3c72Be39be748B06c1e6dDab2855E91b6` | `0x10a2c76fde2053A6234658eA29208b2bDf7C97B6` | Verified and proxy-linked |
+| `DoudoBundleModuleUpgradeable` | `0x68cBA2b3c72Be39be748B06c1e6dDab2855E91b6` | `0xA05b8718D5AFBa4cCCffFE57aa33c8Bc9313b39e` | Verified and proxy-linked |
 | `DoudoRefundModuleUpgradeable` | `0x8ee19238DAa466B7792BE33569c6E4f6993CCf20` | `0xC6cad8c6A27170848CF295fd1A290A143d3Ea4a3` | Verified and proxy-linked |
 | `DoudoRedrawModuleUpgradeable` | `0xE75461828f41C890fbc811e7cABFe2143B3F4afE` | `0xAC4A0DF12704eFE73ca8D20eC4965C69105AF2b8` | Verified and proxy-linked |
 | `DoudoCollectionRewardModuleUpgradeable` | `0x680618a6933DD68fF84Ff9F64760120d27400B3C` | `0x2cE5a89cBA7F79a6de97E6d798522f66310a6d83` | Verified and proxy-linked |
@@ -40,13 +40,15 @@ Explorer links:
 - Core DoudoVRFRouter: `https://sepolia.arbiscan.io/address/0x48A1205c9b6BF1Da1a3D1bE651A9e237AC349Eb5#code`
 - Redraw DoudoVRFRouter: `https://sepolia.arbiscan.io/address/0x5A59D45437559C7CE0A012630a456321180C21e1#code`
 - Core proxy: `https://sepolia.arbiscan.io/address/0xf75395A8cd753f47135cfcaE00D2706252c3E0F5#code`
-- Core implementation: `https://sepolia.arbiscan.io/address/0x0acE3812DBE9BF82908Dae87bA9973f2d2e11500#code`
+- Core implementation: `https://sepolia.arbiscan.io/address/0x2626d63bc4b9c3F90A3D277aFe4b814DdF73962E#code`
+- Core upgrade transaction: `https://sepolia.arbiscan.io/tx/0x48df52ee9765516b4940fa8ea186df7b80f6650a1922beb42a81f3ba63796dbe`
 - Core DoudoPrizeDrawLib: `https://sepolia.arbiscan.io/address/0xbC269A4A26726b02DF521708b7a1Eb1949A25291#code`
 - Core DoudoTokenURILib: `https://sepolia.arbiscan.io/address/0x9Eda0b3b4f2f1E9b47539bcde02baEfeDdEbe25A#code`
 - SeriesOps proxy: `https://sepolia.arbiscan.io/address/0x2FF7521dEF3903fc5c6f2877252cdf5019380070#code`
 - SeriesOps implementation: `https://sepolia.arbiscan.io/address/0x5409aa1Fbdd2e28fb47457F7ee50af1f73dD966D#code`
 - Bundle proxy: `https://sepolia.arbiscan.io/address/0x68cBA2b3c72Be39be748B06c1e6dDab2855E91b6#code`
-- Bundle implementation: `https://sepolia.arbiscan.io/address/0x10a2c76fde2053A6234658eA29208b2bDf7C97B6#code`
+- Bundle implementation: `https://sepolia.arbiscan.io/address/0xA05b8718D5AFBa4cCCffFE57aa33c8Bc9313b39e#code`
+- Bundle upgrade transaction: `https://sepolia.arbiscan.io/tx/0xee652415464df21867b2674e48a91dfda393710e54722c0aa11a3586702f87af`
 - Refund proxy: `https://sepolia.arbiscan.io/address/0x8ee19238DAa466B7792BE33569c6E4f6993CCf20#code`
 - Refund implementation: `https://sepolia.arbiscan.io/address/0xC6cad8c6A27170848CF295fd1A290A143d3Ea4a3#code`
 - Redraw proxy: `https://sepolia.arbiscan.io/address/0xE75461828f41C890fbc811e7cABFe2143B3F4afE#code`
