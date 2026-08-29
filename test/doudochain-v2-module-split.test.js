@@ -613,26 +613,70 @@ describe("DOUDOCHAIN V2 split module suite", function () {
     ).to.be.revertedWithCustomError(bundle, "FreeOrderRefundAlreadyClaimed");
   });
 
-  it("records a losing free-order round without refunding points", async function () {
+  it("keeps the quantity rebate when a five-ticket free-order challenge loses", async function () {
     const { user, points, vrf, router, core, bundle } = await deploySplitSuite();
-    await createSeries(core);
-    await issuePoints(points, user.address);
+    await createSeries(core, { priceInPoints: ethers.parseEther("300") });
+    await issuePoints(points, user.address, ethers.parseEther("2000"));
     await bundle.setSeriesFreeOrderChallenge(0, 60, [1]);
+    await bundle.setSeriesRebateTiers(0, [
+      { minimumTicketQuantity: 5, rebatePoints: ethers.parseEther("150") },
+    ]);
 
-    await bundle
-      .connect(user)
-      .mintFreeOrderChallenge(0, zeroLuckyNumbers(1), ethers.parseEther("10"));
+    await expect(
+      bundle
+        .connect(user)
+        .mintFreeOrderChallenge(0, zeroLuckyNumbers(5), ethers.parseEther("1500"))
+    )
+      .to.emit(bundle, "TicketPurchaseRebatePaid")
+      .withArgs(0, user.address, 5, ethers.parseEther("150"))
+      .and.to.emit(bundle, "FreeOrderChallengePurchased")
+      .withArgs(
+        1,
+        0,
+        user.address,
+        5,
+        ethers.parseEther("1500"),
+        ethers.parseEther("150"),
+        ethers.parseEther("1350"),
+        0
+      );
+    expect(await points.balanceOf(user.address)).to.equal(ethers.parseEther("650"));
 
     const coder = ethers.AbiCoder.defaultAbiCoder();
     let randomWord = 0n;
-    while (
-      BigInt(
-        ethers.keccak256(
-          coder.encode(["uint256", "uint256", "uint256"], [randomWord, 0, 0])
-        )
-      ) % 60n <
-      10n
-    ) {
+    const hitsTriggerPrize = (candidate) => {
+      const remainingQuantities = [10n, 10n, 10n, 30n];
+      for (let tokenID = 0; tokenID < 5; tokenID += 1) {
+        const totalRemaining = remainingQuantities.reduce(
+          (total, quantity) => total + quantity,
+          0n
+        );
+        const winningIndex =
+          BigInt(
+            ethers.keccak256(
+              coder.encode(
+                ["uint256", "uint256", "uint256"],
+                [candidate, tokenID, tokenID]
+              )
+            )
+          ) % totalRemaining;
+        let cursor = 0n;
+        for (
+          let prizeIndex = 0;
+          prizeIndex < remainingQuantities.length;
+          prizeIndex += 1
+        ) {
+          cursor += remainingQuantities[prizeIndex];
+          if (winningIndex < cursor) {
+            if (prizeIndex === 0) return true;
+            remainingQuantities[prizeIndex] -= 1n;
+            break;
+          }
+        }
+      }
+      return false;
+    };
+    while (hitsTriggerPrize(randomWord)) {
       randomWord += 1n;
     }
     await vrf.fulfill(await router.getAddress(), 1, [randomWord]);
@@ -642,7 +686,8 @@ describe("DOUDOCHAIN V2 split module suite", function () {
       .withArgs(1, 0, user.address, false, 0, 0, 0)
       .and.to.not.emit(bundle, "FreeOrderChallengeRefunded");
 
-    expect(await points.balanceOf(user.address)).to.equal(ethers.parseEther("990"));
+    // The buyer paid 1,500 points and keeps the 150-point quantity rebate.
+    expect(await points.balanceOf(user.address)).to.equal(ethers.parseEther("650"));
     const round = await bundle.freeOrderChallengeRounds(1);
     expect(round.processed).to.equal(true);
     expect(round.won).to.equal(false);
