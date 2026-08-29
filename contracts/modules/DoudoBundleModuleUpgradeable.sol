@@ -243,6 +243,7 @@ contract DoudoBundleModuleUpgradeable is
         FreeOrderChallengeConfig storage config = _freeOrderChallengeConfigs[seriesID];
         uint256 version = config.version + 1;
         delete seriesFreeOrderTriggerPrizeIDs[seriesID];
+        bool hasRemainingTriggerPrize;
 
         for (uint256 i = 0; i < triggerPrizeIDs.length; i++) {
             uint256 prizeID = triggerPrizeIDs[i];
@@ -252,9 +253,15 @@ contract DoudoBundleModuleUpgradeable is
             ) {
                 revert InvalidFreeOrderChallenge();
             }
+            uint256 remainingQuantity = core.seriesSubPrizeRemainingQuantity(
+                seriesID,
+                prizeID
+            );
+            if (remainingQuantity > 0) hasRemainingTriggerPrize = true;
             freeOrderTriggerPrizeByVersion[seriesID][version][prizeID] = true;
             seriesFreeOrderTriggerPrizeIDs[seriesID].push(prizeID);
         }
+        if (!hasRemainingTriggerPrize) revert InvalidFreeOrderChallenge();
 
         _freeOrderChallengeConfigs[seriesID] = FreeOrderChallengeConfig({
             eligibleLastTicketCount: eligibleFirstTicketCount,
@@ -301,7 +308,7 @@ contract DoudoBundleModuleUpgradeable is
         return (
             config.eligibleLastTicketCount,
             config.version,
-            config.active
+            config.active && _hasRemainingFreeOrderTriggerPrize(seriesID)
         );
     }
 
@@ -312,6 +319,7 @@ contract DoudoBundleModuleUpgradeable is
         FreeOrderChallengeConfig storage config = _freeOrderChallengeConfigs[seriesID];
         return
             config.active &&
+            _hasRemainingFreeOrderTriggerPrize(seriesID) &&
             freeOrderTriggerPrizeByVersion[seriesID][config.version][prizeID];
     }
 
@@ -423,6 +431,7 @@ contract DoudoBundleModuleUpgradeable is
         uint256 soldTicketNumbers = totalTicketNumbers - remainingTicketNumbers;
         if (
             !config.active ||
+            !_hasRemainingFreeOrderTriggerPrize(seriesID) ||
             soldTicketNumbers + ticketQuantity > config.eligibleLastTicketCount
         ) {
             revert FreeOrderChallengeNotEligible();
@@ -460,6 +469,20 @@ contract DoudoBundleModuleUpgradeable is
             refundablePoints,
             firstTokenID
         );
+    }
+
+    function _hasRemainingFreeOrderTriggerPrize(
+        uint256 seriesID
+    ) internal view returns (bool) {
+        uint256[] storage triggerPrizeIDs = seriesFreeOrderTriggerPrizeIDs[seriesID];
+        for (uint256 i = 0; i < triggerPrizeIDs.length; i++) {
+            uint256 remainingQuantity = core.seriesSubPrizeRemainingQuantity(
+                seriesID,
+                triggerPrizeIDs[i]
+            );
+            if (remainingQuantity > 0) return true;
+        }
+        return false;
     }
 
     function _mintTickets(

@@ -180,8 +180,8 @@ async function linkedCoreFactory() {
   );
 }
 
-async function createSeries(core, overrides = {}) {
-  const tx = await core.createSeriesWithSubPrizes(seriesInput(overrides), prizeTable(60), true);
+async function createSeries(core, overrides = {}, subPrizes = prizeTable(60)) {
+  const tx = await core.createSeriesWithSubPrizes(seriesInput(overrides), subPrizes, true);
   await tx.wait();
 }
 
@@ -692,6 +692,76 @@ describe("DOUDOCHAIN V2 split module suite", function () {
     expect(round.processed).to.equal(true);
     expect(round.won).to.equal(false);
     expect(round.claimed).to.equal(false);
+  });
+
+  it("automatically ends a free-order challenge after every trigger prize is exhausted", async function () {
+    const { user, points, vrf, router, core, bundle } = await deploySplitSuite();
+    await createSeries(core, {}, [
+      { subPrizeID: 1, prizeGroup: "A", subPrizeName: "A1", subPrizeRemainingQuantity: 1 },
+      { subPrizeID: 2, prizeGroup: "B", subPrizeName: "B1", subPrizeRemainingQuantity: 1 },
+      { subPrizeID: 3, prizeGroup: "C", subPrizeName: "C1", subPrizeRemainingQuantity: 58 },
+    ]);
+    await issuePoints(points, user.address);
+    await bundle.setSeriesFreeOrderChallenge(0, 60, [1, 2]);
+
+    const coder = ethers.AbiCoder.defaultAbiCoder();
+    const randomWordForFirstRemainingPrize = (tokenID, totalRemaining) => {
+      let randomWord = 0n;
+      while (
+        BigInt(
+          ethers.keccak256(
+            coder.encode(
+              ["uint256", "uint256", "uint256"],
+              [randomWord, tokenID, 0]
+            )
+          )
+        ) % BigInt(totalRemaining) !== 0n
+      ) {
+        randomWord += 1n;
+      }
+      return randomWord;
+    };
+
+    // A normal (non-challenge) draw exhausts A, but B keeps the challenge active.
+    await core.connect(user).mint(0, [0]);
+    await core.connect(user).reveal(0, [0]);
+    await vrf.fulfill(
+      await router.getAddress(),
+      1,
+      [randomWordForFirstRemainingPrize(0, 60)]
+    );
+    expect(await core.seriesSubPrizeRemainingQuantity(0, 1)).to.equal(0);
+    expect((await bundle.freeOrderChallengeConfigs(0)).active).to.equal(true);
+
+    // This round is recorded before B is exhausted and remains settleable afterward.
+    await bundle
+      .connect(user)
+      .mintFreeOrderChallenge(0, [0], ethers.parseEther("10"));
+    await vrf.fulfill(
+      await router.getAddress(),
+      2,
+      [randomWordForFirstRemainingPrize(1, 59)]
+    );
+
+    expect(await core.seriesSubPrizeRemainingQuantity(0, 2)).to.equal(0);
+    expect((await bundle.freeOrderChallengeConfigs(0)).active).to.equal(false);
+    expect(await bundle.isSeriesFreeOrderTriggerPrize(0, 2)).to.equal(false);
+    await expect(
+      bundle
+        .connect(user)
+        .mintFreeOrderChallenge(0, [0], ethers.parseEther("10"))
+    ).to.be.revertedWithCustomError(bundle, "FreeOrderChallengeNotEligible");
+
+    await expect(bundle.settleFreeOrderChallenge(2))
+      .to.emit(bundle, "FreeOrderChallengeResult")
+      .withArgs(2, 0, user.address, true, ethers.parseEther("10"), 1, 2)
+      .and.to.emit(bundle, "FreeOrderChallengeRefunded")
+      .withArgs(2, 0, user.address, ethers.parseEther("10"));
+    expect(await points.balanceOf(user.address)).to.equal(ethers.parseEther("990"));
+
+    await expect(
+      bundle.setSeriesFreeOrderChallenge(0, 60, [1, 2])
+    ).to.be.revertedWithCustomError(bundle, "InvalidFreeOrderChallenge");
   });
 
   it("rejects invalid ticket quantity purchases", async function () {
