@@ -684,7 +684,8 @@ describe("DOUDOCHAIN V2 split module suite", function () {
     await expect(bundle.settleFreeOrderChallenge(1))
       .to.emit(bundle, "FreeOrderChallengeResult")
       .withArgs(1, 0, user.address, false, 0, 0, 0)
-      .and.to.not.emit(bundle, "FreeOrderChallengeRefunded");
+      .and.to.not.emit(bundle, "FreeOrderChallengeRefunded")
+      .and.to.not.emit(bundle, "FreeOrderChallengeEnded");
 
     // The buyer paid 1,500 points and keeps the 150-point quantity rebate.
     expect(await points.balanceOf(user.address)).to.equal(ethers.parseEther("650"));
@@ -744,6 +745,19 @@ describe("DOUDOCHAIN V2 split module suite", function () {
     );
 
     expect(await core.seriesSubPrizeRemainingQuantity(0, 2)).to.equal(0);
+
+    // Revealing the winning ticket does not scan inventory or end the challenge.
+    expect((await bundle.freeOrderChallengeConfigs(0)).active).to.equal(true);
+    expect(await bundle.isSeriesFreeOrderTriggerPrize(0, 2)).to.equal(true);
+
+    await expect(bundle.settleFreeOrderChallenge(2))
+      .to.emit(bundle, "FreeOrderChallengeResult")
+      .withArgs(2, 0, user.address, true, ethers.parseEther("10"), 1, 2)
+      .and.to.emit(bundle, "FreeOrderChallengeEnded")
+      .withArgs(0, 1)
+      .and.to.emit(bundle, "FreeOrderChallengeRefunded")
+      .withArgs(2, 0, user.address, ethers.parseEther("10"));
+    expect(await points.balanceOf(user.address)).to.equal(ethers.parseEther("990"));
     expect((await bundle.freeOrderChallengeConfigs(0)).active).to.equal(false);
     expect(await bundle.isSeriesFreeOrderTriggerPrize(0, 2)).to.equal(false);
     await expect(
@@ -751,13 +765,6 @@ describe("DOUDOCHAIN V2 split module suite", function () {
         .connect(user)
         .mintFreeOrderChallenge(0, [0], ethers.parseEther("10"))
     ).to.be.revertedWithCustomError(bundle, "FreeOrderChallengeNotEligible");
-
-    await expect(bundle.settleFreeOrderChallenge(2))
-      .to.emit(bundle, "FreeOrderChallengeResult")
-      .withArgs(2, 0, user.address, true, ethers.parseEther("10"), 1, 2)
-      .and.to.emit(bundle, "FreeOrderChallengeRefunded")
-      .withArgs(2, 0, user.address, ethers.parseEther("10"));
-    expect(await points.balanceOf(user.address)).to.equal(ethers.parseEther("990"));
 
     await expect(
       bundle.setSeriesFreeOrderChallenge(0, 60, [1, 2])

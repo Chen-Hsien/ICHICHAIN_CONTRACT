@@ -146,6 +146,7 @@ contract DoudoBundleModuleUpgradeable is
         uint256[] triggerPrizeIDs
     );
     event FreeOrderChallengeCleared(uint256 indexed seriesID, uint256 indexed version);
+    event FreeOrderChallengeEnded(uint256 indexed seriesID, uint256 indexed version);
     event FreeOrderChallengeResult(
         uint256 indexed requestId,
         uint256 indexed seriesID,
@@ -308,7 +309,7 @@ contract DoudoBundleModuleUpgradeable is
         return (
             config.eligibleLastTicketCount,
             config.version,
-            config.active && _hasRemainingFreeOrderTriggerPrize(seriesID)
+            config.active
         );
     }
 
@@ -319,7 +320,6 @@ contract DoudoBundleModuleUpgradeable is
         FreeOrderChallengeConfig storage config = _freeOrderChallengeConfigs[seriesID];
         return
             config.active &&
-            _hasRemainingFreeOrderTriggerPrize(seriesID) &&
             freeOrderTriggerPrizeByVersion[seriesID][config.version][prizeID];
     }
 
@@ -431,7 +431,6 @@ contract DoudoBundleModuleUpgradeable is
         uint256 soldTicketNumbers = totalTicketNumbers - remainingTicketNumbers;
         if (
             !config.active ||
-            !_hasRemainingFreeOrderTriggerPrize(seriesID) ||
             soldTicketNumbers + ticketQuantity > config.eligibleLastTicketCount
         ) {
             revert FreeOrderChallengeNotEligible();
@@ -603,6 +602,24 @@ contract DoudoBundleModuleUpgradeable is
             winningTokenID,
             winningPrizeID
         );
+        if (won) {
+            _endFreeOrderChallengeIfExhausted(round.seriesID, round.configVersion);
+        }
+    }
+
+    function _endFreeOrderChallengeIfExhausted(
+        uint256 seriesID,
+        uint256 settledVersion
+    ) internal {
+        FreeOrderChallengeConfig storage config = _freeOrderChallengeConfigs[seriesID];
+        if (
+            config.active &&
+            config.version == settledVersion &&
+            !_hasRemainingFreeOrderTriggerPrize(seriesID)
+        ) {
+            config.active = false;
+            emit FreeOrderChallengeEnded(seriesID, settledVersion);
+        }
     }
 
     function claimFreeOrderChallengeRefund(uint256 requestId) external nonReentrant {
