@@ -8,6 +8,11 @@
     "deploy:arbitrum-one": "EXECUTE_ARBITRUM_ONE_DEPLOY=1 hardhat run scripts/deployArbitrumOne.ts --network arbitrumOne",
     "upgrade:bundle-opening-discount:arbitrum-one:preflight": "hardhat run scripts/upgradeBundleOpeningDiscountArbitrumOne.ts --network arbitrumOne",
     "upgrade:bundle-opening-discount:arbitrum-one": "EXECUTE_ARBITRUM_ONE_BUNDLE_UPGRADE=1 hardhat run scripts/upgradeBundleOpeningDiscountArbitrumOne.ts --network arbitrumOne",
+    "cutover:database-points:arbitrum-one:preflight": "hardhat run scripts/cutoverDatabasePointsMembershipV2.ts --network arbitrumOne",
+    "cutover:database-points:arbitrum-one": "EXECUTE_DATABASE_POINTS_CUTOVER=1 hardhat run scripts/cutoverDatabasePointsMembershipV2.ts --network arbitrumOne",
+    "cutover:database-points:arbitrum-sepolia:preflight": "hardhat run scripts/cutoverDatabasePointsMembershipV2.ts --network arbitrumSepolia",
+    "cutover:database-points:arbitrum-sepolia": "EXECUTE_DATABASE_POINTS_CUTOVER=1 hardhat run scripts/cutoverDatabasePointsMembershipV2.ts --network arbitrumSepolia",
+    "snapshot:database-points:arbitrum-sepolia": "hardhat run scripts/createDatabasePointsCutoverManifest.ts --network arbitrumSepolia",
     "deploy:arbitrum-one:fork": "FORK_DRY_RUN=1 hardhat run scripts/deployArbitrumOne.ts --network arbitrumOneFork",
     "migration:polygon-holders": "hardhat run --no-compile scripts/queryPolygonMigrationHolders.ts",
     "test": "hardhat test"

@@ -326,6 +326,20 @@ async function grantIfNeeded(
   );
 }
 
+async function revokeIfNeeded(
+  contract: any,
+  roleName: string,
+  account: string,
+  label: string
+) {
+  const role = await contract[roleName]();
+  if (!(await contract.hasRole(role, account))) return;
+  await recordTransaction(
+    `revoke:${label}:${roleName}:${account}`,
+    await contract.revokeRole(role, account)
+  );
+}
+
 async function callOnce(
   key: string,
   check: () => Promise<boolean>,
@@ -524,7 +538,6 @@ async function deploySuite() {
   await grantIfNeeded(core, "ADMINMINT_ROLE", OPERATION, "core");
   for (const [label, contract] of [
     ["seriesOps", seriesOps],
-    ["bundle", bundle],
     ["refund", refund],
     ["redraw", redraw],
     ["reward", reward],
@@ -532,6 +545,13 @@ async function deploySuite() {
   ] as const) {
     await grantIfNeeded(contract, "OPERATION_ROLE", OPERATION, label);
   }
+  await grantIfNeeded(
+    bundle,
+    "MEMBERSHIP_OPERATOR_ROLE",
+    OPERATION,
+    "bundle:membership"
+  );
+  await revokeIfNeeded(bundle, "OPERATION_ROLE", OPERATION, "bundle");
 
   await grantIfNeeded(
     core,
@@ -672,7 +692,6 @@ async function deploySuite() {
   ];
   for (const [label, contract] of [
     ["seriesOps", seriesOps],
-    ["bundle", bundle],
     ["refund", refund],
     ["redraw", redraw],
     ["reward", reward],
@@ -682,6 +701,41 @@ async function deploySuite() {
       `operation has ${label} OPERATION_ROLE`,
       await contract.hasRole(await contract.OPERATION_ROLE(), OPERATION),
     ]);
+  }
+  assertions.push(
+    [
+      "backend signer does not have bundle OPERATION_ROLE",
+      !(await bundle.hasRole(await bundle.OPERATION_ROLE(), OPERATION)),
+    ],
+    [
+      "backend signer has bundle MEMBERSHIP_OPERATOR_ROLE",
+      await bundle.hasRole(
+        await bundle.MEMBERSHIP_OPERATOR_ROLE(),
+        OPERATION
+      ),
+    ],
+    [
+      "admin controls bundle points configuration",
+      await bundle.hasRole(await bundle.POINTS_CONFIG_ROLE(), ADMIN),
+    ]
+  );
+  for (const [label, contract] of [
+    ["refund", refund],
+    ["collection reward", reward],
+  ] as const) {
+    assertions.push(
+      [
+        `backend signer does not have ${label} POINTS_CONFIG_ROLE`,
+        !(await contract.hasRole(
+          await contract.POINTS_CONFIG_ROLE(),
+          OPERATION
+        )),
+      ],
+      [
+        `admin controls ${label} database-points mode`,
+        await contract.hasRole(await contract.POINTS_CONFIG_ROLE(), ADMIN),
+      ]
+    );
   }
   for (const [roleName, target, label] of [
     ["BURNER_ROLE", await core.getAddress(), "core"],
