@@ -13,6 +13,7 @@
     "cutover:database-points:arbitrum-sepolia:preflight": "hardhat run scripts/cutoverDatabasePointsMembershipV2.ts --network arbitrumSepolia",
     "cutover:database-points:arbitrum-sepolia": "EXECUTE_DATABASE_POINTS_CUTOVER=1 hardhat run scripts/cutoverDatabasePointsMembershipV2.ts --network arbitrumSepolia",
     "snapshot:database-points:arbitrum-sepolia": "hardhat run scripts/createDatabasePointsCutoverManifest.ts --network arbitrumSepolia",
+    "prepare:database-points:arbitrum-sepolia": "hardhat run scripts/prepareDatabasePointsMembershipV2ArbSepolia.ts --network arbitrumSepolia",
     "deploy:arbitrum-one:fork": "FORK_DRY_RUN=1 hardhat run scripts/deployArbitrumOne.ts --network arbitrumOneFork",
     "migration:polygon-holders": "hardhat run --no-compile scripts/queryPolygonMigrationHolders.ts",
     "test": "hardhat test"
