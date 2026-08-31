@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "purpose": "Pre-cutover comparison fixture; not the global migration manifest",
+  "network": "arbitrum-sepolia",
+  "chainId": "421614",
+  "wallet": "0x6972083D5C65Fad6547071a9bf001f440a5076e5",
+  "snapshot": {
+    "blockNumber": "303947230",
+    "blockHash": "0x3d68eb83ff675ca1581d03cdbc901d1d0544fffa91b3a085ee6f6a3fe019f3d8",
+    "blockTimestamp": "2026-08-31T12:49:13.000Z"
+  },
+  "contracts": {
+    "legacyPoints": "0xFFCD533609e0e9E810C4C5D8Cb7a69D7a537C17E",
+    "legacyNft": "0x1F1150AC2d7a8208A2743a4E74e8401Ff9F1ED53"
+  },
+  "expectedMigrationInput": {
+    "legacyPointsRaw": "26741000000000000000000",
+    "legacyVoucherRaw": "0",
+    "databasePointsTotalRaw": "26741000000000000000000",
+    "membership": {
+      "legacyTokenId": "275",
+      "level": "5",
+      "totalRedeemedRaw": "210475000000000000000000",
+      "currentRoundRedeemedRaw": "210475000000000000000000",
+      "lastActiveTimestamp": "1786935058"
+    }
+  },
+  "uiEvidence": {
+    "pointsHeader": "26741",
+    "displayedVoucherTokenId": "288",
+    "displayedVoucherPoints": "10000",
+    "purchaseDialog": {
+      "status": "PROPOSED_NOT_COMPLETED",
+      "purchasePoints": "10000",
+      "estimatedCashbackPoints": "250",
+      "estimatedTotalPoints": "10250"
+    }
+  },
+  "reconciliation": {
+    "legacyNftOwnedTokenIds": ["275"],
+    "token288ExistsOnChain": false,
+    "token288MustBeExcludedFromMigration": true,
+    "finding": "The 10000-point voucher shown by the old UI is stale subgraph state after an ERC721 burn."
+  }
+}

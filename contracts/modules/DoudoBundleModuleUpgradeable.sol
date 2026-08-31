@@ -3,8 +3,10 @@ pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import "@openzeppelin/contracts/utils/cryptography/SignatureChecker.sol";
 import "../access/MinimalAccessControlUpgradeable.sol";
 import "../interfaces/IDoudoCore.sol";
+import "../interfaces/IDoudoMembershipV2.sol";
 import "../interfaces/IDoudoPoints.sol";
 import "../security/LightweightGuardsUpgradeable.sol";
 
@@ -15,11 +17,23 @@ contract DoudoBundleModuleUpgradeable is
     LightweightGuardsUpgradeable
 {
     bytes32 public constant OPERATION_ROLE = keccak256("OPERATION_ROLE");
+    bytes32 public constant POINTS_CONFIG_ROLE = keccak256("POINTS_CONFIG_ROLE");
+    bytes32 public constant MEMBERSHIP_OPERATOR_ROLE =
+        keccak256("MEMBERSHIP_OPERATOR_ROLE");
     bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
     bytes32 private constant BUNDLE_MINT = keccak256("BUNDLE_MINT");
     bytes32 private constant BUNDLE_REBATE = keccak256("BUNDLE_REBATE");
     bytes32 private constant FREE_ORDER_REFUND = keccak256("FREE_ORDER_REFUND");
     uint256 private constant MAX_BUNDLE_MINT_AND_REVEAL = 10;
+    bytes32 private constant EIP712_DOMAIN_TYPEHASH = keccak256(
+        "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"
+    );
+    bytes32 private constant POINTS_AUTHORIZATION_NAME_HASH =
+        keccak256("DOUDO Database Points");
+    bytes32 private constant POINTS_AUTHORIZATION_VERSION_HASH = keccak256("1");
+    bytes32 private constant POINTS_MINT_AUTHORIZATION_TYPEHASH = keccak256(
+        "PointsMintAuthorization(bytes32 authorizationId,address buyer,uint256 seriesID,bytes32 luckyNumbersHash,uint256 ticketQuantity,uint256 grossPoints,bool revealImmediately,bool freeOrderChallenge,uint256 deadline)"
+    );
 
     struct BundleConfig {
         uint256 ticketQuantity;
@@ -52,6 +66,18 @@ contract DoudoBundleModuleUpgradeable is
         uint256 regularQuantity;
         uint256 grossPriceInPoints;
         uint256 rebatePoints;
+    }
+
+    struct PointsMintAuthorization {
+        bytes32 authorizationId;
+        address buyer;
+        uint256 seriesID;
+        bytes32 luckyNumbersHash;
+        uint256 ticketQuantity;
+        uint256 grossPoints;
+        bool revealImmediately;
+        bool freeOrderChallenge;
+        uint256 deadline;
     }
 
     struct FreeOrderChallengeConfig {
@@ -91,6 +117,15 @@ contract DoudoBundleModuleUpgradeable is
     error FreeOrderChallengeNotEligible();
     error FreeOrderResultNotReady();
     error FreeOrderRefundAlreadyClaimed();
+    error DatabasePointsModeDisabled();
+    error LegacyPointsModeDisabled();
+    error InvalidPointsAuthorizationConfig();
+    error InvalidPointsAuthorization();
+    error PointsAuthorizationExpired(uint256 deadline);
+    error PointsAuthorizationAlreadyUsed(bytes32 authorizationId);
+    error UnauthorizedRefundModule(address caller);
+    error TicketRefundAlreadySettled(uint256 tokenID);
+    error InvalidRefundAccounting();
 
     event RedrawModuleUpdated(address indexed redrawModule);
     event TicketPurchaseMinted(
@@ -161,11 +196,50 @@ contract DoudoBundleModuleUpgradeable is
         address indexed buyer,
         uint256 refundPoints
     );
+    event DatabasePointsFreeOrderChallengeRefunded(
+        uint256 indexed requestId,
+        uint256 indexed seriesID,
+        address indexed buyer,
+        uint256 refundPoints
+    );
     event FreeOrderChallengeRefundDeferred(
         uint256 indexed requestId,
         uint256 indexed seriesID,
         address indexed buyer,
         uint256 refundPoints
+    );
+    event DatabasePointsAuthorizationConfigured(
+        address indexed signer,
+        address indexed membership,
+        bool enabled
+    );
+    event DatabasePointsPurchaseMinted(
+        bytes32 indexed authorizationId,
+        uint256 indexed seriesID,
+        address indexed buyer,
+        uint256 ticketQuantity,
+        uint256 grossPoints,
+        uint256 rebatePoints,
+        uint256 netPointsConsumed,
+        uint256 membershipRewardPoints,
+        bool revealImmediately,
+        bool freeOrderChallenge,
+        uint256 firstTokenID,
+        uint256 challengeRequestId
+    );
+    event DatabasePointsRebateEntitled(
+        bytes32 indexed authorizationId,
+        uint256 indexed seriesID,
+        address indexed buyer,
+        uint256 rebatePoints
+    );
+    event DatabasePointsRefundModuleConfigured(address indexed refundModule);
+    event DatabasePointsRefundSettlement(
+        bytes32 indexed referenceId,
+        uint256 indexed seriesID,
+        address indexed refundRecipient,
+        uint256 refundPoints,
+        uint256 membershipRewardPointsReversed
     );
 
     /// @custom:oz-upgrades-unsafe-allow constructor
@@ -183,11 +257,106 @@ contract DoudoBundleModuleUpgradeable is
         doudoPoints = IDoudoPoints(doudoPointsAddress);
         _grantRole(UPGRADER_ROLE, msg.sender);
         _grantRole(OPERATION_ROLE, msg.sender);
+        _grantRole(POINTS_CONFIG_ROLE, msg.sender);
+        _grantRole(MEMBERSHIP_OPERATOR_ROLE, msg.sender);
     }
 
     function setRedrawModule(address redrawModule_) external onlyRole(OPERATION_ROLE) {
         redrawModule = redrawModule_;
         emit RedrawModuleUpdated(redrawModule_);
+    }
+
+    function configureDatabasePointsAuthorization(
+        address signer,
+        address membership,
+        bool enabled
+    ) external onlyRole(POINTS_CONFIG_ROLE) {
+        if (enabled && (signer == address(0) || membership == address(0))) {
+            revert InvalidPointsAuthorizationConfig();
+        }
+        pointsAuthorizationSigner = signer;
+        membershipV2 = IDoudoMembershipV2(membership);
+        databasePointsModeEnabled = enabled;
+        emit DatabasePointsAuthorizationConfigured(signer, membership, enabled);
+    }
+
+    function setDatabasePointsRefundModule(
+        address refundModule_
+    ) external onlyRole(POINTS_CONFIG_ROLE) {
+        if (refundModule_ == address(0)) revert InvalidPointsAuthorizationConfig();
+        databasePointsRefundModule = refundModule_;
+        emit DatabasePointsRefundModuleConfigured(refundModule_);
+    }
+
+    /// @notice Atomically consumes per-ticket membership accounting for the refund module.
+    function consumeTicketRefundAccounting(
+        uint256 tokenID
+    )
+        external
+        returns (
+            bool membershipRecorded,
+            uint256 membershipRewardPoints,
+            address membershipWallet
+        )
+    {
+        if (msg.sender != databasePointsRefundModule) {
+            revert UnauthorizedRefundModule(msg.sender);
+        }
+        if (ticketDatabaseRefundSettled[tokenID]) {
+            revert TicketRefundAlreadySettled(tokenID);
+        }
+        ticketDatabaseRefundSettled[tokenID] = true;
+        membershipRecorded = ticketMembershipRecorded[tokenID];
+        membershipRewardPoints = ticketMembershipRewardPoints[tokenID];
+        membershipWallet = ticketMembershipWallet[tokenID];
+    }
+
+    /// @notice Restore or explicitly upgrade Membership V2 through the audited bundle operator.
+    function adminSetMembershipV2(
+        address wallet,
+        uint8 level,
+        uint256 currentQualifyingSpend,
+        uint256 lifetimeSpend,
+        uint64 lastActivityAt,
+        bytes32 caseId
+    ) external onlyRole(MEMBERSHIP_OPERATOR_ROLE) returns (uint256 tokenId) {
+        if (address(membershipV2) == address(0)) {
+            revert InvalidPointsAuthorizationConfig();
+        }
+        return
+            membershipV2.adminSetMembership(
+                wallet,
+                level,
+                currentQualifyingSpend,
+                lifetimeSpend,
+                lastActivityAt,
+                caseId
+            );
+    }
+
+    /// @notice Burn/invalidate one old-wallet membership and restore it on a target wallet.
+    function adminMigrateMembershipV2(
+        address from,
+        address to,
+        uint8 level,
+        uint256 currentQualifyingSpend,
+        uint256 lifetimeSpend,
+        uint64 lastActivityAt,
+        bytes32 caseId
+    ) external onlyRole(MEMBERSHIP_OPERATOR_ROLE) returns (uint256 newTokenId) {
+        if (address(membershipV2) == address(0)) {
+            revert InvalidPointsAuthorizationConfig();
+        }
+        return
+            membershipV2.adminMigrateMembership(
+                from,
+                to,
+                level,
+                currentQualifyingSpend,
+                lifetimeSpend,
+                lastActivityAt,
+                caseId
+            );
     }
 
     function setSeriesRebateTiers(
@@ -376,6 +545,7 @@ contract DoudoBundleModuleUpgradeable is
         uint16[] calldata luckyNumbers,
         bool revealImmediately
     ) external nonReentrant returns (uint256 firstTokenID) {
+        if (databasePointsModeEnabled) revert LegacyPointsModeDisabled();
         OpeningDiscountConfig storage config = seriesOpeningDiscounts[seriesID];
         if (config.active && openingDiscountUsed[seriesID] < config.ticketLimit) {
             revert PriceLimitRequired();
@@ -395,6 +565,7 @@ contract DoudoBundleModuleUpgradeable is
         bool revealImmediately,
         uint256 maxTotalPriceInPoints
     ) external nonReentrant returns (uint256 firstTokenID) {
+        if (databasePointsModeEnabled) revert LegacyPointsModeDisabled();
         (firstTokenID, ) = _mintTickets(
             seriesID,
             luckyNumbers,
@@ -409,6 +580,7 @@ contract DoudoBundleModuleUpgradeable is
         uint16[] calldata luckyNumbers,
         uint256 maxTotalPriceInPoints
     ) external nonReentrant returns (uint256 firstTokenID, uint256 requestId) {
+        if (databasePointsModeEnabled) revert LegacyPointsModeDisabled();
         uint256 ticketQuantity = luckyNumbers.length;
         if (ticketQuantity == 0 || ticketQuantity > MAX_BUNDLE_MINT_AND_REVEAL) {
             revert InvalidFreeOrderChallenge();
@@ -462,6 +634,201 @@ contract DoudoBundleModuleUpgradeable is
         );
     }
 
+    /// @notice Mint tickets after the buyer's database points have been reserved offchain.
+    /// @dev The EIP-712 authorization is bound to this contract and chain through its domain.
+    function mintTicketsWithPointsAuthorization(
+        PointsMintAuthorization calldata authorization,
+        uint16[] calldata luckyNumbers,
+        bytes calldata signature
+    )
+        external
+        nonReentrant
+        returns (uint256 firstTokenID, uint256 challengeRequestId)
+    {
+        if (!databasePointsModeEnabled) revert DatabasePointsModeDisabled();
+        if (
+            authorization.authorizationId == bytes32(0) ||
+            authorization.buyer != msg.sender ||
+            authorization.ticketQuantity != luckyNumbers.length ||
+            authorization.luckyNumbersHash != keccak256(abi.encode(luckyNumbers)) ||
+            (authorization.freeOrderChallenge && !authorization.revealImmediately)
+        ) revert InvalidPointsAuthorization();
+        if (block.timestamp > authorization.deadline) {
+            revert PointsAuthorizationExpired(authorization.deadline);
+        }
+        if (pointsAuthorizationUsed[authorization.authorizationId]) {
+            revert PointsAuthorizationAlreadyUsed(authorization.authorizationId);
+        }
+        if (
+            !SignatureChecker.isValidSignatureNow(
+                pointsAuthorizationSigner,
+                pointsAuthorizationDigest(authorization),
+                signature
+            )
+        ) revert InvalidPointsAuthorization();
+
+        uint256 ticketQuantity = luckyNumbers.length;
+        _validateTicketInput(
+            authorization.seriesID,
+            luckyNumbers,
+            authorization.revealImmediately
+        );
+        if (authorization.freeOrderChallenge) {
+            _validateFreeOrderChallengePurchase(authorization.seriesID, ticketQuantity);
+        }
+
+        TicketPurchaseQuote memory quote = _quoteTicketPurchase(
+            authorization.seriesID,
+            ticketQuantity
+        );
+        if (quote.grossPriceInPoints != authorization.grossPoints) {
+            revert InvalidPointsAuthorization();
+        }
+
+        // Effects precede Core, VRF and Membership V2 external calls.
+        pointsAuthorizationUsed[authorization.authorizationId] = true;
+        if (quote.openingQuantity != 0) {
+            openingDiscountUsed[authorization.seriesID] += quote.openingQuantity;
+        }
+
+        firstTokenID = _mintPricedSegments(
+            authorization.seriesID,
+            luckyNumbers,
+            quote
+        );
+        if (authorization.revealImmediately) {
+            uint256[] memory tokenIDs = new uint256[](ticketQuantity);
+            unchecked {
+                for (uint256 i; i < ticketQuantity; ++i) {
+                    tokenIDs[i] = firstTokenID + i;
+                }
+            }
+            challengeRequestId = core.reveal(authorization.seriesID, tokenIDs);
+        }
+
+        uint256 rebatePoints = quote.rebatePoints > quote.grossPriceInPoints
+            ? quote.grossPriceInPoints
+            : quote.rebatePoints;
+        uint256 netPointsConsumed = quote.grossPriceInPoints - rebatePoints;
+        uint256 membershipRewardPoints;
+        if (netPointsConsumed != 0) {
+            (membershipRewardPoints, , , ) = membershipV2.recordConsumption(
+                msg.sender,
+                netPointsConsumed,
+                authorization.authorizationId
+            );
+            _recordTicketMembershipAccounting(
+                firstTokenID,
+                ticketQuantity,
+                netPointsConsumed,
+                membershipRewardPoints
+            );
+        }
+
+        if (authorization.freeOrderChallenge) {
+            FreeOrderChallengeConfig storage config = _freeOrderChallengeConfigs[
+                authorization.seriesID
+            ];
+            freeOrderChallengeRounds[challengeRequestId] = FreeOrderChallengeRound({
+                seriesID: authorization.seriesID,
+                buyer: msg.sender,
+                configVersion: config.version,
+                firstTokenID: firstTokenID,
+                ticketQuantity: ticketQuantity,
+                refundPoints: netPointsConsumed,
+                processed: false,
+                won: false,
+                claimed: false
+            });
+            emit FreeOrderChallengePurchased(
+                challengeRequestId,
+                authorization.seriesID,
+                msg.sender,
+                ticketQuantity,
+                quote.grossPriceInPoints,
+                rebatePoints,
+                netPointsConsumed,
+                firstTokenID
+            );
+        }
+
+        if (rebatePoints != 0) {
+            emit DatabasePointsRebateEntitled(
+                authorization.authorizationId,
+                authorization.seriesID,
+                msg.sender,
+                rebatePoints
+            );
+        }
+        if (quote.openingQuantity != 0) {
+            emit OpeningDiscountApplied(
+                authorization.seriesID,
+                msg.sender,
+                quote.openingQuantity,
+                quote.regularQuantity,
+                quote.openingPriceInPoints,
+                quote.grossPriceInPoints,
+                rebatePoints
+            );
+        }
+        emit TicketPurchaseMinted(
+            authorization.seriesID,
+            msg.sender,
+            ticketQuantity,
+            quote.grossPriceInPoints,
+            authorization.revealImmediately,
+            firstTokenID
+        );
+        emit DatabasePointsPurchaseMinted(
+            authorization.authorizationId,
+            authorization.seriesID,
+            msg.sender,
+            ticketQuantity,
+            quote.grossPriceInPoints,
+            rebatePoints,
+            netPointsConsumed,
+            membershipRewardPoints,
+            authorization.revealImmediately,
+            authorization.freeOrderChallenge,
+            firstTokenID,
+            challengeRequestId
+        );
+    }
+
+    function pointsAuthorizationDomainSeparator() public view returns (bytes32) {
+        return keccak256(
+            abi.encode(
+                EIP712_DOMAIN_TYPEHASH,
+                POINTS_AUTHORIZATION_NAME_HASH,
+                POINTS_AUTHORIZATION_VERSION_HASH,
+                block.chainid,
+                address(this)
+            )
+        );
+    }
+
+    function pointsAuthorizationDigest(
+        PointsMintAuthorization calldata authorization
+    ) public view returns (bytes32) {
+        bytes32 structHash = keccak256(
+            abi.encode(
+                POINTS_MINT_AUTHORIZATION_TYPEHASH,
+                authorization.authorizationId,
+                authorization.buyer,
+                authorization.seriesID,
+                authorization.luckyNumbersHash,
+                authorization.ticketQuantity,
+                authorization.grossPoints,
+                authorization.revealImmediately,
+                authorization.freeOrderChallenge,
+                authorization.deadline
+            )
+        );
+        return keccak256(
+            abi.encodePacked("\x19\x01", pointsAuthorizationDomainSeparator(), structHash)
+        );
+    }
+
     function _mintTickets(
         uint256 seriesID,
         uint16[] calldata luckyNumbers,
@@ -470,17 +837,7 @@ contract DoudoBundleModuleUpgradeable is
         bool freeOrderChallenge
     ) internal returns (uint256 firstTokenID, uint256 challengeRequestId) {
         uint256 ticketQuantity = luckyNumbers.length;
-        if (ticketQuantity == 0) revert InvalidConfig();
-        if (revealImmediately && ticketQuantity > MAX_BUNDLE_MINT_AND_REVEAL) {
-            revert RevealBatchTooLarge();
-        }
-
-        (, bool useLuckyNumber, , ) = core.seriesMintConfig(seriesID);
-        for (uint256 i = 0; i < ticketQuantity; i++) {
-            if (useLuckyNumber ? luckyNumbers[i] == 0 : luckyNumbers[i] != 0) {
-                revert InvalidConfig();
-            }
-        }
+        _validateTicketInput(seriesID, luckyNumbers, revealImmediately);
 
         TicketPurchaseQuote memory quote = _quoteTicketPurchase(seriesID, ticketQuantity);
         if (quote.grossPriceInPoints > maxTotalPriceInPoints) {
@@ -539,6 +896,42 @@ contract DoudoBundleModuleUpgradeable is
         );
     }
 
+    function _validateTicketInput(
+        uint256 seriesID,
+        uint16[] calldata luckyNumbers,
+        bool revealImmediately
+    ) internal view {
+        uint256 ticketQuantity = luckyNumbers.length;
+        if (ticketQuantity == 0) revert InvalidConfig();
+        if (revealImmediately && ticketQuantity > MAX_BUNDLE_MINT_AND_REVEAL) {
+            revert RevealBatchTooLarge();
+        }
+
+        (, bool useLuckyNumber, , ) = core.seriesMintConfig(seriesID);
+        for (uint256 i = 0; i < ticketQuantity; i++) {
+            if (useLuckyNumber ? luckyNumbers[i] == 0 : luckyNumbers[i] != 0) {
+                revert InvalidConfig();
+            }
+        }
+    }
+
+    function _validateFreeOrderChallengePurchase(
+        uint256 seriesID,
+        uint256 ticketQuantity
+    ) internal view {
+        if (ticketQuantity == 0 || ticketQuantity > MAX_BUNDLE_MINT_AND_REVEAL) {
+            revert InvalidFreeOrderChallenge();
+        }
+        FreeOrderChallengeConfig storage config = _freeOrderChallengeConfigs[seriesID];
+        (, , uint256 remainingTicketNumbers, uint256 totalTicketNumbers) = core
+            .seriesMintConfig(seriesID);
+        uint256 soldTicketNumbers = totalTicketNumbers - remainingTicketNumbers;
+        if (
+            !config.active ||
+            soldTicketNumbers + ticketQuantity > config.eligibleLastTicketCount
+        ) revert FreeOrderChallengeNotEligible();
+    }
+
     function settleFreeOrderChallenge(uint256 requestId) external nonReentrant {
         FreeOrderChallengeRound storage round = freeOrderChallengeRounds[requestId];
         if (round.buyer == address(0) || round.processed) revert InvalidFreeOrderChallenge();
@@ -592,6 +985,30 @@ contract DoudoBundleModuleUpgradeable is
         if (round.claimed) revert FreeOrderRefundAlreadyClaimed();
 
         round.claimed = true;
+        if (databasePointsModeEnabled) {
+            uint256 membershipRewardPointsReversed =
+                _reverseFreeOrderMembership(requestId, round);
+            emit DatabasePointsFreeOrderChallengeRefunded(
+                requestId,
+                round.seriesID,
+                round.buyer,
+                round.refundPoints
+            );
+            emit DatabasePointsRefundSettlement(
+                keccak256(abi.encode("FREE_ORDER_CHALLENGE", requestId)),
+                round.seriesID,
+                round.buyer,
+                round.refundPoints,
+                membershipRewardPointsReversed
+            );
+            emit FreeOrderChallengeRefunded(
+                requestId,
+                round.seriesID,
+                round.buyer,
+                round.refundPoints
+            );
+            return;
+        }
         if (
             round.refundPoints != 0 &&
             !doudoPoints.mintWithReason(round.buyer, round.refundPoints, FREE_ORDER_REFUND)
@@ -616,6 +1033,32 @@ contract DoudoBundleModuleUpgradeable is
             return;
         }
 
+        if (databasePointsModeEnabled) {
+            round.claimed = true;
+            uint256 membershipRewardPointsReversed =
+                _reverseFreeOrderMembership(requestId, round);
+            emit DatabasePointsFreeOrderChallengeRefunded(
+                requestId,
+                round.seriesID,
+                round.buyer,
+                round.refundPoints
+            );
+            emit DatabasePointsRefundSettlement(
+                keccak256(abi.encode("FREE_ORDER_CHALLENGE", requestId)),
+                round.seriesID,
+                round.buyer,
+                round.refundPoints,
+                membershipRewardPointsReversed
+            );
+            emit FreeOrderChallengeRefunded(
+                requestId,
+                round.seriesID,
+                round.buyer,
+                round.refundPoints
+            );
+            return;
+        }
+
         try
             doudoPoints.mintWithReason(round.buyer, round.refundPoints, FREE_ORDER_REFUND)
         returns (bool minted) {
@@ -637,6 +1080,67 @@ contract DoudoBundleModuleUpgradeable is
             round.buyer,
             round.refundPoints
         );
+    }
+
+    function _recordTicketMembershipAccounting(
+        uint256 firstTokenID,
+        uint256 ticketQuantity,
+        uint256 totalPointsConsumed,
+        uint256 totalMembershipRewardPoints
+    ) private {
+        uint256 remainingSpend = totalPointsConsumed;
+        uint256 remainingReward = totalMembershipRewardPoints;
+        for (uint256 i = 0; i < ticketQuantity; i++) {
+            uint256 tokenID = firstTokenID + i;
+            uint256 paid = core.pointsPaid(tokenID);
+            ticketMembershipRecorded[tokenID] = true;
+            ticketMembershipWallet[tokenID] = msg.sender;
+            uint256 reward;
+            if (remainingSpend != 0) {
+                reward = i + 1 == ticketQuantity || paid == remainingSpend
+                    ? remainingReward
+                    : (remainingReward * paid) / remainingSpend;
+            }
+            ticketMembershipRewardPoints[tokenID] = reward;
+            remainingSpend -= paid;
+            remainingReward -= reward;
+        }
+    }
+
+    function _reverseFreeOrderMembership(
+        uint256 requestId,
+        FreeOrderChallengeRound storage round
+    ) private returns (uint256 membershipRewardPointsReversed) {
+        uint256 pointsReversed;
+        bool membershipRecorded;
+        for (uint256 i = 0; i < round.ticketQuantity; i++) {
+            uint256 tokenID = round.firstTokenID + i;
+            if (core.ownerOf(tokenID) != round.buyer) {
+                revert InvalidFreeOrderChallenge();
+            }
+            if (ticketDatabaseRefundSettled[tokenID]) {
+                revert TicketRefundAlreadySettled(tokenID);
+            }
+            ticketDatabaseRefundSettled[tokenID] = true;
+            if (ticketMembershipRecorded[tokenID]) {
+                membershipRecorded = true;
+                pointsReversed += core.pointsPaid(tokenID);
+                membershipRewardPointsReversed += ticketMembershipRewardPoints[tokenID];
+            }
+        }
+        if (membershipRecorded && pointsReversed != round.refundPoints) {
+            revert InvalidFreeOrderChallenge();
+        }
+        if (membershipRewardPointsReversed > round.refundPoints) {
+            revert InvalidRefundAccounting();
+        }
+        if (pointsReversed != 0) {
+            membershipV2.reverseConsumption(
+                round.buyer,
+                pointsReversed,
+                keccak256(abi.encode("FREE_ORDER_CHALLENGE", requestId))
+            );
+        }
     }
 
     function _quoteTicketPurchase(
@@ -751,5 +1255,16 @@ contract DoudoBundleModuleUpgradeable is
     mapping(uint256 => uint256[]) private seriesFreeOrderTriggerPrizeIDs;
     mapping(uint256 => FreeOrderChallengeRound) public freeOrderChallengeRounds;
 
-    uint256[38] private __gap;
+    address public pointsAuthorizationSigner;
+    IDoudoMembershipV2 public membershipV2;
+    bool public databasePointsModeEnabled;
+    mapping(bytes32 => bool) public pointsAuthorizationUsed;
+
+    address public databasePointsRefundModule;
+    mapping(uint256 => bool) public ticketMembershipRecorded;
+    mapping(uint256 => uint256) public ticketMembershipRewardPoints;
+    mapping(uint256 => bool) public ticketDatabaseRefundSettled;
+    mapping(uint256 => address) public ticketMembershipWallet;
+
+    uint256[30] private __gap;
 }

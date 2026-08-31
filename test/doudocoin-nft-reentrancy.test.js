@@ -105,6 +105,44 @@ describe("DOUDOCOINNFT callback safety", function () {
     expect(receiverInfo.totalRedeemed).to.equal(0);
   });
 
+  it("blocks every voucher transfer entry point without affecting voucher burns", async function () {
+    const { user, other, nft } = await deployFixture();
+    await nft.createVoucherType(1, 10, "ipfs://voucher-zero");
+    await nft.createVoucherType(10, 10, "ipfs://voucher-non-transferable");
+    await nft.mintVouchers(user.address, [1], [3]);
+
+    await expect(
+      nft.connect(user).transferFrom(user.address, other.address, 1)
+    ).to.be.revertedWithCustomError(nft, "VoucherNonTransferable");
+    await expect(
+      nft
+        .connect(user)
+        ["safeTransferFrom(address,address,uint256)"](
+          user.address,
+          other.address,
+          2
+        )
+    ).to.be.revertedWithCustomError(nft, "VoucherNonTransferable");
+    await expect(
+      nft
+        .connect(user)
+        ["safeTransferFrom(address,address,uint256,bytes)"](
+          user.address,
+          other.address,
+          3,
+          "0x1234"
+        )
+    ).to.be.revertedWithCustomError(nft, "VoucherNonTransferable");
+
+    expect(await nft.ownerOf(1)).to.equal(user.address);
+    expect(await nft.ownerOf(2)).to.equal(user.address);
+    expect(await nft.ownerOf(3)).to.equal(user.address);
+    expect(await nft.voucherTypeIds(1)).to.equal(1);
+
+    await nft.connect(user).burn(1);
+    await expect(nft.ownerOf(1)).to.be.revertedWith("ERC721: invalid token ID");
+  });
+
   it("clears voucher mappings on burn and prevents membership NFTs from bypassing reconciliation", async function () {
     const { user, nft } = await deployFixture();
     await nft.createVoucherType(1, 10, "ipfs://voucher-zero");

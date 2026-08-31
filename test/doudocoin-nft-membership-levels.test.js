@@ -1,5 +1,6 @@
 const { expect } = require("chai");
 const { artifacts, ethers, upgrades } = require("hardhat");
+const { anyValue } = require("@nomicfoundation/hardhat-chai-matchers/withArgs");
 
 describe("DOUDOCOINNFT UUPS membership configuration", function () {
   async function deployFixture() {
@@ -80,6 +81,34 @@ describe("DOUDOCOINNFT UUPS membership configuration", function () {
     expect(after.rewardBasisPoints).to.equal(40);
   });
 
+  it("mints and reports fractional membership rewards in 18-decimal token units", async function () {
+    const { minter, user, rewardToken, nft } = await deployFixture();
+    await rewardToken.grantRole(
+      await rewardToken.MINTER_ROLE(),
+      await nft.getAddress()
+    );
+    await nft.createVoucherType(100, 1, "ipfs://voucher-100");
+    await nft.connect(minter).mintMembershipNFT(user.address, 2);
+    await nft.connect(minter).mintVouchers(user.address, [0], [1]);
+    const infoBefore = await nft.userInfo(user.address);
+
+    const baseAmount = ethers.parseEther("100");
+    const fractionalReward = ethers.parseEther("0.25");
+    const totalAmount = baseAmount + fractionalReward;
+
+    await expect(nft.connect(user).burnVouchersBatch([2]))
+      .to.emit(nft, "VoucherTotalRedeemed")
+      .withArgs([2], user.address, totalAmount, fractionalReward);
+
+    expect(await rewardToken.balanceOf(user.address)).to.equal(totalAmount);
+    const info = await nft.userInfo(user.address);
+    expect(info.totalRedeemed).to.equal(infoBefore.totalRedeemed + totalAmount);
+    expect(info.currentRoundRedeemed).to.equal(
+      infoBefore.currentRoundRedeemed + totalAmount
+    );
+    expect(info.membershipLevel).to.equal(2);
+  });
+
   it("rejects unauthorized, nonexistent, unordered, and excessive membership settings", async function () {
     const { other, nft } = await deployFixture();
 
@@ -98,6 +127,74 @@ describe("DOUDOCOINNFT UUPS membership configuration", function () {
     await expect(
       nft.setMembershipLevelConfig(2, ethers.parseEther("10000"), 10001)
     ).to.be.revertedWithCustomError(nft, "InvalidRewardBasisPoints");
+  });
+
+  it("cancels legacy voucher and membership NFTs onchain without deleting history", async function () {
+    const { minter, user, other, nft } = await deployFixture();
+    await nft.createVoucherType(100, 10, "ipfs://voucher-100");
+    await nft.connect(minter).mintVouchers(user.address, [0], [1]);
+    await nft.connect(minter).mintMembershipNFT(other.address, 2);
+    const snapshotBlock = await ethers.provider.getBlockNumber();
+    const snapshotRoot = ethers.id("legacy-snapshot-root");
+    const cancelledURI = "ipfs://legacy-assets-cancelled";
+
+    await expect(
+      nft.cancelLegacyCollection(snapshotBlock, snapshotRoot, cancelledURI)
+    )
+      .to.emit(nft, "LegacyCollectionCancelled")
+      .withArgs(snapshotBlock, snapshotRoot, anyValue, cancelledURI);
+
+    expect(await nft.legacyCollectionCancelled()).to.equal(true);
+    expect(await nft.legacyCancellationSnapshotBlock()).to.equal(snapshotBlock);
+    expect(await nft.legacyCancellationSnapshotRoot()).to.equal(snapshotRoot);
+    expect(await nft.tokenURI(1)).to.equal(cancelledURI);
+    expect(await nft.tokenURI(2)).to.equal(cancelledURI);
+    expect(await nft.ownerOf(1)).to.equal(user.address);
+    expect(await nft.ownerOf(2)).to.equal(other.address);
+
+    await expect(
+      nft.connect(minter).mintVouchers(user.address, [0], [1])
+    ).to.be.revertedWithCustomError(nft, "LegacyCollectionCancelledOperation");
+    await expect(
+      nft.connect(user).burnVouchersBatch([1])
+    ).to.be.revertedWithCustomError(nft, "LegacyCollectionCancelledOperation");
+    await expect(
+      nft.connect(other).transferFrom(other.address, user.address, 2)
+    ).to.be.revertedWithCustomError(nft, "LegacyCollectionCancelledOperation");
+    await expect(
+      nft.connect(user).approve(other.address, 1)
+    ).to.be.revertedWithCustomError(nft, "LegacyCollectionCancelledOperation");
+    await expect(
+      nft.connect(user).burn(1)
+    ).to.be.revertedWithCustomError(nft, "LegacyCollectionCancelledOperation");
+    await expect(
+      nft.updateVoucherType(0, 200, 10, "ipfs://changed")
+    ).to.be.revertedWithCustomError(nft, "LegacyCollectionCancelledOperation");
+    await expect(
+      nft.cancelLegacyCollection(snapshotBlock, snapshotRoot, cancelledURI)
+    ).to.be.revertedWithCustomError(nft, "LegacyCollectionAlreadyCancelled");
+  });
+
+  it("requires an authorized, finalized snapshot to cancel the legacy collection", async function () {
+    const { other, nft } = await deployFixture();
+    const currentBlock = await ethers.provider.getBlockNumber();
+    await expect(
+      nft.connect(other).cancelLegacyCollection(
+        currentBlock,
+        ethers.id("unauthorized-root"),
+        "ipfs://cancelled"
+      )
+    ).to.be.revertedWithCustomError(nft, "MissingRole");
+    await expect(
+      nft.cancelLegacyCollection(0, ethers.ZeroHash, "")
+    ).to.be.revertedWithCustomError(nft, "InvalidLegacyCancellationSnapshot");
+    await expect(
+      nft.cancelLegacyCollection(
+        currentBlock + 100,
+        ethers.id("future-root"),
+        "ipfs://cancelled"
+      )
+    ).to.be.revertedWithCustomError(nft, "InvalidLegacyCancellationSnapshot");
   });
 
   it("preserves roles, membership settings, voucher data, and user NFT state across upgrades", async function () {
