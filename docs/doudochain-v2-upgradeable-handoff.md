@@ -34,6 +34,21 @@ coordinator and authorize their respective requester.
 | `MerchantSeriesRegistry` | `0x03dBEE1f231A29b06032aa24D2CFb96a1321C1A6` | `0x59B2869C51cc555734845DF9eb3bDFb5Fc6f1E81` | Verified and proxy-linked |
 | `MerchantSeriesPublisher` | `0xB0EC5ca70a9AeCaeb260FdCDF238a64Ad37F5515` | `0xe787DD97F42Aa467A3A74CBc995c789794eC6f55` | Verified |
 
+### Database Points / Membership V2 prepared implementations
+
+The following Arbitrum Sepolia implementations were deployed and explorer-verified on
+2026-08-31. They are cutover candidates only: `prepareUpgrade` did not change any proxy
+implementation slot, did not enable database-points mode, and did not deploy a Membership
+V2 proxy.
+
+| Contract | Prepared implementation |
+| --- | --- |
+| `DoudoBundleModuleUpgradeable` | `0x392D3A603B8421C3Dd92B553D71fE46A80b08C73` |
+| `DoudoRefundModuleUpgradeable` | `0xC55CD35aaa831612622eB61963fc07b81393120D` |
+| `DoudoCollectionRewardModuleUpgradeable` | `0x78d571cBCd809c08A8b236a0B373625F536579c0` |
+| `DOUDOCOINNFT` legacy-cancellation upgrade | `0x020c7d950b7C40ccb7ab40d579b87493b713BbCb` |
+| `DoudoMembershipV2Upgradeable` implementation | `0xedfC35C2099199b5c24471B9101e7D06F1e85Ac8` |
+
 Explorer links:
 
 - DOUDOCOIN: `https://sepolia.arbiscan.io/address/0xFFCD533609e0e9E810C4C5D8Cb7a69D7a537C17E#code`
