@@ -197,6 +197,34 @@ describe("DOUDOCOINNFT UUPS membership configuration", function () {
     ).to.be.revertedWithCustomError(nft, "InvalidLegacyCancellationSnapshot");
   });
 
+  it("uses the Arbitrum L2 block number when validating a legacy snapshot", async function () {
+    const { nft } = await deployFixture();
+    const currentEvmBlock = await ethers.provider.getBlockNumber();
+    const snapshotBlock = currentEvmBlock + 10_000;
+    const l2Block = snapshotBlock + 10_000;
+    const arbSysAddress = "0x0000000000000000000000000000000000000064";
+
+    const MockArbSys = await ethers.getContractFactory("MockArbSys");
+    const mock = await MockArbSys.deploy();
+    await mock.waitForDeployment();
+    const runtimeCode = await ethers.provider.getCode(await mock.getAddress());
+
+    await ethers.provider.send("hardhat_setCode", [arbSysAddress, runtimeCode]);
+    const arbSys = MockArbSys.attach(arbSysAddress);
+    await arbSys.setArbBlockNumber(l2Block);
+
+    await expect(
+      nft.cancelLegacyCollection(
+        snapshotBlock,
+        ethers.id("arbitrum-l2-snapshot-root"),
+        "ipfs://legacy-assets-cancelled"
+      )
+    ).to.emit(nft, "LegacyCollectionCancelled");
+
+    expect(await nft.legacyCancellationSnapshotBlock()).to.equal(snapshotBlock);
+    await ethers.provider.send("hardhat_setCode", [arbSysAddress, "0x"]);
+  });
+
   it("preserves roles, membership settings, voucher data, and user NFT state across upgrades", async function () {
     const { admin, minter, user, other, nft } = await deployFixture();
     await nft.createVoucherType(10, 99, "ipfs://voucher-10");

@@ -16,6 +16,10 @@ import "@openzeppelin/contracts/utils/math/Math.sol";
 import "./access/MinimalAccessControlUpgradeable.sol";
 import "./interfaces/IDoudoPoints.sol";
 
+interface IArbSys {
+    function arbBlockNumber() external view returns (uint256);
+}
+
 contract DOUDOCOINNFT is
     Initializable,
     ERC721Upgradeable,
@@ -932,7 +936,7 @@ contract DOUDOCOINNFT is
         if (legacyCollectionCancelled) revert LegacyCollectionAlreadyCancelled();
         if (
             snapshotBlock == 0 ||
-            snapshotBlock > block.number ||
+            snapshotBlock > _chainBlockNumber() ||
             snapshotRoot == bytes32(0) ||
             bytes(cancelledTokenURI).length == 0
         ) revert InvalidLegacyCancellationSnapshot();
@@ -948,6 +952,20 @@ contract DOUDOCOINNFT is
             legacyCollectionCancelledAt,
             cancelledTokenURI
         );
+    }
+
+    /// @dev Arbitrum's Solidity `block.number` is the corresponding L1 block,
+    /// while snapshots and RPC `eth_blockNumber` use the Arbitrum L2 block.
+    /// ArbSys is available at address(100) on Arbitrum. Falling back preserves
+    /// the expected behavior on Ethereum-compatible development networks.
+    function _chainBlockNumber() private view returns (uint256) {
+        (bool success, bytes memory result) = address(100).staticcall(
+            abi.encodeCall(IArbSys.arbBlockNumber, ())
+        );
+        if (success && result.length >= 32) {
+            return abi.decode(result, (uint256));
+        }
+        return block.number;
     }
 
     function approve(

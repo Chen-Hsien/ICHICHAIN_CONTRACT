@@ -12,6 +12,8 @@
     "cutover:database-points:arbitrum-one": "EXECUTE_DATABASE_POINTS_CUTOVER=1 hardhat run scripts/cutoverDatabasePointsMembershipV2.ts --network arbitrumOne",
     "cutover:database-points:arbitrum-sepolia:preflight": "hardhat run scripts/cutoverDatabasePointsMembershipV2.ts --network arbitrumSepolia",
     "cutover:database-points:arbitrum-sepolia": "EXECUTE_DATABASE_POINTS_CUTOVER=1 hardhat run scripts/cutoverDatabasePointsMembershipV2.ts --network arbitrumSepolia",
+    "upgrade:legacy-snapshot-block-fix:arbitrum-sepolia:preflight": "hardhat run scripts/upgradeLegacyArbitrumSnapshotBlockFix.ts --network arbitrumSepolia",
+    "upgrade:legacy-snapshot-block-fix:arbitrum-sepolia": "EXECUTE_LEGACY_SNAPSHOT_BLOCK_FIX=1 hardhat run scripts/upgradeLegacyArbitrumSnapshotBlockFix.ts --network arbitrumSepolia",
     "snapshot:database-points:arbitrum-sepolia": "hardhat run scripts/createDatabasePointsCutoverManifest.ts --network arbitrumSepolia",
     "prepare:database-points:arbitrum-sepolia": "hardhat run scripts/prepareDatabasePointsMembershipV2ArbSepolia.ts --network arbitrumSepolia",
     "deploy:arbitrum-one:fork": "FORK_DRY_RUN=1 hardhat run scripts/deployArbitrumOne.ts --network arbitrumOneFork",
