@@ -1,6 +1,6 @@
 # DOUDOCHAIN V2 Upgradeable Handoff
 
-Last updated: 2026-08-28
+Last updated: 2026-09-01
 
 This document is the current handoff for the upgraded Arbitrum Sepolia V2 split-module deployment. Use proxy addresses for app/subgraph calls and implementation addresses only for verification and upgrade records.
 
@@ -26,13 +26,38 @@ coordinator and authorize their respective requester.
 | `DoudoVRFRouter` (Redraw) | `0x5A59D45437559C7CE0A012630a456321180C21e1` | Non-proxy | Verified |
 | `DOUDOCHAINV2CoreUpgradeable` | `0xf75395A8cd753f47135cfcaE00D2706252c3E0F5` | `0x2626d63bc4b9c3F90A3D277aFe4b814DdF73962E` | Verified |
 | `DoudoSeriesOpsModuleUpgradeable` | `0x2FF7521dEF3903fc5c6f2877252cdf5019380070` | `0x5409aa1Fbdd2e28fb47457F7ee50af1f73dD966D` | Verified and proxy-linked |
-| `DoudoBundleModuleUpgradeable` | `0x68cBA2b3c72Be39be748B06c1e6dDab2855E91b6` | `0xA05b8718D5AFBa4cCCffFE57aa33c8Bc9313b39e` | Verified and proxy-linked |
-| `DoudoRefundModuleUpgradeable` | `0x8ee19238DAa466B7792BE33569c6E4f6993CCf20` | `0xC6cad8c6A27170848CF295fd1A290A143d3Ea4a3` | Verified and proxy-linked |
+| `DoudoBundleModuleUpgradeable` | `0x68cBA2b3c72Be39be748B06c1e6dDab2855E91b6` | `0x392D3A603B8421C3Dd92B553D71fE46A80b08C73` | Database Points mode enabled |
+| `DoudoRefundModuleUpgradeable` | `0x8ee19238DAa466B7792BE33569c6E4f6993CCf20` | `0xC55CD35aaa831612622eB61963fc07b81393120D` | Database Points mode enabled |
 | `DoudoRedrawModuleUpgradeable` | `0xE75461828f41C890fbc811e7cABFe2143B3F4afE` | `0xAC4A0DF12704eFE73ca8D20eC4965C69105AF2b8` | Verified and proxy-linked |
-| `DoudoCollectionRewardModuleUpgradeable` | `0x680618a6933DD68fF84Ff9F64760120d27400B3C` | `0x2cE5a89cBA7F79a6de97E6d798522f66310a6d83` | Verified and proxy-linked |
+| `DoudoCollectionRewardModuleUpgradeable` | `0x680618a6933DD68fF84Ff9F64760120d27400B3C` | `0x78d571cBCd809c08A8b236a0B373625F536579c0` | Database Points mode enabled |
+| `DOUDOCOINNFT` (legacy collection) | `0x1F1150AC2d7a8208A2743a4E74e8401Ff9F1ED53` | `0xDE42f2fF88887aaEdee94C23CaBa5695c334BBE5` | Collection cancelled onchain |
+| `DoudoMembershipV2Upgradeable` | `0x2aBAd03eA3399e03a6c768405F0647f2aAe32B99` | `0xedfC35C2099199b5c24471B9101e7D06F1e85Ac8` | Deployed and 32-member snapshot restored |
 | `CollectionBookUpgradeable` | `0x4284be399cA9591fBd98248969fCcb969E21B2C6` | `0x712357CE959DD055500D4a44BB33eFe41073d5A0` | Verified and proxy-linked |
 | `MerchantSeriesRegistry` | `0x03dBEE1f231A29b06032aa24D2CFb96a1321C1A6` | `0x59B2869C51cc555734845DF9eb3bDFb5Fc6f1E81` | Verified and proxy-linked |
 | `MerchantSeriesPublisher` | `0xB0EC5ca70a9AeCaeb260FdCDF238a64Ad37F5515` | `0xe787DD97F42Aa467A3A74CBc995c789794eC6f55` | Verified |
+
+### Database Points / Membership V2 cutover
+
+The Arbitrum Sepolia cutover completed on 2026-09-01. Database Points mode is enabled,
+Membership V2 is live, the legacy NFT collection is cancelled onchain, and every recorded
+legacy Points minter/burner role has been revoked. The cutover checkpoint finished at
+`CUTOVER_VERIFIED`.
+
+| Contract | Active implementation |
+| --- | --- |
+| `DoudoBundleModuleUpgradeable` | `0x392D3A603B8421C3Dd92B553D71fE46A80b08C73` |
+| `DoudoRefundModuleUpgradeable` | `0xC55CD35aaa831612622eB61963fc07b81393120D` |
+| `DoudoCollectionRewardModuleUpgradeable` | `0x78d571cBCd809c08A8b236a0B373625F536579c0` |
+| `DOUDOCOINNFT` legacy-cancellation upgrade | `0xDE42f2fF88887aaEdee94C23CaBa5695c334BBE5` |
+| `DoudoMembershipV2Upgradeable` implementation | `0xedfC35C2099199b5c24471B9101e7D06F1e85Ac8` |
+
+Cutover evidence:
+
+- Membership V2 proxy: `0x2aBAd03eA3399e03a6c768405F0647f2aAe32B99`
+- Points authorization signer: `0x56535d9904D7F3F1B462ED97997C8E9CDFB52227`
+- Snapshot block: `303962629`
+- Snapshot root: `0x1d0e30c70270ec937674e98451fdae71716cbf1d9a22cdef02f7212cfc389194`
+- Legacy cancellation transaction: `0x1c51cfcdb97f9eb37d6d3e8cf5e30c2cfb6e580a48db76027f8c31540e490668`
 
 Explorer links:
 
@@ -169,11 +194,11 @@ Index these addresses. For UUPS contracts, index the proxy address.
 Current Arbitrum Sepolia Studio deployment:
 
 - Project: `doudochain-arb-v-2`
-- Version: `v2.1.11`
-- Deployment: `QmTt3dTE2iyhQ7ssfw8CqeewTp4qcPvyvErudizgAotFcH`
-- Query endpoint: `https://api.studio.thegraph.com/query/79631/doudochain-arb-v-2/v2.1.11`
-- Published on `2026-08-28`; the deployment rebuilds from the existing start
-  blocks and must finish syncing before consumer endpoint cutover.
+- Version: `v2.1.0-database-points.20260901`
+- Deployment: `QmQ7ZnbKvJqTrNpfnRFPhrhuLxo9PMhnAuKzTvigcGD3FA`
+- Query endpoint: `https://api.studio.thegraph.com/query/79631/doudochain-arb-v-2/v2.1.0-database-points.20260901`
+- Published on `2026-09-01`; schema probe passed with no indexing errors. It contains
+  all 32 Membership V2 members/restorations and the legacy collection cancellation.
 
 | Data source | Address | Purpose |
 | --- | --- | --- |
@@ -193,22 +218,14 @@ Heavy on-chain aggregate readers are intentionally absent from the split Core: `
 
 See `/Users/angustsai/ICHICHAIN_CONTRACT/docs/subgraph-v2-upgradeable-query-mapping.md` for schema/query mapping.
 
-Current Studio version: `rebate-tiers-20260627`
-
-```text
-https://api.studio.thegraph.com/query/79631/doudochain-arb-v-2/rebate-tiers-20260627
-```
-
 ## Role Wiring
 
 | Contract | Permission | Holder |
 | --- | --- | --- |
-| `DOUDOCOIN` | `BURNER_ROLE` | Core proxy `0xf75395A8cd753f47135cfcaE00D2706252c3E0F5` |
-| `DOUDOCOIN` | `BURNER_ROLE` | Bundle proxy `0x68cBA2b3c72Be39be748B06c1e6dDab2855E91b6` |
-| `DOUDOCOIN` | `MINTER_ROLE` | Bundle proxy `0x68cBA2b3c72Be39be748B06c1e6dDab2855E91b6` |
-| `DOUDOCOIN` | `MINTER_ROLE` | Refund proxy `0x8ee19238DAa466B7792BE33569c6E4f6993CCf20` |
-| `DOUDOCOIN` | `MINTER_ROLE` | Collection reward proxy `0x680618a6933DD68fF84Ff9F64760120d27400B3C` |
-| `DOUDOCOIN` | `MINTER_ROLE` | CollectionBook proxy `0x4284be399cA9591fBd98248969fCcb969E21B2C6` |
+| `DOUDOCOIN` | legacy `MINTER_ROLE` / `BURNER_ROLE` | All cutover inventory addresses revoked; no longer used by buyer flows |
+| Bundle | Points authorization signer | `0x56535d9904D7F3F1B462ED97997C8E9CDFB52227` (no admin, upgrader, minter, or operation role) |
+| Bundle / Refund / CollectionReward | Database Points configuration governance | `0x226f0197D502e7AC87d1A76D6526945DFa9E4209` |
+| Membership V2 | Consumption recorder | Bundle and Refund proxies |
 | Core | `MODULE_ROLE` | Bundle, Refund, Redraw, CollectionReward proxies |
 | Core Router `0x48A1...9Eb5` | requester | Core proxy `0xf75395A8cd753f47135cfcaE00D2706252c3E0F5` |
 | Redraw Router `0x5A59...21e1` | requester | Redraw proxy `0xE75461828f41C890fbc811e7cABFe2143B3F4afE` |
