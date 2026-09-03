@@ -1,6 +1,6 @@
 # DOUDOCHAIN V2 Upgradeable Handoff
 
-Last updated: 2026-09-01
+Last updated: 2026-09-03
 
 This document is the current handoff for the upgraded Arbitrum Sepolia V2 split-module deployment. Use proxy addresses for app/subgraph calls and implementation addresses only for verification and upgrade records.
 
@@ -24,7 +24,7 @@ coordinator and authorize their respective requester.
 | `DOUDOCOIN` | `0xFFCD533609e0e9E810C4C5D8Cb7a69D7a537C17E` | Non-proxy | Verified |
 | `DoudoVRFRouter` (Core) | `0x48A1205c9b6BF1Da1a3D1bE651A9e237AC349Eb5` | Non-proxy | Chain read confirmed |
 | `DoudoVRFRouter` (Redraw) | `0x5A59D45437559C7CE0A012630a456321180C21e1` | Non-proxy | Verified |
-| `DOUDOCHAINV2CoreUpgradeable` | `0xf75395A8cd753f47135cfcaE00D2706252c3E0F5` | `0x2626d63bc4b9c3F90A3D277aFe4b814DdF73962E` | Verified |
+| `DOUDOCHAINV2CoreUpgradeable` | `0xf75395A8cd753f47135cfcaE00D2706252c3E0F5` | `0x6A92A57DCee2bd3C25Bd435CF64E7B2042Daf851` | Verified |
 | `DoudoSeriesOpsModuleUpgradeable` | `0x2FF7521dEF3903fc5c6f2877252cdf5019380070` | `0x5409aa1Fbdd2e28fb47457F7ee50af1f73dD966D` | Verified and proxy-linked |
 | `DoudoBundleModuleUpgradeable` | `0x68cBA2b3c72Be39be748B06c1e6dDab2855E91b6` | `0x392D3A603B8421C3Dd92B553D71fE46A80b08C73` | Database Points mode enabled |
 | `DoudoRefundModuleUpgradeable` | `0x8ee19238DAa466B7792BE33569c6E4f6993CCf20` | `0xC55CD35aaa831612622eB61963fc07b81393120D` | Database Points mode enabled |
@@ -59,21 +59,36 @@ Cutover evidence:
 - Snapshot root: `0x1d0e30c70270ec937674e98451fdae71716cbf1d9a22cdef02f7212cfc389194`
 - Legacy cancellation transaction: `0x1c51cfcdb97f9eb37d6d3e8cf5e30c2cfb6e580a48db76027f8c31540e490668`
 
+### Free-order staging repair
+
+The 2026-09-03 repair upgraded only Core so the active Bundle can call
+`seriesSubPrizeRemainingQuantity`, restored Bundle `OPERATION_ROLE` to the backend
+operation signer, and left the Database Points Bundle implementation unchanged.
+
+- Core implementation: `0x6A92A57DCee2bd3C25Bd435CF64E7B2042Daf851`
+- Core upgrade transaction: `0xc67945f17cb8bddb7c10b609c25f1b2098c166ae949e03e9186c236b7dc4701c`
+- Bundle backend-role grant transaction: `0x18d16a1c43f212c8a134cef9e3c386f0616871520668922c581b94d279b8bf12`
+- Core pause transaction: `0xa07a729a680efe4e32801f301c37bd9a5661dc2816d3b5a43c048787bca75291`
+- Core unpause transaction: `0x82d9f1c9794c68825f8c98833d015bc5925518592538c5403fcb7d9b9c6113ea`
+- Post-deploy probe: Core unpaused, no pending Core VRF request, Bundle Database Points mode
+  enabled, legacy Points minter role revoked, backend Bundle operation role present, series
+  `#90` prize `#6` remaining quantity `6`.
+
 Explorer links:
 
 - DOUDOCOIN: `https://sepolia.arbiscan.io/address/0xFFCD533609e0e9E810C4C5D8Cb7a69D7a537C17E#code`
 - Core DoudoVRFRouter: `https://sepolia.arbiscan.io/address/0x48A1205c9b6BF1Da1a3D1bE651A9e237AC349Eb5#code`
 - Redraw DoudoVRFRouter: `https://sepolia.arbiscan.io/address/0x5A59D45437559C7CE0A012630a456321180C21e1#code`
 - Core proxy: `https://sepolia.arbiscan.io/address/0xf75395A8cd753f47135cfcaE00D2706252c3E0F5#code`
-- Core implementation: `https://sepolia.arbiscan.io/address/0x2626d63bc4b9c3F90A3D277aFe4b814DdF73962E#code`
-- Core upgrade transaction: `https://sepolia.arbiscan.io/tx/0x48df52ee9765516b4940fa8ea186df7b80f6650a1922beb42a81f3ba63796dbe`
+- Core implementation: `https://sepolia.arbiscan.io/address/0x6A92A57DCee2bd3C25Bd435CF64E7B2042Daf851#code`
+- Core upgrade transaction: `https://sepolia.arbiscan.io/tx/0xc67945f17cb8bddb7c10b609c25f1b2098c166ae949e03e9186c236b7dc4701c`
 - Core DoudoPrizeDrawLib: `https://sepolia.arbiscan.io/address/0xbC269A4A26726b02DF521708b7a1Eb1949A25291#code`
 - Core DoudoTokenURILib: `https://sepolia.arbiscan.io/address/0x9Eda0b3b4f2f1E9b47539bcde02baEfeDdEbe25A#code`
 - SeriesOps proxy: `https://sepolia.arbiscan.io/address/0x2FF7521dEF3903fc5c6f2877252cdf5019380070#code`
 - SeriesOps implementation: `https://sepolia.arbiscan.io/address/0x5409aa1Fbdd2e28fb47457F7ee50af1f73dD966D#code`
 - Bundle proxy: `https://sepolia.arbiscan.io/address/0x68cBA2b3c72Be39be748B06c1e6dDab2855E91b6#code`
-- Bundle implementation: `https://sepolia.arbiscan.io/address/0xA05b8718D5AFBa4cCCffFE57aa33c8Bc9313b39e#code`
-- Bundle upgrade transaction: `https://sepolia.arbiscan.io/tx/0xee652415464df21867b2674e48a91dfda393710e54722c0aa11a3586702f87af`
+- Bundle implementation: `https://sepolia.arbiscan.io/address/0x392D3A603B8421C3Dd92B553D71fE46A80b08C73#code`
+- Bundle backend-role grant transaction: `https://sepolia.arbiscan.io/tx/0x18d16a1c43f212c8a134cef9e3c386f0616871520668922c581b94d279b8bf12`
 - Refund proxy: `https://sepolia.arbiscan.io/address/0x8ee19238DAa466B7792BE33569c6E4f6993CCf20#code`
 - Refund implementation: `https://sepolia.arbiscan.io/address/0xC6cad8c6A27170848CF295fd1A290A143d3Ea4a3#code`
 - Redraw proxy: `https://sepolia.arbiscan.io/address/0xE75461828f41C890fbc811e7cABFe2143B3F4afE#code`
@@ -427,17 +442,18 @@ npx hardhat run scripts/upgradeCoreAndBundleArbSepolia.ts --network arbitrumSepo
 
 The script validates and upgrades Core, Bundle, and Redraw together. A real run pauses all three proxies before the first upgrade and only unpauses proxies that it paused after every wiring assertion passes.
 
-Free-order challenge upgrade and post-deploy probe:
+Free-order challenge repair and post-deploy probe:
 
 ```bash
-npx hardhat run scripts/upgradeFreeOrderChallengeArbSepolia.ts --network arbitrumSepolia
-EXECUTE_FREE_ORDER_CHALLENGE_UPGRADE=1 npx hardhat run scripts/upgradeFreeOrderChallengeArbSepolia.ts --network arbitrumSepolia
-npx hardhat run scripts/checkFreeOrderChallengeUpgradeArbSepolia.ts --network arbitrumSepolia
+BACKEND_OPERATION_ADDRESS=<address> npm run repair:free-order:arbitrum-sepolia:preflight
+BACKEND_OPERATION_ADDRESS=<address> npm run repair:free-order:arbitrum-sepolia
+BACKEND_OPERATION_ADDRESS=<address> npm run check:free-order:arbitrum-sepolia
 ```
 
-The feature is deployed but remains inactive until operations calls
-`setFreeOrderChallengeConfig` for a specific series with its eligible last-ticket
-count and trigger prize IDs.
+The repair script upgrades only Core when the remaining-quantity getter is absent and
+restores the backend Bundle operation role. The feature remains configured per series by
+calling `setSeriesFreeOrderChallenge` with its eligible first-ticket count and trigger prize
+IDs.
 
 Verification script:
 
@@ -474,8 +490,8 @@ npm test
 npx hardhat run scripts/checkSplitModuleArbSepolia.ts --network arbitrumSepolia
 Split module wiring checks passed.
 
-npx hardhat run scripts/checkFreeOrderChallengeUpgradeArbSepolia.ts --network arbitrumSepolia
-Free-order challenge Sepolia post-deploy checks passed at block 302635039.
+npm run check:free-order:arbitrum-sepolia
+Free-order challenge Sepolia post-deploy checks passed at block 304893835.
 ```
 
 Storage upgrade coverage:

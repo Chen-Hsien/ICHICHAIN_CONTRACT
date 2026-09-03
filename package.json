@@ -16,6 +16,9 @@
     "upgrade:legacy-snapshot-block-fix:arbitrum-sepolia": "EXECUTE_LEGACY_SNAPSHOT_BLOCK_FIX=1 hardhat run scripts/upgradeLegacyArbitrumSnapshotBlockFix.ts --network arbitrumSepolia",
     "snapshot:database-points:arbitrum-sepolia": "hardhat run scripts/createDatabasePointsCutoverManifest.ts --network arbitrumSepolia",
     "prepare:database-points:arbitrum-sepolia": "hardhat run scripts/prepareDatabasePointsMembershipV2ArbSepolia.ts --network arbitrumSepolia",
+    "repair:free-order:arbitrum-sepolia:preflight": "hardhat run scripts/upgradeFreeOrderChallengeArbSepolia.ts --network arbitrumSepolia",
+    "repair:free-order:arbitrum-sepolia": "EXECUTE_FREE_ORDER_CHALLENGE_REPAIR=1 hardhat run scripts/upgradeFreeOrderChallengeArbSepolia.ts --network arbitrumSepolia",
+    "check:free-order:arbitrum-sepolia": "hardhat run scripts/checkFreeOrderChallengeUpgradeArbSepolia.ts --network arbitrumSepolia",
     "deploy:arbitrum-one:fork": "FORK_DRY_RUN=1 hardhat run scripts/deployArbitrumOne.ts --network arbitrumOneFork",
     "migration:polygon-holders": "hardhat run --no-compile scripts/queryPolygonMigrationHolders.ts",
     "test": "hardhat test"

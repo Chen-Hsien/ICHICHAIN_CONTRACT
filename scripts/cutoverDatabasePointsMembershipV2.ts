@@ -800,7 +800,7 @@ async function main() {
   let grantCutoverPointsConfigTxHash: string | undefined;
   let grantGovernancePointsConfigTxHash: string | undefined;
   let grantMembershipOperatorTxHash: string | undefined;
-  let revokeBackendOperationTxHash: string | undefined;
+  let grantBackendOperationTxHash: string | undefined;
   let revokeCutoverPointsConfigTxHash: string | undefined;
   let grantRefundConsumptionRecorderTxHash: string | undefined;
   let configureBundleRefundModuleTxHash: string | undefined;
@@ -1020,12 +1020,12 @@ async function main() {
   }
   markCheckpoint(checkpointPath, checkpoint, "MEMBERSHIP_V2_MIGRATED");
 
-  if (await upgradedBundle.hasRole(bundleOperationRole, backendOperation)) {
-    const tx = await upgradedBundle.revokeRole(
+  if (!(await upgradedBundle.hasRole(bundleOperationRole, backendOperation))) {
+    const tx = await upgradedBundle.grantRole(
       bundleOperationRole,
       backendOperation
     );
-    revokeBackendOperationTxHash = tx.hash;
+    grantBackendOperationTxHash = tx.hash;
     await tx.wait();
   }
   if (
@@ -1172,8 +1172,8 @@ async function main() {
   ) {
     throw new Error("Bundle Membership V2 wiring does not match deployment");
   }
-  if (await upgradedBundle.hasRole(bundleOperationRole, backendOperation)) {
-    throw new Error("Backend signer still has Bundle OPERATION_ROLE");
+  if (!(await upgradedBundle.hasRole(bundleOperationRole, backendOperation))) {
+    throw new Error("Backend signer is missing Bundle OPERATION_ROLE");
   }
   if (
     !(await upgradedBundle.hasRole(membershipOperatorRole, backendOperation))
@@ -1300,7 +1300,7 @@ async function main() {
     grantMembershipOperatorTxHash,
     grantRefundConsumptionRecorderTxHash,
     configureBundleRefundModuleTxHash,
-    revokeBackendOperationTxHash,
+    grantBackendOperationTxHash,
     revokeCutoverPointsConfigTxHash,
     additionalPointsConfigTxHashes,
     configureTxHash,

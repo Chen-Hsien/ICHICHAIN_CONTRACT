@@ -9,12 +9,6 @@ const ADDRESSES = {
   bundle:
     process.env.DOUDO_BUNDLE_MODULE_PROXY_ADDRESS ||
     "0x68cBA2b3c72Be39be748B06c1e6dDab2855E91b6",
-  points:
-    process.env.DOUDO_POINTS_ADDRESS ||
-    "0xFFCD533609e0e9E810C4C5D8Cb7a69D7a537C17E",
-  redraw:
-    process.env.DOUDO_REDRAW_MODULE_PROXY_ADDRESS ||
-    "0xE75461828f41C890fbc811e7cABFe2143B3F4afE",
   coreRouter:
     process.env.DOUDO_VRF_ROUTER_ADDRESS ||
     "0x48A1205c9b6BF1Da1a3D1bE651A9e237AC349Eb5",
@@ -29,17 +23,25 @@ const ADDRESSES = {
 const BUNDLE_FQN =
   "contracts/modules/DoudoBundleModuleUpgradeable.sol:DoudoBundleModuleUpgradeable";
 
+const requiredAddress = (name: string) => {
+  const value = process.env[name];
+  if (!value || !ethers.isAddress(value)) {
+    throw new Error(`${name} must be a valid address`);
+  }
+  return ethers.getAddress(value);
+};
+
 async function requireTrue(label: string, value: boolean) {
-  if (!value) throw new Error(`Pre/post-upgrade assertion failed: ${label}`);
+  if (!value) throw new Error(`Pre/post-repair assertion failed: ${label}`);
   console.log("OK:", label);
 }
 
-async function verifyImplementation(address: string, contract: string) {
+async function verifyImplementation(address: string) {
   try {
     await run("verify:verify", {
       address,
       constructorArguments: [],
-      contract,
+      contract: CORE_FQN,
     });
     console.log("Verified:", address);
   } catch (error: any) {
@@ -48,12 +50,24 @@ async function verifyImplementation(address: string, contract: string) {
       console.log("Already verified:", address);
       return;
     }
-    console.warn("Verification failed (upgrade remains complete):", message);
+    console.warn("Verification failed (repair remains complete):", message);
+  }
+}
+
+async function supportsRemainingQuantityGetter(core: any) {
+  try {
+    await core.seriesSubPrizeRemainingQuantity(0, 0);
+    return true;
+  } catch {
+    return false;
   }
 }
 
 async function main() {
-  const execute = process.env.EXECUTE_FREE_ORDER_CHALLENGE_UPGRADE === "1";
+  const execute = process.env.EXECUTE_FREE_ORDER_CHALLENGE_REPAIR === "1";
+  const backendOperation = requiredAddress("BACKEND_OPERATION_ADDRESS");
+  const checkSeriesID = BigInt(process.env.FREE_ORDER_CHECK_SERIES_ID || "90");
+  const checkPrizeID = BigInt(process.env.FREE_ORDER_CHECK_PRIZE_ID || "6");
 
   const network = await ethers.provider.getNetwork();
   if (network.chainId !== CHAIN_ID) {
@@ -65,8 +79,6 @@ async function main() {
   const [signer] = await ethers.getSigners();
   if (!signer) throw new Error("ARB_TESTNET_PK is missing or invalid");
   const signerAddress = await signer.getAddress();
-  const signerBalance = await ethers.provider.getBalance(signerAddress);
-
   const core: any = await ethers.getContractAt(
     CORE_FQN,
     ADDRESSES.core,
@@ -82,57 +94,38 @@ async function main() {
     ADDRESSES.coreRouter,
     signer
   );
-  const points: any = await ethers.getContractAt(
-    "contracts/DDOUDOCOIN.sol:DOUDOCOIN",
-    ADDRESSES.points,
-    signer
-  );
 
   const oldCoreImplementation = await upgrades.erc1967.getImplementationAddress(
     ADDRESSES.core
   );
-  const oldBundleImplementation =
-    await upgrades.erc1967.getImplementationAddress(ADDRESSES.bundle);
+  const bundleImplementation = await upgrades.erc1967.getImplementationAddress(
+    ADDRESSES.bundle
+  );
+  const getterSupportedBefore = await supportsRemainingQuantityGetter(core);
+  const operationRole = await bundle.OPERATION_ROLE();
+  const backendHadOperationRole = await bundle.hasRole(
+    operationRole,
+    backendOperation
+  );
   const pausedBefore = await core.paused();
   const corePointsBefore = await core.doudoPoints();
   const coreRouterBefore = await core.vrfRouter();
   const bundleCoreBefore = await bundle.core();
-  const bundlePointsBefore = await bundle.doudoPoints();
-  const bundleRedrawBefore = await bundle.redrawModule();
-  const freeOrderConfigBefore = await bundle.freeOrderChallengeConfigs(0);
-  const freeOrderTriggerPrizeIDsBefore =
-    await bundle.getSeriesFreeOrderTriggerPrizeIDs(0);
 
   console.log("Network:", network.name, network.chainId.toString());
-  console.log("Execute upgrade:", execute);
+  console.log("Execute repair:", execute);
   console.log("Signer:", signerAddress);
-  console.log("Signer balance:", ethers.formatEther(signerBalance));
+  console.log("Backend operation signer:", backendOperation);
   console.log("Core proxy:", ADDRESSES.core);
-  console.log("Core old implementation:", oldCoreImplementation);
+  console.log("Core implementation:", oldCoreImplementation);
+  console.log("Core remaining-quantity getter before:", getterSupportedBefore);
   console.log("Bundle proxy:", ADDRESSES.bundle);
-  console.log("Bundle old implementation:", oldBundleImplementation);
-  console.log("Core paused before:", pausedBefore);
   console.log(
-    "Core router pending requests:",
-    (await router.pendingRequests()).toString()
+    "Bundle implementation (will not be upgraded):",
+    bundleImplementation
   );
+  console.log("Backend Bundle OPERATION_ROLE before:", backendHadOperationRole);
 
-  await requireTrue(
-    "Core signer UPGRADER_ROLE",
-    await core.hasRole(await core.UPGRADER_ROLE(), signerAddress)
-  );
-  await requireTrue(
-    "Core signer OPERATION_ROLE",
-    await core.hasRole(await core.OPERATION_ROLE(), signerAddress)
-  );
-  await requireTrue(
-    "Bundle signer UPGRADER_ROLE",
-    await bundle.hasRole(await bundle.UPGRADER_ROLE(), signerAddress)
-  );
-  await requireTrue(
-    "Core router has no pending request",
-    (await router.pendingRequests()) === 0n
-  );
   await requireTrue(
     "PrizeDraw library deployed",
     (await ethers.provider.getCode(ADDRESSES.prizeDrawLib)) !== "0x"
@@ -141,6 +134,14 @@ async function main() {
     "TokenURI library deployed",
     (await ethers.provider.getCode(ADDRESSES.tokenUriLib)) !== "0x"
   );
+  await requireTrue(
+    "Bundle still uses database points",
+    await bundle.databasePointsModeEnabled()
+  );
+  await requireTrue(
+    "Bundle core wiring",
+    bundleCoreBefore.toLowerCase() === ADDRESSES.core.toLowerCase()
+  );
 
   const Core = await ethers.getContractFactory(CORE_FQN, {
     libraries: {
@@ -148,119 +149,78 @@ async function main() {
       DoudoTokenURILib: ADDRESSES.tokenUriLib,
     },
   });
-  const Bundle = await ethers.getContractFactory(BUNDLE_FQN);
   await upgrades.validateUpgrade(ADDRESSES.core, Core, {
     kind: "uups",
     unsafeAllowLinkedLibraries: true,
   });
-  await upgrades.validateUpgrade(ADDRESSES.bundle, Bundle, { kind: "uups" });
-  console.log("Core and Bundle storage-layout validation: OK");
+  console.log("Core storage-layout validation: OK");
+
+  if (!getterSupportedBefore) {
+    await requireTrue(
+      "Core signer UPGRADER_ROLE",
+      await core.hasRole(await core.UPGRADER_ROLE(), signerAddress)
+    );
+    await requireTrue(
+      "Core signer OPERATION_ROLE",
+      await core.hasRole(await core.OPERATION_ROLE(), signerAddress)
+    );
+    await requireTrue(
+      "Core router has no pending request",
+      (await router.pendingRequests()) === 0n
+    );
+  }
+  if (!backendHadOperationRole) {
+    await requireTrue(
+      "Bundle signer DEFAULT_ADMIN_ROLE",
+      await bundle.hasRole(await bundle.DEFAULT_ADMIN_ROLE(), signerAddress)
+    );
+  }
 
   if (!execute) {
     console.log(
-      "Dry run complete. Set EXECUTE_FREE_ORDER_CHALLENGE_UPGRADE=1 to send transactions."
+      "Preflight complete. Set EXECUTE_FREE_ORDER_CHALLENGE_REPAIR=1 to upgrade Core and restore the Bundle operation role."
     );
     return;
   }
 
   let pausedByScript = false;
   let newCoreImplementation = oldCoreImplementation;
-  let newBundleImplementation = oldBundleImplementation;
+  let coreChanged = false;
 
   try {
-    if (!pausedBefore) {
-      const pauseTx = await core.pause();
-      console.log("Core pause tx:", pauseTx.hash);
-      await pauseTx.wait();
-      pausedByScript = true;
-    }
-    await requireTrue(
-      "Core router still has no pending request after pause",
-      (await router.pendingRequests()) === 0n
-    );
-
-    const upgradedCore: any = await upgrades.upgradeProxy(
-      ADDRESSES.core,
-      Core,
-      {
-        kind: "uups",
-        unsafeAllowLinkedLibraries: true,
+    if (!getterSupportedBefore) {
+      if (!pausedBefore) {
+        const pauseTx = await core.pause();
+        console.log("Core pause tx:", pauseTx.hash);
+        await pauseTx.wait();
+        pausedByScript = true;
       }
-    );
-    const coreUpgradeTx = upgradedCore.deploymentTransaction();
-    if (coreUpgradeTx) console.log("Core upgrade tx:", coreUpgradeTx.hash);
-    await upgradedCore.waitForDeployment();
-    newCoreImplementation = await upgrades.erc1967.getImplementationAddress(
-      ADDRESSES.core
-    );
-    await requireTrue(
-      "Core implementation changed",
-      newCoreImplementation.toLowerCase() !==
-        oldCoreImplementation.toLowerCase()
-    );
 
-    const upgradedBundle: any = await upgrades.upgradeProxy(
-      ADDRESSES.bundle,
-      Bundle,
-      { kind: "uups" }
-    );
-    const bundleUpgradeTx = upgradedBundle.deploymentTransaction();
-    if (bundleUpgradeTx)
-      console.log("Bundle upgrade tx:", bundleUpgradeTx.hash);
-    await upgradedBundle.waitForDeployment();
-    newBundleImplementation = await upgrades.erc1967.getImplementationAddress(
-      ADDRESSES.bundle
-    );
-    await requireTrue(
-      "Bundle implementation changed",
-      newBundleImplementation.toLowerCase() !==
-        oldBundleImplementation.toLowerCase()
-    );
+      const upgradedCore: any = await upgrades.upgradeProxy(
+        ADDRESSES.core,
+        Core,
+        {
+          kind: "uups",
+          unsafeAllowLinkedLibraries: true,
+        }
+      );
+      const coreUpgradeTx = upgradedCore.deploymentTransaction();
+      if (coreUpgradeTx) console.log("Core upgrade tx:", coreUpgradeTx.hash);
+      await upgradedCore.waitForDeployment();
+      newCoreImplementation = await upgrades.erc1967.getImplementationAddress(
+        ADDRESSES.core
+      );
+      coreChanged =
+        newCoreImplementation.toLowerCase() !==
+        oldCoreImplementation.toLowerCase();
+      await requireTrue("Core implementation changed", coreChanged);
+    }
 
-    await requireTrue(
-      "Core points wiring preserved",
-      (await upgradedCore.doudoPoints()).toLowerCase() ===
-        corePointsBefore.toLowerCase()
-    );
-    await requireTrue(
-      "Core router wiring preserved",
-      (await upgradedCore.vrfRouter()).toLowerCase() ===
-        coreRouterBefore.toLowerCase()
-    );
-    await requireTrue(
-      "Bundle core wiring preserved",
-      (await upgradedBundle.core()).toLowerCase() ===
-        bundleCoreBefore.toLowerCase()
-    );
-    await requireTrue(
-      "Bundle points wiring preserved",
-      (await upgradedBundle.doudoPoints()).toLowerCase() ===
-        bundlePointsBefore.toLowerCase()
-    );
-    await requireTrue(
-      "Bundle redraw wiring preserved",
-      (await upgradedBundle.redrawModule()).toLowerCase() ===
-        bundleRedrawBefore.toLowerCase()
-    );
-    await requireTrue(
-      "Bundle still has points MINTER_ROLE",
-      await points.hasRole(await points.MINTER_ROLE(), ADDRESSES.bundle)
-    );
-
-    const config = await upgradedBundle.freeOrderChallengeConfigs(0);
-    await requireTrue(
-      "Free-order config storage preserved",
-      config.eligibleFirstTicketCount ===
-        freeOrderConfigBefore.eligibleFirstTicketCount &&
-        config.version === freeOrderConfigBefore.version &&
-        config.active === freeOrderConfigBefore.active
-    );
-    await requireTrue(
-      "Free-order trigger list preserved",
-      JSON.stringify(
-        (await upgradedBundle.getSeriesFreeOrderTriggerPrizeIDs(0)).map(String)
-      ) === JSON.stringify(freeOrderTriggerPrizeIDsBefore.map(String))
-    );
+    if (!(await bundle.hasRole(operationRole, backendOperation))) {
+      const grantTx = await bundle.grantRole(operationRole, backendOperation);
+      console.log("Bundle grant backend OPERATION_ROLE tx:", grantTx.hash);
+      await grantTx.wait();
+    }
   } finally {
     if (pausedByScript && (await core.paused())) {
       const unpauseTx = await core.unpause();
@@ -269,13 +229,45 @@ async function main() {
     }
   }
 
-  console.log("Core new implementation:", newCoreImplementation);
-  console.log("Bundle new implementation:", newBundleImplementation);
-  console.log("Core paused after:", await core.paused());
+  const repairedCore: any = await ethers.getContractAt(
+    CORE_FQN,
+    ADDRESSES.core,
+    signer
+  );
+  const remainingQuantity = await repairedCore.seriesSubPrizeRemainingQuantity(
+    checkSeriesID,
+    checkPrizeID
+  );
+  await requireTrue("Core remaining-quantity getter", true);
+  await requireTrue("Core is unpaused", !(await repairedCore.paused()));
+  await requireTrue(
+    "Core points wiring preserved",
+    (await repairedCore.doudoPoints()).toLowerCase() ===
+      corePointsBefore.toLowerCase()
+  );
+  await requireTrue(
+    "Core router wiring preserved",
+    (await repairedCore.vrfRouter()).toLowerCase() ===
+      coreRouterBefore.toLowerCase()
+  );
+  await requireTrue(
+    "Bundle implementation unchanged",
+    (
+      await upgrades.erc1967.getImplementationAddress(ADDRESSES.bundle)
+    ).toLowerCase() === bundleImplementation.toLowerCase()
+  );
+  await requireTrue(
+    "Backend Bundle OPERATION_ROLE",
+    await bundle.hasRole(operationRole, backendOperation)
+  );
 
-  await verifyImplementation(newCoreImplementation, CORE_FQN);
-  await verifyImplementation(newBundleImplementation, BUNDLE_FQN);
-  console.log("Free-order challenge Core + Bundle Sepolia upgrade complete.");
+  console.log(
+    `Core seriesSubPrizeRemainingQuantity(${checkSeriesID}, ${checkPrizeID}):`,
+    remainingQuantity.toString()
+  );
+  console.log("Core implementation after:", newCoreImplementation);
+  if (coreChanged) await verifyImplementation(newCoreImplementation);
+  console.log("Free-order challenge Sepolia repair complete.");
 }
 
 main().catch((error) => {
