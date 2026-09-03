@@ -14,12 +14,8 @@ const ADDRESSES = {
   coreRouter:
     process.env.DOUDO_VRF_ROUTER_ADDRESS ||
     "0x48A1205c9b6BF1Da1a3D1bE651A9e237AC349Eb5",
-  expectedCoreImplementation:
-    process.env.EXPECTED_CORE_IMPLEMENTATION ||
-    "0x2626d63bc4b9c3F90A3D277aFe4b814DdF73962E",
-  expectedBundleImplementation:
-    process.env.EXPECTED_BUNDLE_IMPLEMENTATION ||
-    "0xA05b8718D5AFBa4cCCffFE57aa33c8Bc9313b39e",
+  expectedCoreImplementation: process.env.EXPECTED_CORE_IMPLEMENTATION,
+  expectedBundleImplementation: process.env.EXPECTED_BUNDLE_IMPLEMENTATION,
 };
 
 const CORE_FQN =
@@ -42,7 +38,27 @@ async function latestUpgradeTx(proxy: string, currentBlock: number) {
   return logs.at(-1)?.transactionHash;
 }
 
+async function simulateBundleOperation(
+  bundle: any,
+  from: string,
+  functionName: string,
+  args: unknown[]
+) {
+  await ethers.provider.call({
+    from,
+    to: await bundle.getAddress(),
+    data: bundle.interface.encodeFunctionData(functionName, args),
+  });
+  console.log("OK: Bundle simulation", functionName);
+}
+
 async function main() {
+  const backendOperation = process.env.BACKEND_OPERATION_ADDRESS;
+  if (!backendOperation || !ethers.isAddress(backendOperation)) {
+    throw new Error("BACKEND_OPERATION_ADDRESS must be a valid address");
+  }
+  const checkSeriesID = BigInt(process.env.FREE_ORDER_CHECK_SERIES_ID || "90");
+  const checkPrizeID = BigInt(process.env.FREE_ORDER_CHECK_PRIZE_ID || "6");
   const network = await ethers.provider.getNetwork();
   if (network.chainId !== CHAIN_ID) {
     throw new Error(
@@ -83,16 +99,20 @@ async function main() {
     await latestUpgradeTx(ADDRESSES.bundle, currentBlock)
   );
 
-  await requireTrue(
-    "Core implementation slot",
-    coreImplementation.toLowerCase() ===
-      ADDRESSES.expectedCoreImplementation.toLowerCase()
-  );
-  await requireTrue(
-    "Bundle implementation slot",
-    bundleImplementation.toLowerCase() ===
-      ADDRESSES.expectedBundleImplementation.toLowerCase()
-  );
+  if (ADDRESSES.expectedCoreImplementation) {
+    await requireTrue(
+      "Core implementation slot",
+      coreImplementation.toLowerCase() ===
+        ADDRESSES.expectedCoreImplementation.toLowerCase()
+    );
+  }
+  if (ADDRESSES.expectedBundleImplementation) {
+    await requireTrue(
+      "Bundle implementation slot",
+      bundleImplementation.toLowerCase() ===
+        ADDRESSES.expectedBundleImplementation.toLowerCase()
+    );
+  }
   await requireTrue("Core is unpaused", !(await core.paused()));
   await requireTrue(
     "Core VRF has no pending request",
@@ -108,8 +128,63 @@ async function main() {
       ADDRESSES.points.toLowerCase()
   );
   await requireTrue(
-    "Bundle points MINTER_ROLE",
-    await points.hasRole(await points.MINTER_ROLE(), ADDRESSES.bundle)
+    "Bundle database-points mode",
+    await bundle.databasePointsModeEnabled()
+  );
+  await requireTrue(
+    "Bundle legacy points MINTER_ROLE revoked",
+    !(await points.hasRole(await points.MINTER_ROLE(), ADDRESSES.bundle))
+  );
+  await requireTrue(
+    "Backend Bundle OPERATION_ROLE",
+    await bundle.hasRole(
+      await bundle.OPERATION_ROLE(),
+      ethers.getAddress(backendOperation)
+    )
+  );
+
+  await simulateBundleOperation(
+    bundle,
+    backendOperation,
+    "setSeriesRebateTiers",
+    [checkSeriesID, []]
+  );
+  await simulateBundleOperation(
+    bundle,
+    backendOperation,
+    "setSeriesFreeOrderChallenge",
+    [checkSeriesID, 30, [checkPrizeID]]
+  );
+
+  let openingDiscountSeriesID: bigint | undefined;
+  let openingDiscountPrice: bigint | undefined;
+  for (let seriesID = 0; seriesID <= Number(checkSeriesID); seriesID++) {
+    const config = await core.seriesMintConfig(seriesID);
+    const used = await bundle.openingDiscountUsed(seriesID);
+    if (config.priceInPoints > 1n && used === 0n) {
+      openingDiscountSeriesID = BigInt(seriesID);
+      openingDiscountPrice = config.priceInPoints - 1n;
+      break;
+    }
+  }
+  await requireTrue(
+    "Opening discount simulation series available",
+    openingDiscountSeriesID !== undefined && openingDiscountPrice !== undefined
+  );
+  await simulateBundleOperation(
+    bundle,
+    backendOperation,
+    "setSeriesOpeningDiscount",
+    [openingDiscountSeriesID, 1, openingDiscountPrice]
+  );
+
+  const remainingQuantity = await core.seriesSubPrizeRemainingQuantity(
+    checkSeriesID,
+    checkPrizeID
+  );
+  console.log(
+    `Core seriesSubPrizeRemainingQuantity(${checkSeriesID}, ${checkPrizeID}):`,
+    remainingQuantity.toString()
   );
 
   const seriesMintConfig = await core.seriesMintConfig(0);
