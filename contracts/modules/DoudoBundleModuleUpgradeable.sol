@@ -496,14 +496,15 @@ contract DoudoBundleModuleUpgradeable is
         uint256 seriesID,
         uint256 ticketLimit,
         uint256 priceInPoints
-    ) external onlyRole(OPERATION_ROLE) {
+    ) external onlyRole(OPERATION_ROLE) nonReentrant {
         (uint256 basePriceInPoints, , , ) = core.seriesMintConfig(seriesID);
+        OpeningDiscountConfig storage previous = seriesOpeningDiscounts[seriesID];
         if (
             basePriceInPoints == 0 ||
             ticketLimit == 0 ||
             priceInPoints == 0 ||
             priceInPoints >= basePriceInPoints ||
-            openingDiscountUsed[seriesID] != 0
+            (previous.active && openingDiscountUsed[seriesID] < previous.ticketLimit)
         ) {
             revert InvalidConfig();
         }
@@ -513,16 +514,17 @@ contract DoudoBundleModuleUpgradeable is
             priceInPoints: priceInPoints,
             active: true
         });
+        openingDiscountUsed[seriesID] = 0;
         emit OpeningDiscountConfigured(seriesID, ticketLimit, priceInPoints);
     }
 
-    function clearSeriesOpeningDiscount(uint256 seriesID) external onlyRole(OPERATION_ROLE) {
+    function clearSeriesOpeningDiscount(uint256 seriesID) external onlyRole(OPERATION_ROLE) nonReentrant {
         OpeningDiscountConfig storage config = seriesOpeningDiscounts[seriesID];
-        if (!config.active || openingDiscountUsed[seriesID] != 0) {
+        if (!config.active) {
             revert InvalidConfig();
         }
 
-        delete seriesOpeningDiscounts[seriesID];
+        config.active = false;
         emit OpeningDiscountCleared(seriesID);
     }
 

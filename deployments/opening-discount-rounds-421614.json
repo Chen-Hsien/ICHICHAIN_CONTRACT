@@ -1,0 +1,1081 @@
+{
+  "network": "arbitrumSepolia",
+  "chainId": "421614",
+  "proxy": "0x68cBA2b3c72Be39be748B06c1e6dDab2855E91b6",
+  "oldImplementation": "0x392D3A603B8421C3Dd92B553D71fE46A80b08C73",
+  "signer": "0x226f0197D502e7AC87d1A76D6526945DFa9E4209",
+  "runtimeBytes": 22382,
+  "creationBytecodeHash": "0xf373db48b39eab6a9f8a49149cee9473d27c02cd23ab58083371440acf50536c",
+  "snapshotBlock": 305761010,
+  "wiring": {
+    "core": "0xf75395A8cd753f47135cfcaE00D2706252c3E0F5",
+    "doudoPoints": "0xFFCD533609e0e9E810C4C5D8Cb7a69D7a537C17E",
+    "redrawModule": "0xE75461828f41C890fbc811e7cABFe2143B3F4afE",
+    "databasePointsModeEnabled": "true",
+    "pointsAuthorizationSigner": "0x56535d9904D7F3F1B462ED97997C8E9CDFB52227",
+    "membershipV2": "0x2aBAd03eA3399e03a6c768405F0647f2aAe32B99"
+  },
+  "series": [
+    {
+      "seriesId": 0,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 1,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 2,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 3,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 4,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 5,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 6,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 7,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 8,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 9,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 10,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 11,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 12,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 13,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 14,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 15,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 16,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 17,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 18,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 19,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 20,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 21,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 22,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 23,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 24,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 25,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 26,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 27,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 28,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 29,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 30,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 31,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 32,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 33,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 34,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 35,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 36,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 37,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 38,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 39,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 40,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 41,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 42,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 43,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 44,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 45,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 46,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 47,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 48,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 49,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 50,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 51,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 52,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 53,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 54,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 55,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 56,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 57,
+      "config": [
+        "10",
+        "100000000000000000000",
+        "true"
+      ],
+      "used": "10"
+    },
+    {
+      "seriesId": 58,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 59,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 60,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 61,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 62,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 63,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 64,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 65,
+      "config": [
+        "10",
+        "123000000000000000000",
+        "true"
+      ],
+      "used": "10"
+    },
+    {
+      "seriesId": 66,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 67,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 68,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 69,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 70,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 71,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 72,
+      "config": [
+        "10",
+        "200000000000000000000",
+        "true"
+      ],
+      "used": "10"
+    },
+    {
+      "seriesId": 73,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 74,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 75,
+      "config": [
+        "10",
+        "100000000000000000000",
+        "true"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 76,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 77,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 78,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 79,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 80,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 81,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 82,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 83,
+      "config": [
+        "10",
+        "400000000000000000000",
+        "true"
+      ],
+      "used": "10"
+    },
+    {
+      "seriesId": 84,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 85,
+      "config": [
+        "10",
+        "200000000000000000000",
+        "true"
+      ],
+      "used": "10"
+    },
+    {
+      "seriesId": 86,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 87,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 88,
+      "config": [
+        "10",
+        "100000000000000000000",
+        "true"
+      ],
+      "used": "10"
+    },
+    {
+      "seriesId": 89,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 90,
+      "config": [
+        "10",
+        "200000000000000000000",
+        "true"
+      ],
+      "used": "10"
+    },
+    {
+      "seriesId": 91,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 92,
+      "config": [
+        "10",
+        "150000000000000000000",
+        "true"
+      ],
+      "used": "10"
+    },
+    {
+      "seriesId": 93,
+      "config": [
+        "10",
+        "130000000000000000000",
+        "true"
+      ],
+      "used": "10"
+    },
+    {
+      "seriesId": 94,
+      "config": [
+        "10",
+        "130000000000000000000",
+        "true"
+      ],
+      "used": "10"
+    },
+    {
+      "seriesId": 95,
+      "config": [
+        "10",
+        "170000000000000000000",
+        "true"
+      ],
+      "used": "10"
+    },
+    {
+      "seriesId": 96,
+      "config": [
+        "10",
+        "200000000000000000000",
+        "true"
+      ],
+      "used": "10"
+    },
+    {
+      "seriesId": 97,
+      "config": [
+        "10",
+        "160000000000000000000",
+        "true"
+      ],
+      "used": "10"
+    },
+    {
+      "seriesId": 98,
+      "config": [
+        "10",
+        "175000000000000000000",
+        "true"
+      ],
+      "used": "10"
+    },
+    {
+      "seriesId": 99,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 100,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 101,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 102,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 103,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 104,
+      "config": [
+        "100",
+        "90000000000000000000",
+        "true"
+      ],
+      "used": "81"
+    },
+    {
+      "seriesId": 105,
+      "config": [
+        "10",
+        "160000000000000000000",
+        "true"
+      ],
+      "used": "10"
+    },
+    {
+      "seriesId": 106,
+      "config": [
+        "7",
+        "100000000000000000000",
+        "true"
+      ],
+      "used": "7"
+    },
+    {
+      "seriesId": 107,
+      "config": [
+        "10",
+        "160000000000000000000",
+        "true"
+      ],
+      "used": "10"
+    },
+    {
+      "seriesId": 108,
+      "config": [
+        "12",
+        "100000000000000000000",
+        "true"
+      ],
+      "used": "12"
+    },
+    {
+      "seriesId": 109,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 110,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 111,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 112,
+      "config": [
+        "0",
+        "0",
+        "false"
+      ],
+      "used": "0"
+    },
+    {
+      "seriesId": 113,
+      "config": [
+        "10",
+        "340000000000000000000",
+        "true"
+      ],
+      "used": "10"
+    },
+    {
+      "seriesId": 114,
+      "config": [
+        "10",
+        "360000000000000000000",
+        "true"
+      ],
+      "used": "10"
+    },
+    {
+      "seriesId": 115,
+      "config": [
+        "10",
+        "110000000000000000000",
+        "true"
+      ],
+      "used": "1"
+    },
+    {
+      "seriesId": 116,
+      "config": [
+        "6",
+        "360000000000000000000",
+        "true"
+      ],
+      "used": "6"
+    }
+  ],
+  "executed": true,
+  "upgradeTxHash": "0x54a66aa9bd809155aa5ffbafdc3f290a823d73959a1acd68d0a6801d92426e01",
+  "implementation": "0x17138341b4c823b0EFEeB30A0CafD20aa7244c13",
+  "upgradeBlock": 305761574,
+  "preservedSeriesCount": 117,
+  "concurrentlyTouchedSeries": [],
+  "sourceVerified": true,
+  "normalizedRuntimeBytecodeMatches": true
+}
