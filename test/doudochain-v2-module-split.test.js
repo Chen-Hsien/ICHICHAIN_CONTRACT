@@ -1043,6 +1043,219 @@ describe("DOUDOCHAIN V2 split module suite", function () {
     expect(await core.balanceOf(user.address)).to.equal(8);
   });
 
+  it("blocks opening discount round changes during receiver callbacks", async function () {
+    const { points, core, bundle } = await deploySplitSuite();
+    await createSeries(core);
+    const Receiver = await ethers.getContractFactory(
+      "OpeningDiscountCallbackReceiver",
+    );
+    const receiver = await Receiver.deploy(await bundle.getAddress());
+    await bundle.grantRole(
+      await bundle.OPERATION_ROLE(),
+      await receiver.getAddress(),
+    );
+    await issuePoints(points, await receiver.getAddress());
+    const purchase = bundle.interface.encodeFunctionData(
+      "mintTicketsWithPriceLimit",
+      [0, [0], false, ethers.parseEther("7")],
+    );
+    const reentrantError = bundle.interface.encodeErrorResult("ReentrantCall");
+    for (const action of [
+      "clearSeriesOpeningDiscount",
+      "setSeriesOpeningDiscount",
+    ]) {
+      await bundle.setSeriesOpeningDiscount(0, 1, ethers.parseEther("7"));
+      const attack = bundle.interface.encodeFunctionData(
+        action,
+        action.startsWith("clear") ? [0] : [0, 5, ethers.parseEther("6")],
+      );
+      await receiver.configure(attack, true);
+      const supply = await core.totalSupply();
+      await expect(receiver.execute(purchase)).to.be.revertedWithCustomError(
+        core,
+        "InvalidERC721Receiver",
+      );
+      expect(await core.totalSupply()).to.equal(supply);
+      expect(await bundle.openingDiscountUsed(0)).to.equal(0);
+      await receiver.configure(attack, false);
+      await expect(receiver.execute(purchase))
+        .to.emit(bundle, "OpeningDiscountApplied")
+        .withArgs(
+          0,
+          await receiver.getAddress(),
+          1,
+          0,
+          ethers.parseEther("7"),
+          ethers.parseEther("7"),
+          0,
+        );
+      expect(await receiver.succeeded()).to.equal(false);
+      expect(await receiver.result()).to.equal(reentrantError);
+      expect(await bundle.seriesOpeningDiscounts(0)).to.deep.equal([
+        1n,
+        ethers.parseEther("7"),
+        true,
+      ]);
+      expect(await bundle.openingDiscountUsed(0)).to.equal(1);
+    }
+  });
+
+  for (const databasePoints of [false, true]) {
+    it(`supports opening discount rounds and stale quotes (${databasePoints ? "database" : "legacy"} points)`, async function () {
+      const { admin, user, other, points, core, bundle, membership } =
+        await deploySplitSuite();
+      await createSeries(core);
+      if (databasePoints) {
+        await bundle.configureDatabasePointsAuthorization(
+          admin.address,
+          await membership.getAddress(),
+          true,
+        );
+      } else {
+        await issuePoints(points, user.address);
+      }
+      let sequence = 0;
+      const preparePurchase = async (quantity, gross) => {
+        const luckyNumbers = zeroLuckyNumbers(quantity);
+        if (!databasePoints)
+          return () =>
+            bundle
+              .connect(user)
+              .mintTicketsWithPriceLimit(
+                0,
+                luckyNumbers,
+                false,
+                ethers.parseEther(gross),
+              );
+        const authorization = buildPointsMintAuthorization({
+          authorizationId: ethers.id(`opening-round-${++sequence}`),
+          buyer: user.address,
+          seriesID: 0,
+          luckyNumbers,
+          grossPoints: ethers.parseEther(gross),
+          deadline: (await time.latest()) + 600,
+        });
+        const signature = await signPointsMintAuthorization(
+          admin,
+          bundle,
+          authorization,
+        );
+        return () =>
+          bundle
+            .connect(user)
+            .mintTicketsWithPointsAuthorization(
+              authorization,
+              luckyNumbers,
+              signature,
+            );
+      };
+      const state = async (limit, price, active, used) => {
+        expect(await bundle.seriesOpeningDiscounts(0)).to.deep.equal([
+          BigInt(limit),
+          ethers.parseEther(price),
+          active,
+        ]);
+        expect(await bundle.openingDiscountUsed(0)).to.equal(used);
+      };
+      await expect(
+        bundle.clearSeriesOpeningDiscount(0),
+      ).to.be.revertedWithCustomError(bundle, "InvalidConfig");
+      await expect(
+        bundle.setSeriesOpeningDiscount(999, 10, ethers.parseEther("7")),
+      ).to.be.reverted;
+      await expect(
+        bundle.setSeriesOpeningDiscount(0, 10, ethers.parseEther("7")),
+      )
+        .to.emit(bundle, "OpeningDiscountConfigured")
+        .withArgs(0, 10, ethers.parseEther("7"));
+      await expect(
+        bundle.setSeriesOpeningDiscount(0, 5, ethers.parseEther("6")),
+      ).to.be.revertedWithCustomError(bundle, "InvalidConfig");
+      await state(10, "7", true, 0);
+      await (
+        await preparePurchase(3, "21")
+      )();
+      await expect(
+        bundle.setSeriesOpeningDiscount(0, 5, ethers.parseEther("6")),
+      ).to.be.revertedWithCustomError(bundle, "InvalidConfig");
+      await expect(bundle.connect(other).clearSeriesOpeningDiscount(0)).to.be
+        .reverted;
+      await expect(
+        bundle
+          .connect(other)
+          .setSeriesOpeningDiscount(0, 5, ethers.parseEther("6")),
+      ).to.be.reverted;
+      const stalePurchase = await preparePurchase(1, "7");
+      await expect(bundle.clearSeriesOpeningDiscount(0))
+        .to.emit(bundle, "OpeningDiscountCleared")
+        .withArgs(0);
+      await state(10, "7", false, 3);
+      expect(await bundle.quoteTicketPurchase(0, 1)).to.deep.equal([
+        0n,
+        1n,
+        ethers.parseEther("10"),
+        0n,
+      ]);
+      await expect(stalePurchase()).to.be.revertedWithCustomError(
+        bundle,
+        databasePoints ? "InvalidPointsAuthorization" : "PriceExceedsLimit",
+      );
+      await state(10, "7", false, 3);
+      expect(await core.totalSupply()).to.equal(3);
+      await expect(
+        bundle.clearSeriesOpeningDiscount(0),
+      ).to.be.revertedWithCustomError(bundle, "InvalidConfig");
+      for (const [limit, price] of [
+        [0, "7"],
+        [5, "0"],
+        [5, "10"],
+        [5, "11"],
+      ]) {
+        await expect(
+          bundle.setSeriesOpeningDiscount(0, limit, ethers.parseEther(price)),
+        ).to.be.revertedWithCustomError(bundle, "InvalidConfig");
+        await state(10, "7", false, 3);
+      }
+      await bundle.setSeriesOpeningDiscount(0, 5, ethers.parseEther("7"));
+      await state(5, "7", true, 0);
+      // A still-valid authorization/price limit is not bound to an earlier round.
+      await stalePurchase();
+      await (
+        await preparePurchase(2, "14")
+      )();
+      await expect((await preparePurchase(5, "44"))())
+        .to.emit(bundle, "OpeningDiscountApplied")
+        .withArgs(
+          0,
+          user.address,
+          2,
+          3,
+          ethers.parseEther("7"),
+          ethers.parseEther("44"),
+          0,
+        );
+      await state(5, "7", true, 5);
+      for (let token = 0; token < 8; token++)
+        expect(await core.pointsPaid(token)).to.equal(ethers.parseEther("7"));
+      for (let token = 8; token < 11; token++)
+        expect(await core.pointsPaid(token)).to.equal(ethers.parseEther("10"));
+      await expect(
+        bundle.setSeriesOpeningDiscount(0, 5, ethers.parseEther("7")),
+      )
+        .to.emit(bundle, "OpeningDiscountConfigured")
+        .withArgs(0, 5, ethers.parseEther("7"));
+      await state(5, "7", true, 0);
+      await (
+        await preparePurchase(5, "35")
+      )();
+      await bundle.clearSeriesOpeningDiscount(0);
+      await state(5, "7", false, 5);
+      expect(await points.balanceOf(user.address)).to.equal(
+        ethers.parseEther(databasePoints ? "0" : "879"),
+      );
+    });
+  }
+
   it("allows an unused opening discount to be cleared and rejects invalid prices", async function () {
     const { user, points, core, bundle } = await deploySplitSuite();
     await createSeries(core);
