@@ -1171,7 +1171,10 @@ describe("DOUDOCHAIN V2 split module suite", function () {
         bundle.setSeriesOpeningDiscount(0, 10, ethers.parseEther("7")),
       )
         .to.emit(bundle, "OpeningDiscountConfigured")
-        .withArgs(0, 10, ethers.parseEther("7"));
+        .withArgs(0, 10, ethers.parseEther("7"))
+        .and.to.emit(bundle, "OpeningDiscountRoundAdvanced")
+        .withArgs(0, 1, 10, ethers.parseEther("7"));
+      expect(await bundle.openingDiscountRoundId(0)).to.equal(1);
       await expect(
         bundle.setSeriesOpeningDiscount(0, 5, ethers.parseEther("6")),
       ).to.be.revertedWithCustomError(bundle, "InvalidConfig");
@@ -1220,7 +1223,11 @@ describe("DOUDOCHAIN V2 split module suite", function () {
         ).to.be.revertedWithCustomError(bundle, "InvalidConfig");
         await state(10, "7", false, 3);
       }
-      await bundle.setSeriesOpeningDiscount(0, 5, ethers.parseEther("7"));
+      await expect(
+        bundle.setSeriesOpeningDiscount(0, 5, ethers.parseEther("7")),
+      )
+        .to.emit(bundle, "OpeningDiscountRoundAdvanced")
+        .withArgs(0, 2, 5, ethers.parseEther("7"));
       await state(5, "7", true, 0);
       // A still-valid authorization/price limit is not bound to an earlier round.
       await stalePurchase();
@@ -1247,12 +1254,15 @@ describe("DOUDOCHAIN V2 split module suite", function () {
         bundle.setSeriesOpeningDiscount(0, 5, ethers.parseEther("7")),
       )
         .to.emit(bundle, "OpeningDiscountConfigured")
-        .withArgs(0, 5, ethers.parseEther("7"));
+        .withArgs(0, 5, ethers.parseEther("7"))
+        .and.to.emit(bundle, "OpeningDiscountRoundAdvanced")
+        .withArgs(0, 3, 5, ethers.parseEther("7"));
       await state(5, "7", true, 0);
       await (
         await preparePurchase(5, "35")
       )();
       await bundle.clearSeriesOpeningDiscount(0);
+      expect(await bundle.openingDiscountRoundId(0)).to.equal(3);
       await state(5, "7", false, 5);
       expect(await points.balanceOf(user.address)).to.equal(
         ethers.parseEther(databasePoints ? "0" : "879"),

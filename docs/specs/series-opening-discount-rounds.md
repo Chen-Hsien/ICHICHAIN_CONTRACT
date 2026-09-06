@@ -34,7 +34,7 @@
 
 ## 3. 狀態模型
 
-沿用現有 storage，不新增鏈上 round counter，不重排 struct、mapping 或 storage gap。
+保留既有 storage 順序，在尾端 storage gap 前新增 `openingDiscountRoundId` mapping，並將 gap 由 30 調整為 29。既有系列升級後的目前輪次為 0；每次成功 SET 新輪時遞增。
 
 - `seriesOpeningDiscounts[seriesID]`：目前／最近一輪的 `ticketLimit`、`priceInPoints`、`active`。
 - `openingDiscountUsed[seriesID]`：目前／最近一輪已使用數量，**不是歷史累計使用數量**。
@@ -98,11 +98,11 @@ OpeningDiscountCleared(uint256 indexed seriesID)
 OpeningDiscountApplied(uint256 indexed seriesID, address indexed buyer, uint256 openingQuantity, uint256 regularQuantity, uint256 openingPriceInPoints, uint256 grossPriceInPoints, uint256 rebatePoints)
 ```
 
-本期不新增鏈上 round ID、不新增 Graph schema 欄位或獨立輪次報表。每次 Configured 的 `(chainId, bundle proxy, transactionHash, logIndex)` 可作為後端歷史／操作紀錄的輪次識別；必須保留完整 receipt 與 logIndex，不能以價格、名額或 transactionHash 單獨辨識一輪。
+新增 `OpeningDiscountRoundAdvanced(seriesID, roundId, ticketLimit, priceInPoints)`，同時保留既有 `OpeningDiscountConfigured` 簽章以維持 ABI 消費端相容。`roundId` 是 workflow 與 Graph 的權威輪次識別；receipt 仍保存 transactionHash 與 logIndex 供稽核。
 
 歷史交易與不可變事件保留；目前狀態的 getter／Graph config 僅提供最近一輪。跨輪總用量必須由 Applied 歷史事件計算，不得再用 `openingDiscountUsed` 當累計值。若未來需要逐輪報表，應以 `(blockNumber, transactionIndex, logIndex)` 鏈上順序歸屬事件，另行設計索引欄位，不能只用時間戳排序；現有 schema 並未提供所有排序欄位。
 
-重新編譯與核對 ABI，確認函式／事件簽章未變；任何自動產生的 artifact 若有差異，依既有同步流程更新並驗證完整 shape，不手改 ABI。非重入 modifier 不需要新增 storage。
+重新編譯並同步 ABI，確認既有函式與事件簽章不變，新增 getter 與輪次事件的完整 shape。ABI 由 Hardhat artifact 產生，不手改。
 
 ## 6. Backend workflow 與資料同步
 
@@ -111,12 +111,12 @@ OpeningDiscountApplied(uint256 indexed seriesID, address indexed buyer, uint256 
 1. 建立及執行前讀取鏈上 config／used，依狀態表驗證；設定價格與 series 原價採既有 points 單位轉換。管理 API 提供狀態、used、有效剩餘名額及資料來源／更新位置，不能僅依上架 metadata 判斷。
 2. 同一 chain、bundle proxy、series 的優惠操作序列化；CLEAR 確認成功後才容許發送下一筆 SET。一般買家成交仍以鏈上執行順序為準。
 3. 每個新輪用獨立 workflow／冪等識別。重試同一 workflow 必須先查原交易結果；不得因逾時重新建立新的 SET，以免在之後的已用完狀態意外多開一輪。
-4. workflow 保存建立時的上一個設定事件識別、config 快照與操作意圖。發送前若輪次已切換，判定該操作過期，不得將舊 CLEAR 套用到新輪。普通購買導致 used 增加時重新計算狀態及可放棄名額，不誤認為另一輪。
+4. workflow 保存建立時的 `roundId`、config 快照與操作意圖。precheck 只需在固定區塊讀取 getter 並比較 round ID；若已切換則拒絕。升級前建立、缺少 round ID 的 workflow 暫時沿用事件回查，完成或重建後自然淘汰。
 5. receipt 驗證包含目標合約地址、成功狀態、事件及完整參數。SET 確認 seriesID／ticketLimit／price；CLEAR 也確認 seriesID，不能只驗 topic。後續鏈上／Graph 讀回需考慮其後買家已成交，不以「讀回 used 必定是 0」判定 SET 成敗。
 6. SET 成功保存新設定與 workflow 證據；CLEAR 成功保存關閉狀態，不能沿用舊 metadata 把商品顯示成仍有優惠。使相關 catalog／商品／報價快取失效。
 7. 區分交易已確認與 Graph 已追上；索引落後時顯示同步中，不將舊索引值覆蓋成最新狀態。清除後設定失敗時保持「已關閉」，不得自動恢復舊輪。
 
-介面相容性的限制：既有 SET／CLEAR 不帶 expected round，因此鏈上不會拒絕「針對舊輪但延遲到新輪才到達」的角色授權操作。後端鎖、快照與重試管理保護受管 workflow；不能宣稱能防止其他 OPERATION_ROLE 地址直接送出的並行交易。營運操作須經同一編排流程；若需要合約強制預期輪次比對，應擴大介面設計，列為本期之外。
+介面相容性的限制：既有 SET／CLEAR 仍不帶 expected round；`roundId` 供後端在送出前判斷 workflow 是否過期。其他 OPERATION_ROLE 地址直接送出的並行交易仍按鏈上交易順序執行。
 
 ## 7. Admin 操作
 
@@ -132,9 +132,9 @@ OpeningDiscountApplied(uint256 indexed seriesID, address indexed buyer, uint256 
 
 ### The Graph
 
-現有 Configured handler 重設 used=0、active=true；Cleared handler 保留數量並設 active=false；Applied handler 累加 used，與本規格一致。優先保留 schema 與 handler，補多輪事件回放測試，不為此次變更自動要求重新索引。
+Configured handler 重設 used=0、active=true；RoundAdvanced handler 寫入鏈上 round ID；Cleared handler 保留數量並設 active=false；Applied handler 累加 used。schema 的目前設定與不可變輪次事件都保存 round ID。
 
-如實作未改事件／mapping／schema，既有 subgraph 可繼續處理升級後事件；若驗證發現必須調整，才產生新版並按目標部署驗證。不能假定升級事件等於優惠 Configured，升級本身不得重設任何系列。
+subgraph 加入新事件 handler 後重新部署並從既有 startBlock 回放。歷史舊輪沒有 RoundAdvanced 事件，因此 round ID 維持 0；升級本身不發優惠設定事件，也不重設任何系列。
 
 ### 買家前端與結帳
 

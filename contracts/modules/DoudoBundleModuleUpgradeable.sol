@@ -154,6 +154,12 @@ contract DoudoBundleModuleUpgradeable is
         uint256 ticketLimit,
         uint256 priceInPoints
     );
+    event OpeningDiscountRoundAdvanced(
+        uint256 indexed seriesID,
+        uint256 indexed roundId,
+        uint256 ticketLimit,
+        uint256 priceInPoints
+    );
     event OpeningDiscountCleared(uint256 indexed seriesID);
     event OpeningDiscountApplied(
         uint256 indexed seriesID,
@@ -515,7 +521,9 @@ contract DoudoBundleModuleUpgradeable is
             active: true
         });
         openingDiscountUsed[seriesID] = 0;
+        uint256 roundId = ++openingDiscountRoundId[seriesID];
         emit OpeningDiscountConfigured(seriesID, ticketLimit, priceInPoints);
+        emit OpeningDiscountRoundAdvanced(seriesID, roundId, ticketLimit, priceInPoints);
     }
 
     function clearSeriesOpeningDiscount(uint256 seriesID) external onlyRole(OPERATION_ROLE) nonReentrant {
@@ -1308,5 +1316,9 @@ contract DoudoBundleModuleUpgradeable is
     mapping(uint256 => bool) public ticketDatabaseRefundSettled;
     mapping(uint256 => address) public ticketMembershipWallet;
 
-    uint256[30] private __gap;
+    /// @notice Monotonically increases whenever a series starts a new opening-discount round.
+    /// @dev Legacy rounds that existed before this storage field was introduced use round ID 0.
+    mapping(uint256 => uint256) public openingDiscountRoundId;
+
+    uint256[29] private __gap;
 }

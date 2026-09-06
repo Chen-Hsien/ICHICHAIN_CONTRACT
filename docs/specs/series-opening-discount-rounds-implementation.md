@@ -1,25 +1,25 @@
 # 系列優惠多輪實作與部署交接
 
-日期：2026-09-06。對應規格：`series-opening-discount-rounds.md`。
+日期：2026-09-07。對應規格：`series-opening-discount-rounds.md`。
 
 ## 實作結果
 
 | 層級 | 已完成內容 |
 | --- | --- |
-| Contracts | SET 僅允許未設定、已關閉或已用完；新輪重設 used。CLEAR 保留本輪價格、名額與用量，只設 inactive。兩個入口加入既有非重入 guard，ABI／storage 欄位不變。 |
+| Contracts | SET 僅允許未設定、已關閉或已用完；新輪重設 used 並遞增 `openingDiscountRoundId`。CLEAR 保留本輪價格、名額與用量，只設 inactive。既有事件簽章不變，新增輪次事件與 getter。 |
 | Backend | 固定區塊讀取鏈上 config、用量及可售供應；建立、預檢、enqueue 及 worker 真正送出前檢查。相同系列以 PostgreSQL advisory lock 序列化 workflow 建立，未完成操作阻擋下一筆。SET／CLEAR receipt 驗證合約地址與完整參數。 |
 | Admin | 呈現鏈上狀態、每輪名額、用量、放棄數量、資料區塊及未完成 workflow；進行中禁止 SET，關閉提示剩餘名額失效。未取得鏈上狀態時禁止操作。 |
-| The Graph | 已驗證現有 handler 的 CLEAR 保留資料、SET 歸零行為符合規格；增加部分使用後關閉、重開、用完直接重開與歷史保留的事件回放測試。完整 ABI 與編譯結果一致，不需改 schema。 |
+| The Graph | 新增 `roundId` 與 `OpeningDiscountRoundAdvanced` 索引；保留 CLEAR、SET、Applied 原有語義，並補輪次事件回放測試。 |
 | Frontend | 保留既有計價方式，補上跨輪計價測試。收到 MINT_PRICE_CHANGED 時刷新商品資料並要求重新確認，不自動重試或提高買家金額。 |
 
 ### 實作細節與相容性
 
-- 待執行 workflow 的輪次防護採用建立時的 **chain ID、proxy、series ID、區塊號及區塊 hash** 與 config 快照。後續掃描快照之後的 Configured 事件，即使價格及名額完全相同也拒絕舊操作；另檢查快照是否發生鏈重組。此做法不用為了建立每筆操作回掃系列全部歷史；新輪的完整交易事件仍由 receipt／Graph 保存。
+- 新 workflow 快照保存 **chain ID、proxy、series ID、區塊號、區塊 hash、round ID** 與 config。precheck 比較鏈上 round ID，一次合約讀取即可識別相隔很久或內容相同的新輪。升級前缺少 round ID 的既有 workflow 暫時沿用事件回查。
 - 既有沒有快照的優惠 workflow 必須取消後重建，不允許直接補用當下輪次冒充原始意圖。已預備或已發送交易仍遵守原本 durable attempt／同 hash 恢復路徑，不重新建立下一輪操作。
 - 目前狀態以鏈上 getter 與 Graph 為準，上架 metadata 保留建立時資料；Admin 不再把上架 metadata 當成目前輪次狀態。公開商品讀取既有 no-store Graph 路徑，SET／CLEAR 不需重建上架 metadata。
 - Database points 新購買要求 `totalPrice` 作為買家接受的上限，後端在 holdPoints 與簽署之前驗證新報價。現有買家前端已傳此欄位；其他直接呼叫 mint API 的消費端亦須傳入。既有 intent 的冪等重取流程維持不變。
-- 本期仍不新增鏈上 round ID，不能阻擋其他 OPERATION_ROLE 地址在受管 workflow 之外直接送出的跨輪操作；合約最終按交易順序與當下狀態執行。
-- Backend／Admin／Frontend 本次為原始碼更新；尚未部署或重啟 API／worker／網站服務。
+- 新增鏈上 round ID 作為受管 workflow 的輪次一致性依據；SET／CLEAR 的既有函式簽章保持不變，合約最終仍按交易順序與當下狀態執行。
+- Backend round ID reader 已推送 develop；API／worker 的 Render 滾動部署需另以 runtime 版本確認。Admin／Frontend 本次無需新增程式變更。
 
 ## 已執行驗證
 
@@ -35,6 +35,15 @@
 ## 部署結果
 
 ### Arbitrum Sepolia
+
+### Arbitrum Sepolia round ID 升級（2026-09-07）
+
+- Bundle proxy 維持 `0x68cBA2b3c72Be39be748B06c1e6dDab2855E91b6`。
+- implementation：`0x17138341b4c823b0EFEeB30A0CafD20aa7244c13` → `0x7947317fb1D30cDc8A8C11c382f6D9f3c3DAcdB8`。
+- 升級交易：`0xfdde9a05d37d942208bfacab19793bcbac64e44f233b9152e51f2934273bd6ac`，區塊 306110590，receipt status 1。
+- runtime 22,505 bytes；storage layout、角色、wiring 驗證通過。
+- 119 個既有系列的 config／used 均保持一致，沒有同區塊並行優惠事件；119 個 legacy round ID 初始化為 0。
+- implementation 已在 Arbiscan 完成原始碼驗證。
 
 - chain ID：421614。
 - Bundle proxy：`0x68cBA2b3c72Be39be748B06c1e6dDab2855E91b6`。
@@ -60,12 +69,13 @@
 ### The Graph dev
 
 - 從乾淨的 `develop` 部署至 `doudochain-arb-v-2`（Arbitrum Sepolia）。
-- 版本標籤：`4ac732533bd6132f0812cffb5f4b99483c401635`；IPFS deployment：`QmQ7ZnbKvJqTrNpfnRFPhrhuLxo9PMhnAuKzTvigcGD3FA`。
-- endpoint 查詢成功，`hasIndexingErrors=false`，已索引至區塊 305762877，並可讀取既有 `SeriesOpeningDiscountConfig`。
-- mapping 與 schema 原本已符合多輪事件語義，本次部署包含新增的事件回放測試，proxy 地址及 startBlock 未變。
+- round ID 版本標籤：`ea05e2d`；IPFS deployment：`QmdcehTseCZEZcuaWPceZYCVLnR7B7AJC2PXxvnoT9Sf1k`。
+- endpoint：`https://api.studio.thegraph.com/query/79631/doudochain-arb-v-2/ea05e2d`。
+- 新版本已發布，會從既有 startBlock 回放；發布後初始 `_meta` 為 273178799、`hasIndexingErrors=false`，追趕完成後再驗證 series 118 的 `roundId=0`。
+- proxy 地址及 startBlock 未變。
 
 ## 部署工具與限制
 
-升級腳本：`scripts/upgradeBundleOpeningDiscountRounds.ts`，預設僅唯讀；只有 `EXECUTE_OPENING_DISCOUNT_ROUNDS_UPGRADE` 等於所選 chain ID 時才執行。腳本會先保存 checkpoint，驗證升級回執、implementation、wiring 與既有優惠資料；如有既存未完成 checkpoint，拒絕盲目重送。
+round ID 升級腳本：`scripts/upgradeBundleOpeningDiscountRoundIds.ts`，預設僅唯讀；只有 `EXECUTE_OPENING_DISCOUNT_ROUND_IDS_UPGRADE` 等於所選 chain ID 時才執行。腳本會先保存 checkpoint，驗證升級回執、implementation、wiring 與既有優惠資料；如有既存未完成 checkpoint，拒絕盲目重送。
 
 Graph 的既有部署工具要求 test 從乾淨 develop、prod 從乾淨 main 發布。此次僅發布 test/dev；Arbitrum One 合約與正式 Graph 均未變更。Backend／Admin／Frontend 仍是本地實作，尚未部署或重啟。
