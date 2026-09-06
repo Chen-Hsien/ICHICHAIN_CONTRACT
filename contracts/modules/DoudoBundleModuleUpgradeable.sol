@@ -154,6 +154,12 @@ contract DoudoBundleModuleUpgradeable is
         uint256 ticketLimit,
         uint256 priceInPoints
     );
+    event OpeningDiscountRoundAdvanced(
+        uint256 indexed seriesID,
+        uint256 indexed roundId,
+        uint256 ticketLimit,
+        uint256 priceInPoints
+    );
     event OpeningDiscountCleared(uint256 indexed seriesID);
     event OpeningDiscountApplied(
         uint256 indexed seriesID,
@@ -181,6 +187,7 @@ contract DoudoBundleModuleUpgradeable is
         uint256[] triggerPrizeIDs
     );
     event FreeOrderChallengeCleared(uint256 indexed seriesID, uint256 indexed version);
+    event FreeOrderChallengeEnded(uint256 indexed seriesID, uint256 indexed version);
     event FreeOrderChallengeResult(
         uint256 indexed requestId,
         uint256 indexed seriesID,
@@ -412,6 +419,7 @@ contract DoudoBundleModuleUpgradeable is
         FreeOrderChallengeConfig storage config = _freeOrderChallengeConfigs[seriesID];
         uint256 version = config.version + 1;
         delete seriesFreeOrderTriggerPrizeIDs[seriesID];
+        bool hasRemainingTriggerPrize;
 
         for (uint256 i = 0; i < triggerPrizeIDs.length; i++) {
             uint256 prizeID = triggerPrizeIDs[i];
@@ -421,9 +429,15 @@ contract DoudoBundleModuleUpgradeable is
             ) {
                 revert InvalidFreeOrderChallenge();
             }
+            uint256 remainingQuantity = core.seriesSubPrizeRemainingQuantity(
+                seriesID,
+                prizeID
+            );
+            if (remainingQuantity > 0) hasRemainingTriggerPrize = true;
             freeOrderTriggerPrizeByVersion[seriesID][version][prizeID] = true;
             seriesFreeOrderTriggerPrizeIDs[seriesID].push(prizeID);
         }
+        if (!hasRemainingTriggerPrize) revert InvalidFreeOrderChallenge();
 
         _freeOrderChallengeConfigs[seriesID] = FreeOrderChallengeConfig({
             eligibleLastTicketCount: eligibleFirstTicketCount,
@@ -507,7 +521,9 @@ contract DoudoBundleModuleUpgradeable is
             active: true
         });
         openingDiscountUsed[seriesID] = 0;
+        uint256 roundId = ++openingDiscountRoundId[seriesID];
         emit OpeningDiscountConfigured(seriesID, ticketLimit, priceInPoints);
+        emit OpeningDiscountRoundAdvanced(seriesID, roundId, ticketLimit, priceInPoints);
     }
 
     function clearSeriesOpeningDiscount(uint256 seriesID) external onlyRole(OPERATION_ROLE) nonReentrant {
@@ -831,6 +847,20 @@ contract DoudoBundleModuleUpgradeable is
         );
     }
 
+    function _hasRemainingFreeOrderTriggerPrize(
+        uint256 seriesID
+    ) internal view returns (bool) {
+        uint256[] storage triggerPrizeIDs = seriesFreeOrderTriggerPrizeIDs[seriesID];
+        for (uint256 i = 0; i < triggerPrizeIDs.length; i++) {
+            uint256 remainingQuantity = core.seriesSubPrizeRemainingQuantity(
+                seriesID,
+                triggerPrizeIDs[i]
+            );
+            if (remainingQuantity > 0) return true;
+        }
+        return false;
+    }
+
     function _mintTickets(
         uint256 seriesID,
         uint16[] calldata luckyNumbers,
@@ -975,6 +1005,24 @@ contract DoudoBundleModuleUpgradeable is
             winningTokenID,
             winningPrizeID
         );
+        if (won) {
+            _endFreeOrderChallengeIfExhausted(round.seriesID, round.configVersion);
+        }
+    }
+
+    function _endFreeOrderChallengeIfExhausted(
+        uint256 seriesID,
+        uint256 settledVersion
+    ) internal {
+        FreeOrderChallengeConfig storage config = _freeOrderChallengeConfigs[seriesID];
+        if (
+            config.active &&
+            config.version == settledVersion &&
+            !_hasRemainingFreeOrderTriggerPrize(seriesID)
+        ) {
+            config.active = false;
+            emit FreeOrderChallengeEnded(seriesID, settledVersion);
+        }
     }
 
     function claimFreeOrderChallengeRefund(uint256 requestId) external nonReentrant {
@@ -1268,5 +1316,9 @@ contract DoudoBundleModuleUpgradeable is
     mapping(uint256 => bool) public ticketDatabaseRefundSettled;
     mapping(uint256 => address) public ticketMembershipWallet;
 
-    uint256[30] private __gap;
+    /// @notice Monotonically increases whenever a series starts a new opening-discount round.
+    /// @dev Legacy rounds that existed before this storage field was introduced use round ID 0.
+    mapping(uint256 => uint256) public openingDiscountRoundId;
+
+    uint256[29] private __gap;
 }

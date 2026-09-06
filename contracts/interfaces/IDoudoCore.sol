@@ -37,6 +37,11 @@ interface IDoudoCore {
             uint256 totalTicketNumbers
         );
 
+    function seriesSubPrizeRemainingQuantity(
+        uint256 seriesID,
+        uint256 prizeID
+    ) external view returns (uint256);
+
     function moduleMintRevealed(
         address to,
         uint256 seriesID,

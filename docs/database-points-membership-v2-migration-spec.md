@@ -1,7 +1,7 @@
 # 資料庫 Points、消費授權與 Membership V2 遷移規格
 
-狀態：實作基準（不代表已部署）
-目標環境：先於 Arbitrum Sepolia 驗證，設計本身不綁定單一 chain ID
+狀態：實作基準（不代表已部署）  
+目標環境：先於 Arbitrum Sepolia 驗證，設計本身不綁定單一 chain ID  
 最後更新：2026-08-31
 
 ## 1. 目的與責任邊界
