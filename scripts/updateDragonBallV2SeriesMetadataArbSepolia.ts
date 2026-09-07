@@ -40,14 +40,16 @@ async function main() {
     exchangeTokenURI,
     unrevealTokenURI,
     revealTokenURI,
-    seriesMetaDataURI
+    seriesMetaDataURI,
+    0
   );
   const estimatedGas = await core.setSeriesMetadata.estimateGas(
     SERIES_ID,
     exchangeTokenURI,
     unrevealTokenURI,
     revealTokenURI,
-    seriesMetaDataURI
+    seriesMetaDataURI,
+    0
   );
   console.log("Estimated gas:", estimatedGas.toString());
 

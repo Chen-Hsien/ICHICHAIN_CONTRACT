@@ -150,7 +150,30 @@ async function linkedCoreFactory() {
 
 async function createSeries(core, overrides = {}, revealEnabled = true) {
   const input = seriesInput(overrides);
-  await core.createSeriesWithSubPrizes(input, prizeTable(input.totalTicketNumbers), revealEnabled);
+  const tx = await core.createSeriesWithSubPrizes(
+    input,
+    prizeTable(input.totalTicketNumbers),
+    revealEnabled
+  );
+  const receipt = await tx.wait();
+  const created = receipt.logs
+    .map((log) => {
+      try {
+        return core.interface.parseLog(log);
+      } catch (_) {
+        return null;
+      }
+    })
+    .find((event) => event?.name === "NewSeries");
+  const exchangeWindowDays = overrides.exchangeWindowDays ?? 14;
+  await core.setSeriesMetadata(
+    created.args.seriesID,
+    input.exchangeTokenURI,
+    input.unrevealTokenURI,
+    input.revealTokenURI,
+    input.seriesMetaDataURI,
+    input.estimateDeliverTime + exchangeWindowDays * 24 * 60 * 60
+  );
 }
 
 async function issuePoints(points, to, amount = ethers.parseEther("100")) {
@@ -245,7 +268,8 @@ describe("DOUDOCHAIN V2 fixes", function () {
       input,
       prizeTable(input.totalTicketNumbers),
       true,
-      MERCHANT_A
+      MERCHANT_A,
+      input.estimateDeliverTime + 14 * 24 * 60 * 60
     );
 
     expect(await registry.merchantOf(await core.getAddress(), 0)).to.equal(MERCHANT_A);
@@ -570,7 +594,7 @@ describe("DOUDOCHAIN V2 fixes", function () {
       .to.be.revertedWithCustomError(core, "TokenAlreadyExchanged");
   });
 
-  it("blocks exchange after 60 days from reveal", async function () {
+  it("blocks exchange after the default 14 days from reveal", async function () {
     const suite = await deploySplitSuite();
     const { user, points, core } = suite;
     await createSeries(core, { totalTicketNumbers: 3, useLuckyNumber: false, maxPerWallet: 0 });
@@ -579,7 +603,7 @@ describe("DOUDOCHAIN V2 fixes", function () {
     await revealTickets(suite, 0, [0, 1], 1n);
     const prizeID = (await core.ticketStatusDetail(0)).tokenRevealedPrize;
 
-    await ethers.provider.send("evm_increaseTime", [60 * 24 * 60 * 60 - 1]);
+    await ethers.provider.send("evm_increaseTime", [14 * 24 * 60 * 60 - 1]);
     await ethers.provider.send("evm_mine", []);
 
     await expect(core.connect(user).exchangePrize([0]))
@@ -607,7 +631,7 @@ describe("DOUDOCHAIN V2 fixes", function () {
     await core.connect(user).mint(0, [0, 0]);
     await revealTickets(suite, 0, [0, 1], 1n);
     const prizeID = (await core.ticketStatusDetail(0)).tokenRevealedPrize;
-    const deadline = estimateDeliverTime + 60 * 24 * 60 * 60;
+    const deadline = estimateDeliverTime + 14 * 24 * 60 * 60;
 
     await ethers.provider.send("evm_setNextBlockTimestamp", [deadline]);
     await expect(core.connect(user).exchangePrize([0]))
@@ -618,7 +642,7 @@ describe("DOUDOCHAIN V2 fixes", function () {
     await expect(core.connect(user).exchangePrize([1])).to.be.reverted;
   });
 
-  it("extends the exchange deadline when actual arrival is later than the estimate", async function () {
+  it("preserves a merchant exchange window when actual arrival is later than the estimate", async function () {
     const suite = await deploySplitSuite();
     const { user, points, core } = suite;
     const latestBlock = await ethers.provider.getBlock("latest");
@@ -630,6 +654,14 @@ describe("DOUDOCHAIN V2 fixes", function () {
       useLuckyNumber: false,
       maxPerWallet: 0,
     });
+    await core.setSeriesMetadata(
+      0,
+      "ipfs://exchange/",
+      "ipfs://unreveal",
+      "ipfs://reveal/",
+      "ipfs://series",
+      estimateDeliverTime + 30 * 24 * 60 * 60
+    );
     await issuePoints(points, user.address);
     await core.connect(user).mint(0, [0, 0]);
     await revealTickets(suite, 0, [0, 1], 1n);
@@ -638,13 +670,13 @@ describe("DOUDOCHAIN V2 fixes", function () {
     await ethers.provider.send("evm_setNextBlockTimestamp", [actualArrivalTime]);
     await core.setGoodsArrived(0);
 
-    const originalDeadline = estimateDeliverTime + 60 * 24 * 60 * 60;
+    const originalDeadline = estimateDeliverTime + 30 * 24 * 60 * 60;
     await ethers.provider.send("evm_setNextBlockTimestamp", [originalDeadline + 1]);
     await expect(core.connect(user).exchangePrize([0]))
       .to.emit(core, "UpdateTicketStatus")
       .withArgs(0, 0, prizeID, true, true);
 
-    const updatedDeadline = actualArrivalTime + 60 * 24 * 60 * 60;
+    const updatedDeadline = actualArrivalTime + 30 * 24 * 60 * 60;
     await ethers.provider.send("evm_setNextBlockTimestamp", [updatedDeadline + 1]);
     await expect(core.connect(user).exchangePrize([1])).to.be.reverted;
   });
@@ -706,7 +738,91 @@ describe("DOUDOCHAIN V2 fixes", function () {
       .find((event) => event?.name === "NewSeries");
 
     expect(newSeries.args.estimateDeliverTime).to.equal(1880000000);
-    expect(newSeries.args.exchangeExpireTime).to.equal(1880000000 + 60 * 24 * 60 * 60);
+    expect(newSeries.args.exchangeExpireTime).to.equal(0);
+  });
+
+  it("snapshots a merchant-specific exchange window on the series", async function () {
+    const { core } = await deploySplitSuite();
+    const estimateDeliverTime = 1880000000;
+
+    const tx = await core.createSeriesWithSubPrizes(
+      seriesInput({ estimateDeliverTime }),
+      prizeTable(6),
+      true
+    );
+    const updateTx = await core.setSeriesMetadata(
+      0,
+      "ipfs://exchange/",
+      "ipfs://unreveal",
+      "ipfs://reveal/",
+      "ipfs://series",
+      estimateDeliverTime + 45 * 24 * 60 * 60
+    );
+    await tx.wait();
+    const updateReceipt = await updateTx.wait();
+    const updateSeries = updateReceipt.logs
+      .map((log) => {
+        try {
+          return core.interface.parseLog(log);
+        } catch (_) {
+          return null;
+        }
+      })
+      .find((event) => event?.name === "UpdateSeriesInformation");
+    expect(updateSeries.args.exchangeExpireTime).to.equal(
+      estimateDeliverTime + 45 * 24 * 60 * 60
+    );
+  });
+
+  it("allows an existing series deadline to be extended but never shortened", async function () {
+    const { core } = await deploySplitSuite();
+    const estimateDeliverTime = 1880000000;
+    await core.createSeriesWithSubPrizes(
+      seriesInput({ estimateDeliverTime }),
+      prizeTable(6),
+      true
+    );
+    const originalDeadline = estimateDeliverTime + 14 * 24 * 60 * 60;
+    const extendedDeadline = estimateDeliverTime + 30 * 24 * 60 * 60;
+
+    await expect(core.setSeriesMetadata(
+      0,
+      "ipfs://exchange/",
+      "ipfs://unreveal",
+      "ipfs://reveal/",
+      "ipfs://series",
+      extendedDeadline
+    ))
+      .to.emit(core, "UpdateSeriesInformation")
+      .withArgs(
+        0,
+        false,
+        estimateDeliverTime,
+        extendedDeadline,
+        "ipfs://exchange/",
+        "ipfs://unreveal",
+        "ipfs://reveal/",
+        "ipfs://series"
+      );
+    await expect(core.setSeriesMetadata(
+      0,
+      "ipfs://exchange/",
+      "ipfs://unreveal",
+      "ipfs://reveal/",
+      "ipfs://series",
+      originalDeadline
+    ))
+      .to.emit(core, "UpdateSeriesInformation")
+      .withArgs(
+        0,
+        false,
+        estimateDeliverTime,
+        extendedDeadline,
+        "ipfs://exchange/",
+        "ipfs://unreveal",
+        "ipfs://reveal/",
+        "ipfs://series"
+      );
   });
 
   it("allows pre-order minting but gates reveal with the series reveal switch", async function () {

@@ -237,9 +237,17 @@ contract DOUDOCHAINV2CoreUpgradeable is
         string calldata exchangeTokenURI,
         string calldata unrevealTokenURI,
         string calldata revealTokenURI,
-        string calldata seriesMetaDataURI
+        string calldata seriesMetaDataURI,
+        uint256 extendedExchangeExpireTime
     ) external onlyRole(OPERATION_ROLE) {
         Series storage series = seriesData[seriesID];
+
+        assembly {
+            let exchangeExpireTimeSlot := add(series.slot, 6)
+            if gt(extendedExchangeExpireTime, sload(exchangeExpireTimeSlot)) {
+                sstore(exchangeExpireTimeSlot, extendedExchangeExpireTime)
+            }
+        }
 
         series.exchangeTokenURI = exchangeTokenURI;
         series.unrevealTokenURI = unrevealTokenURI;
@@ -307,12 +315,15 @@ contract DOUDOCHAINV2CoreUpgradeable is
         series.lastPrizeQuantity = quantity;
     }
 
-    function reveal(uint256 seriesID, uint256[] calldata tokenIDs) external nonReentrant whenNotPaused {
+    function reveal(
+        uint256 seriesID,
+        uint256[] calldata tokenIDs
+    ) external nonReentrant whenNotPaused returns (uint256 requestId) {
         if (tokenIDs.length == 0) revert InvalidSeriesInput();
         if (tokenIDs.length > MAX_REVEAL_BATCH) revert RevealBatchTooLarge();
         if (!_seriesOps().revealEnabled(seriesID)) revert GoodsNotArrived();
         _validateRevealTokens(seriesID, tokenIDs);
-        _requestRevealRandomWords(seriesID, tokenIDs);
+        requestId = _requestRevealRandomWords(seriesID, tokenIDs);
     }
 
     function fulfillRandomWordsFromRouter(
@@ -344,7 +355,7 @@ contract DOUDOCHAINV2CoreUpgradeable is
             uint256 lastTokenId = _tokenIdFromSeriesIndex(seriesID, totalMintedInSeries[seriesID] - 1);
             address winner = ownerOf(lastTokenId);
             uint256[] memory sourceTokens = new uint256[](quantity);
-            for (uint256 i = 0; i < quantity; i++) {
+            for (uint256 i = 0; i < quantity; i = _uncheckedInc(i)) {
                 _mintLastPrizeToken(seriesID, winner);
                 lastPrizeOwners[seriesID].push(winner);
                 sourceTokens[i] = lastTokenId;
@@ -375,7 +386,7 @@ contract DOUDOCHAINV2CoreUpgradeable is
         }
         bool autoAssignLuckyNumbers = !enforceWalletAndLock;
         uint16[] memory resolvedLuckyNumbers = luckyNumbers;
-        for (uint256 i = 0; i < quantity; i++) {
+        for (uint256 i = 0; i < quantity; i = _uncheckedInc(i)) {
             if (series.useLuckyNumber && autoAssignLuckyNumbers) {
                 if (resolvedLuckyNumbers[i] != 0) revert InvalidConfig();
                 resolvedLuckyNumbers[i] = _assignNextLuckyNumber(seriesID);
@@ -485,14 +496,16 @@ contract DOUDOCHAINV2CoreUpgradeable is
     function setGoodsArrived(uint256 seriesID) external onlyRole(OPERATION_ROLE) {
         Series storage series = seriesData[seriesID];
         if (series.totalTicketNumbers == 0) revert InvalidSeriesInput();
-        series.isGoodsArrived = true;
-        series.estimateDeliverTime = block.timestamp;
-        series.exchangeExpireTime = block.timestamp + 60 days;
+        unchecked {
+            series.isGoodsArrived = true;
+            series.exchangeExpireTime = block.timestamp + series.exchangeExpireTime - series.estimateDeliverTime;
+            series.estimateDeliverTime = block.timestamp;
+        }
         _emitSeriesInformation(seriesID);
     }
 
     function exchangePrize(uint256[] calldata tokenIDs) external whenNotPaused {
-        for (uint256 i = 0; i < tokenIDs.length; i++) {
+        for (uint256 i = 0; i < tokenIDs.length; i = _uncheckedInc(i)) {
             uint256 tokenID = tokenIDs[i];
             if (ownerOf(tokenID) != msg.sender) revert NotTheTokenOwner();
             TicketStatus storage status = ticketStatusDetail[tokenID];
@@ -529,9 +542,49 @@ contract DOUDOCHAINV2CoreUpgradeable is
 
     function seriesMintConfig(
         uint256 seriesID
-    ) external view returns (uint256 priceInPoints, bool useLuckyNumber) {
-        Series storage series = seriesData[seriesID];
-        return (series.priceInPoints, series.useLuckyNumber);
+    )
+        external
+        view
+        returns (
+            uint256 priceInPoints,
+            bool useLuckyNumber,
+            uint256 remainingTicketNumbers,
+            uint256 totalTicketNumbers
+        )
+    {
+        assembly ("memory-safe") {
+            mstore(0, seriesID)
+            mstore(0x20, seriesData.slot)
+            let seriesSlot := keccak256(0, 0x40)
+            mstore(0, sload(add(seriesSlot, 3)))
+            mstore(0x20, shr(16, sload(add(seriesSlot, 12))))
+            mstore(0x40, sload(add(seriesSlot, 2)))
+            mstore(0x60, sload(add(seriesSlot, 1)))
+            return(0, 0x80)
+        }
+    }
+
+    function seriesSubPrizeRemainingQuantity(
+        uint256 seriesID,
+        uint256 prizeID
+    ) external view returns (uint256) {
+        assembly {
+            mstore(0, seriesID)
+            mstore(0x20, seriesSubPrizes.slot)
+            let arraySlot := keccak256(0, 0x40)
+            let length := sload(arraySlot)
+            mstore(0, arraySlot)
+            let prizeSlot := keccak256(0, 0x20)
+            let endSlot := add(prizeSlot, shl(2, length))
+            for { } lt(prizeSlot, endSlot) { prizeSlot := add(prizeSlot, 4) } {
+                if eq(sload(prizeSlot), prizeID) {
+                    mstore(0, sload(add(prizeSlot, 3)))
+                    return(0, 0x20)
+                }
+            }
+            mstore(0, 0)
+            return(0, 0x20)
+        }
     }
 
     function _createSeriesWithSubPrizes(
@@ -549,7 +602,6 @@ contract DOUDOCHAINV2CoreUpgradeable is
         series.priceInPoints = input.priceInPoints;
         series.priceInTWD = input.priceInTWD;
         series.estimateDeliverTime = input.estimateDeliverTime;
-        series.exchangeExpireTime = input.estimateDeliverTime + 60 days;
         series.exchangeTokenURI = input.exchangeTokenURI;
         series.unrevealTokenURI = input.unrevealTokenURI;
         series.revealTokenURI = input.revealTokenURI;
@@ -599,7 +651,7 @@ contract DOUDOCHAINV2CoreUpgradeable is
         uint256 seriesID,
         SubPrize[] calldata subPrizes
     ) internal {
-        for (uint256 i = 0; i < subPrizes.length; i++) {
+        for (uint256 i = 0; i < subPrizes.length; i = _uncheckedInc(i)) {
             seriesSubPrizes[seriesID].push(subPrizes[i]);
             emit NewSubPrize(
                 seriesID,
@@ -638,7 +690,7 @@ contract DOUDOCHAINV2CoreUpgradeable is
         if (quantity == 0 || quantity > series.remainingTicketNumbers) revert NotEnoughNFTsRemaining();
         uint256 startTokenId = _nextTokenId();
         _mint(to, quantity);
-        for (uint256 i = 0; i < quantity; i++) {
+        for (uint256 i = 0; i < quantity; i = _uncheckedInc(i)) {
             uint16 luckyNumber = luckyNumbersPreassigned
                 ? luckyNumbers[i]
                 : _consumeLuckyNumber(seriesID, series.useLuckyNumber, luckyNumbers[i]);
@@ -671,13 +723,13 @@ contract DOUDOCHAINV2CoreUpgradeable is
         uint256 seriesID,
         uint256[] memory tokenIDs
     ) internal returns (uint256 requestId) {
-        for (uint256 i = 0; i < tokenIDs.length; i++) {
+        for (uint256 i = 0; i < tokenIDs.length; i = _uncheckedInc(i)) {
             revealRequestPending[tokenIDs[i]] = true;
         }
         requestId = _requestRandomWords(1);
         requestKind[requestId] = RequestKind.Reveal;
         requestToSeries[requestId] = seriesID;
-        for (uint256 i = 0; i < tokenIDs.length; i++) {
+        for (uint256 i = 0; i < tokenIDs.length; i = _uncheckedInc(i)) {
             requestToRevealToken[requestId].push(tokenIDs[i]);
         }
         emit RevealDrawSent(requestId, tokenIDs);
@@ -703,7 +755,7 @@ contract DOUDOCHAINV2CoreUpgradeable is
         uint256[] storage tokenIDs = requestToRevealToken[requestId];
         uint256 randomWord = randomWords[0];
 
-        for (uint256 i = 0; i < tokenIDs.length; i++) {
+        for (uint256 i = 0; i < tokenIDs.length; i = _uncheckedInc(i)) {
             uint256 tokenId = tokenIDs[i];
             TicketStatus storage status = ticketStatusDetail[tokenId];
             if (status.tokenRevealed) revert TokenAlreadyRevealed();
@@ -730,7 +782,7 @@ contract DOUDOCHAINV2CoreUpgradeable is
     ) internal {
         uint256 seriesID = requestToSeries[requestId];
 
-        for (uint256 i = 0; i < randomWords.length; i++) {
+        for (uint256 i = 0; i < randomWords.length; i = _uncheckedInc(i)) {
             uint256 sourceTokenId = _selectExistingTokenFromSeries(seriesID, randomWords[i]);
             address winner = ownerOf(sourceTokenId);
             _mintLastPrizeToken(seriesID, winner);
@@ -800,12 +852,28 @@ contract DOUDOCHAINV2CoreUpgradeable is
     }
 
     function _recordSeriesRange(uint256 seriesID, uint256 start, uint256 quantity) internal {
-        uint256 end = start + quantity - 1;
-        uint256 length = seriesRanges[seriesID].length;
-        if (length > 0 && seriesRanges[seriesID][length - 1].end + 1 == start) {
-            seriesRanges[seriesID][length - 1].end = end;
-        } else {
-            seriesRanges[seriesID].push(TokenRange({start: start, end: end}));
+        assembly ("memory-safe") {
+            mstore(0, seriesID)
+            mstore(0x20, seriesRanges.slot)
+            let arraySlot := keccak256(0, 0x40)
+            let length := sload(arraySlot)
+            let end := sub(add(start, quantity), 1)
+            mstore(0, arraySlot)
+            let dataSlot := keccak256(0, 0x20)
+            let append := 1
+            if length {
+                let lastSlot := add(dataSlot, mul(sub(length, 1), 2))
+                if eq(add(sload(add(lastSlot, 1)), 1), start) {
+                    sstore(add(lastSlot, 1), end)
+                    append := 0
+                }
+            }
+            if append {
+                sstore(arraySlot, add(length, 1))
+                let newSlot := add(dataSlot, mul(length, 2))
+                sstore(newSlot, start)
+                sstore(add(newSlot, 1), end)
+            }
         }
     }
 
@@ -815,7 +883,7 @@ contract DOUDOCHAINV2CoreUpgradeable is
     ) internal view returns (uint256 tokenId) {
         TokenRange[] storage ranges = seriesRanges[seriesID];
         uint256 cursor;
-        for (uint256 i = 0; i < ranges.length; i++) {
+        for (uint256 i = 0; i < ranges.length; i = _uncheckedInc(i)) {
             uint256 size = ranges[i].end - ranges[i].start + 1;
             if (index < cursor + size) {
                 return ranges[i].start + (index - cursor);
@@ -831,7 +899,7 @@ contract DOUDOCHAINV2CoreUpgradeable is
     ) internal view {
         address user = msg.sender;
         bool moduleCaller = hasRole(MODULE_ROLE, user);
-        for (uint256 i = 0; i < tokenIDs.length; i++) {
+        for (uint256 i = 0; i < tokenIDs.length; i = _uncheckedInc(i)) {
             if (!moduleCaller) {
                 if (ownerOf(tokenIDs[i]) != user) revert NotTheTokenOwner();
             }
@@ -839,7 +907,7 @@ contract DOUDOCHAINV2CoreUpgradeable is
             if (status.seriesID != seriesID) revert InvalidSeriesInput();
             if (status.tokenRevealed) revert TokenAlreadyRevealed();
             if (revealRequestPending[tokenIDs[i]]) revert TokenRevealPending();
-            for (uint256 j = 0; j < i; j++) {
+            for (uint256 j = 0; j < i; j = _uncheckedInc(j)) {
                 if (tokenIDs[j] == tokenIDs[i]) revert TokenRevealPending();
             }
         }
@@ -895,13 +963,16 @@ contract DOUDOCHAINV2CoreUpgradeable is
 
     function _requireExchangeDeadlineOpen(uint64 revealTime, uint256 seriesID) internal view {
         assembly {
-            // Series.exchangeExpireTime is slot 6 and already equals
-            // estimateDeliverTime + 60 days. Expiration requires both the
-            // per-token reveal deadline and the series delivery deadline to pass.
+            // Derive the immutable per-series window from the stored delivery
+            // timestamp and deadline so legacy 60-day series retain their terms.
             mstore(0, seriesID)
             mstore(0x20, seriesData.slot)
-            let deliveryDeadline := sload(add(keccak256(0, 0x40), 6))
-            if and(gt(timestamp(), add(revealTime, 5184000)), gt(timestamp(), deliveryDeadline)) {
+            let seriesSlot := keccak256(0, 0x40)
+            let deliveryDeadline := sload(add(seriesSlot, 6))
+            if and(
+                gt(timestamp(), add(revealTime, sub(deliveryDeadline, sload(add(seriesSlot, 5))))),
+                gt(timestamp(), deliveryDeadline)
+            ) {
                 revert(0, 0)
             }
         }
@@ -919,7 +990,7 @@ contract DOUDOCHAINV2CoreUpgradeable is
             return tokenId;
         }
 
-        for (uint256 attempt = 1; attempt <= 20; attempt++) {
+        for (uint256 attempt = 1; attempt <= 20; attempt = _uncheckedInc(attempt)) {
             tokenId = _tokenIdFromSeriesIndex(
                 seriesID,
                 uint256(keccak256(abi.encode(randomWord, attempt))) % totalSeriesTokens
@@ -948,7 +1019,7 @@ contract DOUDOCHAINV2CoreUpgradeable is
         if (subPrizes.length == 0) revert EmptySubPrizes();
 
         uint256 totalPrizeQuantity;
-        for (uint256 i = 0; i < subPrizes.length; i++) {
+        for (uint256 i = 0; i < subPrizes.length; i = _uncheckedInc(i)) {
             totalPrizeQuantity += subPrizes[i].subPrizeRemainingQuantity;
         }
         if (totalPrizeQuantity != input.totalTicketNumbers) revert SubprizeQuantityNotEqual();
@@ -957,6 +1028,12 @@ contract DOUDOCHAINV2CoreUpgradeable is
     function _seriesOps() internal view returns (IDoudoSeriesOps ops) {
         ops = seriesOpsModule;
         if (address(ops) == address(0)) revert InvalidConfig();
+    }
+
+    function _uncheckedInc(uint256 value) private pure returns (uint256) {
+        unchecked {
+            return value + 1;
+        }
     }
 
     function _initializeSeriesOps(

@@ -46,4 +46,13 @@ interface IDoudoSeriesPublishing {
         SubPrize[] calldata subPrizes,
         bool revealEnabled
     ) external returns (uint256 seriesID);
+
+    function setSeriesMetadata(
+        uint256 seriesID,
+        string calldata exchangeTokenURI,
+        string calldata unrevealTokenURI,
+        string calldata revealTokenURI,
+        string calldata seriesMetaDataURI,
+        uint256 extendedExchangeExpireTime
+    ) external;
 }

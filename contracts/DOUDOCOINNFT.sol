@@ -12,8 +12,13 @@ import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.
 import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
+import "@openzeppelin/contracts/utils/math/Math.sol";
 import "./access/MinimalAccessControlUpgradeable.sol";
 import "./interfaces/IDoudoPoints.sol";
+
+interface IArbSys {
+    function arbBlockNumber() external view returns (uint256);
+}
 
 contract DOUDOCOINNFT is
     Initializable,
@@ -100,6 +105,8 @@ contract DOUDOCOINNFT is
         address recipient,
         uint256 voucherTypeId
     );
+    /// @param totalAmount Total points minted, in 18-decimal token units.
+    /// @param additionalReward Membership reward, in 18-decimal token units.
     event VoucherTotalRedeemed(
         uint256[] tokenIds,
         address redeemer,
@@ -158,11 +165,28 @@ contract DOUDOCOINNFT is
         uint256 currentRoundRedeemed,
         uint256 lastActiveTimestamp
     );
+    event LegacyCollectionCancelled(
+        uint256 indexed snapshotBlock,
+        bytes32 indexed snapshotRoot,
+        uint64 cancelledAt,
+        string cancelledTokenURI
+    );
 
     error InvalidAddress();
     error InvalidMembershipLevel();
     error InvalidMembershipThreshold();
     error InvalidRewardBasisPoints();
+    error VoucherNonTransferable();
+    error LegacyCollectionCancelledOperation();
+    error LegacyCollectionAlreadyCancelled();
+    error InvalidLegacyCancellationSnapshot();
+
+    modifier whenLegacyCollectionActive() {
+        if (legacyCollectionCancelled) {
+            revert LegacyCollectionCancelledOperation();
+        }
+        _;
+    }
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
@@ -235,7 +259,7 @@ contract DOUDOCOINNFT is
         uint256 amount,
         uint256 maxPerUser,
         string memory _tokenURI
-    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    ) external onlyRole(DEFAULT_ADMIN_ROLE) whenLegacyCollectionActive {
         voucherTypes[nextVoucherTypeId] = VoucherType(
             amount,
             maxPerUser,
@@ -255,7 +279,7 @@ contract DOUDOCOINNFT is
         uint256 amount,
         uint256 maxPerUser,
         string memory _tokenURI
-    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    ) external onlyRole(DEFAULT_ADMIN_ROLE) whenLegacyCollectionActive {
         voucherTypes[voucherTypeId] = VoucherType(
             amount,
             maxPerUser,
@@ -269,6 +293,7 @@ contract DOUDOCOINNFT is
         uint256 tokenId
     ) public view override returns (string memory) {
         _requireMinted(tokenId);
+        if (legacyCollectionCancelled) return legacyCancelledTokenURI;
         if (isMembershipNFT[tokenId]) {
             uint256 membershipLevel = userInfo[ownerOf(tokenId)].membershipLevel;
             return membershipLevels[membershipLevel].membershipTokenURI;
@@ -282,7 +307,7 @@ contract DOUDOCOINNFT is
         address to,
         uint256[] memory _voucherTypeIds,
         uint256[] memory quantities
-    ) public onlyRole(MINTER_ROLE) nonReentrant {
+    ) public onlyRole(MINTER_ROLE) whenLegacyCollectionActive nonReentrant {
         require(
             _voucherTypeIds.length == quantities.length,
             "Mismatched inputs"
@@ -316,7 +341,7 @@ contract DOUDOCOINNFT is
     function mintMembershipNFT(
         address to,
         uint256 membershipLevel
-    ) public onlyRole(MINTER_ROLE) nonReentrant {
+    ) public onlyRole(MINTER_ROLE) whenLegacyCollectionActive nonReentrant {
         require(
             userInfo[to].membershipNFT == 0,
             "User already owns a membership NFT"
@@ -351,7 +376,7 @@ contract DOUDOCOINNFT is
         address to,
         uint256 tokenId,
         uint256 voucherTypeId
-    ) external onlyRole(MIGRATOR_ROLE) nonReentrant {
+    ) external onlyRole(MIGRATOR_ROLE) whenLegacyCollectionActive nonReentrant {
         if (to == address(0)) revert InvalidAddress();
         require(voucherTypeId < nextVoucherTypeId, "Invalid voucher type");
         _advanceTokenId(tokenId);
@@ -368,7 +393,7 @@ contract DOUDOCOINNFT is
         uint256 currentRoundRedeemed,
         uint256 membershipLevel,
         uint256 lastActiveTimestamp
-    ) external onlyRole(MIGRATOR_ROLE) nonReentrant {
+    ) external onlyRole(MIGRATOR_ROLE) whenLegacyCollectionActive nonReentrant {
         if (to == address(0)) revert InvalidAddress();
         if (
             membershipLevel == 0 ||
@@ -424,20 +449,24 @@ contract DOUDOCOINNFT is
     // 新增映射來追踪用戶每種 voucher 的數量
     mapping(address => mapping(uint256 => uint256)) private userVoucherCounts;
 
-    // Override safeTransferFrom to handle membership or voucher transfer
+    // Reconcile membership state after safe transfers. Voucher transfers are
+    // rejected centrally in _beforeTokenTransfer.
     function safeTransferFrom(
         address from,
         address to,
         uint256 tokenId,
         bytes memory _data
-    ) public override(ERC721Upgradeable, IERC721Upgradeable) nonReentrant {
+    )
+        public
+        override(ERC721Upgradeable, IERC721Upgradeable)
+        whenLegacyCollectionActive
+        nonReentrant
+    {
         bool membershipToken = isMembershipNFT[tokenId];
         super.transferFrom(from, to, tokenId);
 
         if (membershipToken) {
             _transferMembership(from, to, tokenId);
-        } else {
-            emit VoucherTransferred(from, to, tokenId);
         }
 
         // Membership reconciliation can replace or burn tokenId. Only notify the
@@ -465,6 +494,7 @@ contract DOUDOCOINNFT is
         public
         virtual
         override(ERC721Upgradeable, IERC721Upgradeable)
+        whenLegacyCollectionActive
         nonReentrant
     {
         // 保存原始的 packed ownership 數據
@@ -476,11 +506,10 @@ contract DOUDOCOINNFT is
         // 調用原始的 transferFrom 邏輯
         super.transferFrom(from, to, tokenId);
 
-        // 如果是會員 NFT，執行額外的會員轉移邏輯
+        // Voucher transfers revert in _beforeTokenTransfer, so only membership
+        // tokens can reach the reconciliation path below.
         if (isMembershipNFT[tokenId]) {
             _transferMembership(from, to, tokenId);
-        } else {
-            emit VoucherTransferred(from, to, tokenId);
         }
     }
 
@@ -555,7 +584,7 @@ contract DOUDOCOINNFT is
     // Batch burn vouchers and redeem tokens with additional rewards
     function burnVouchersBatch(
         uint256[] calldata tokenIds
-    ) external nonReentrant {
+    ) external whenLegacyCollectionActive nonReentrant {
         _checkMembershipExpiration(msg.sender); // Check if membership is expired
 
         uint256 totalAmount = 0;
@@ -579,12 +608,16 @@ contract DOUDOCOINNFT is
             totalAmount += voucherType.amount;
         }
 
-        // Calculate additional rewards based on membership level
+        // Convert voucher face values to token units before calculating the
+        // membership reward so fractional DOUDO rewards are preserved.
         uint256 currentLevel = userInfo[msg.sender].membershipLevel;
-        uint256 additionalReward = (totalAmount *
-            membershipLevels[currentLevel].rewardBasisPoints) / 10000;
-        totalAmount += additionalReward;
-        totalAmount = totalAmount * 10 ** 18;
+        uint256 baseAmount = totalAmount * 1 ether;
+        uint256 additionalReward = Math.mulDiv(
+            baseAmount,
+            membershipLevels[currentLevel].rewardBasisPoints,
+            10000
+        );
+        totalAmount = baseAmount + additionalReward;
 
         emit VoucherTotalRedeemed(
             tokenIds,
@@ -683,7 +716,7 @@ contract DOUDOCOINNFT is
     // Admin function to update the membership expiration period
     function setMembershipExpirationPeriod(
         uint256 newExpirationPeriod
-    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    ) external onlyRole(DEFAULT_ADMIN_ROLE) whenLegacyCollectionActive {
         membershipExpirationPeriod = newExpirationPeriod;
     }
 
@@ -693,7 +726,7 @@ contract DOUDOCOINNFT is
         uint256 threshold,
         string memory _membershipTokenURI,
         uint256 rewardBasisPoints
-    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    ) external onlyRole(DEFAULT_ADMIN_ROLE) whenLegacyCollectionActive {
         _addMembershipLevel(
             name,
             threshold,
@@ -708,7 +741,7 @@ contract DOUDOCOINNFT is
         uint256 newThreshold,
         string memory newTokenURI,
         uint256 newRewardBasisPoints
-    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    ) external onlyRole(DEFAULT_ADMIN_ROLE) whenLegacyCollectionActive {
         _setMembershipLevel(
             levelIndex,
             newThreshold,
@@ -721,7 +754,7 @@ contract DOUDOCOINNFT is
         uint256 levelIndex,
         uint256 newThreshold,
         uint256 newRewardBasisPoints
-    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    ) external onlyRole(DEFAULT_ADMIN_ROLE) whenLegacyCollectionActive {
         if (levelIndex >= membershipLevels.length) {
             revert InvalidMembershipLevel();
         }
@@ -791,7 +824,7 @@ contract DOUDOCOINNFT is
     // Admin function to set the token reward contract
     function setRewardToken(
         address _rewardToken
-    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    ) external onlyRole(DEFAULT_ADMIN_ROLE) whenLegacyCollectionActive {
         if (_rewardToken == address(0)) revert InvalidAddress();
         rewardToken = IDoudoPoints(_rewardToken);
     }
@@ -825,7 +858,7 @@ contract DOUDOCOINNFT is
         address user,
         uint256[] calldata _voucherTypeIds,
         uint256[] calldata amounts
-    ) external onlyRole(MINTER_ROLE) {
+    ) external onlyRole(MINTER_ROLE) whenLegacyCollectionActive {
         mintVouchers(user, _voucherTypeIds, amounts);
         uint256 totalAmount = 0;
         for (uint256 i = 0; i < amounts.length; i++) {
@@ -851,7 +884,9 @@ contract DOUDOCOINNFT is
         return voucherTypeIds[tokenId];
     }
 
-    function burn(uint256 tokenId) public override nonReentrant {
+    function burn(
+        uint256 tokenId
+    ) public override whenLegacyCollectionActive nonReentrant {
         require(!isMembershipNFT[tokenId], "Cannot burn membership NFTs");
         super.burn(tokenId);
         delete voucherTypeIds[tokenId];
@@ -893,6 +928,68 @@ contract DOUDOCOINNFT is
         }
     }
 
+    function cancelLegacyCollection(
+        uint256 snapshotBlock,
+        bytes32 snapshotRoot,
+        string calldata cancelledTokenURI
+    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        if (legacyCollectionCancelled) revert LegacyCollectionAlreadyCancelled();
+        if (
+            snapshotBlock == 0 ||
+            snapshotBlock > _chainBlockNumber() ||
+            snapshotRoot == bytes32(0) ||
+            bytes(cancelledTokenURI).length == 0
+        ) revert InvalidLegacyCancellationSnapshot();
+
+        legacyCollectionCancelled = true;
+        legacyCollectionCancelledAt = uint64(block.timestamp);
+        legacyCancellationSnapshotBlock = snapshotBlock;
+        legacyCancellationSnapshotRoot = snapshotRoot;
+        legacyCancelledTokenURI = cancelledTokenURI;
+        emit LegacyCollectionCancelled(
+            snapshotBlock,
+            snapshotRoot,
+            legacyCollectionCancelledAt,
+            cancelledTokenURI
+        );
+    }
+
+    /// @dev Arbitrum's Solidity `block.number` is the corresponding L1 block,
+    /// while snapshots and RPC `eth_blockNumber` use the Arbitrum L2 block.
+    /// ArbSys is available at address(100) on Arbitrum. Falling back preserves
+    /// the expected behavior on Ethereum-compatible development networks.
+    function _chainBlockNumber() private view returns (uint256) {
+        (bool success, bytes memory result) = address(100).staticcall(
+            abi.encodeCall(IArbSys.arbBlockNumber, ())
+        );
+        if (success && result.length >= 32) {
+            return abi.decode(result, (uint256));
+        }
+        return block.number;
+    }
+
+    function approve(
+        address to,
+        uint256 tokenId
+    )
+        public
+        override(ERC721Upgradeable, IERC721Upgradeable)
+        whenLegacyCollectionActive
+    {
+        super.approve(to, tokenId);
+    }
+
+    function setApprovalForAll(
+        address operator,
+        bool approved
+    )
+        public
+        override(ERC721Upgradeable, IERC721Upgradeable)
+        whenLegacyCollectionActive
+    {
+        super.setApprovalForAll(operator, approved);
+    }
+
     // function _update(
     //     address to,
     //     uint256 tokenId,
@@ -927,6 +1024,16 @@ contract DOUDOCOINNFT is
         uint256 tokenId,
         uint256 batchSize
     ) internal override(ERC721Upgradeable, ERC721EnumerableUpgradeable) {
+        if (legacyCollectionCancelled) {
+            revert LegacyCollectionCancelledOperation();
+        }
+        if (
+            from != address(0) &&
+            to != address(0) &&
+            !isMembershipNFT[tokenId]
+        ) {
+            revert VoucherNonTransferable();
+        }
         super._beforeTokenTransfer(from, to, tokenId, batchSize);
     }
 
@@ -934,5 +1041,11 @@ contract DOUDOCOINNFT is
         address
     ) internal override onlyRole(UPGRADER_ROLE) {}
 
-    uint256[50] private __gap;
+    bool public legacyCollectionCancelled;
+    uint64 public legacyCollectionCancelledAt;
+    uint256 public legacyCancellationSnapshotBlock;
+    bytes32 public legacyCancellationSnapshotRoot;
+    string public legacyCancelledTokenURI;
+
+    uint256[46] private __gap;
 }

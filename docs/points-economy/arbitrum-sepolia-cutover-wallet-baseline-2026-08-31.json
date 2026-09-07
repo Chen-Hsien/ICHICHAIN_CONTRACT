@@ -1,0 +1,54 @@
+{
+  "version": 2,
+  "purpose": "Pre-cutover comparison fixture; not the global migration manifest",
+  "network": "arbitrum-sepolia",
+  "chainId": "421614",
+  "wallet": "0x6972083D5C65Fad6547071a9bf001f440a5076e5",
+  "snapshot": {
+    "blockNumber": "303961036",
+    "blockHash": "0x1e64ec02de85b216b06e8a034cb34f8a5928bd23c5c3f522d925f8f8c0f92953",
+    "blockTimestamp": "2026-08-31T13:46:35.000Z"
+  },
+  "contracts": {
+    "legacyPoints": "0xFFCD533609e0e9E810C4C5D8Cb7a69D7a537C17E",
+    "legacyNft": "0x1F1150AC2d7a8208A2743a4E74e8401Ff9F1ED53"
+  },
+  "expectedMigrationInput": {
+    "legacyPointsRaw": "26741000000000000000000",
+    "legacyVoucherBaseRaw": "10000000000000000000000",
+    "legacyVoucherMembershipRewardRaw": "250000000000000000000",
+    "legacyVoucherTotalRaw": "10250000000000000000000",
+    "databasePointsTotalRaw": "36991000000000000000000",
+    "membershipBeforeVoucherMigration": {
+      "legacyTokenId": "275",
+      "level": "5",
+      "totalRedeemedRaw": "210475000000000000000000",
+      "currentRoundRedeemedRaw": "210475000000000000000000",
+      "lastActiveTimestamp": "1786935058"
+    },
+    "membershipAfterVoucherMigrationAtThisSnapshot": {
+      "level": "5",
+      "lifetimeSpendRaw": "220725000000000000000000",
+      "currentQualifyingSpendRaw": "220725000000000000000000",
+      "lastActivityAt": "1788183995"
+    }
+  },
+  "uiEvidence": {
+    "pointsHeader": "26741",
+    "displayedVoucherTokenId": "288",
+    "displayedVoucherPoints": "10000",
+    "purchaseDialog": {
+      "status": "CONFIRMED_BY_ONCHAIN_VOUCHER_MINT",
+      "purchasePoints": "10000",
+      "membershipRewardPoints": "250",
+      "migrationValuePoints": "10250"
+    }
+  },
+  "reconciliation": {
+    "legacyNftOwnedTokenIds": ["275", "288"],
+    "token288MintBlock": "303948296",
+    "token288ExistsOnChain": true,
+    "token288MustBeIncludedInMigration": true,
+    "finding": "Token 288 was minted after the earlier diagnostic block 303947230. The UI and v2.1.12 subgraph are correct; the earlier diagnostic manifest is obsolete and must not be executed."
+  }
+}

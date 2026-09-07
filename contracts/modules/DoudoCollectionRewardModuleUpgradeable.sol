@@ -15,6 +15,7 @@ contract DoudoCollectionRewardModuleUpgradeable is
     LightweightGuardsUpgradeable
 {
     bytes32 public constant OPERATION_ROLE = keccak256("OPERATION_ROLE");
+    bytes32 public constant POINTS_CONFIG_ROLE = keccak256("POINTS_CONFIG_ROLE");
     bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
     bytes32 private constant COLLECTION_BOOK_REWARD = keccak256("COLLECTION_BOOK_REWARD");
 
@@ -36,6 +37,7 @@ contract DoudoCollectionRewardModuleUpgradeable is
     IDoudoPoints public doudoPoints;
     address public collectionBook;
     mapping(uint256 => RewardConfig) public rewardConfigs;
+    bool public databasePointsModeEnabled;
 
     error InvalidConfig();
     error OnlyCollectionBook(address caller);
@@ -57,6 +59,12 @@ contract DoudoCollectionRewardModuleUpgradeable is
         uint256 amount,
         uint256 tokenID
     );
+    event DatabasePointsCollectionRewardModeConfigured(bool enabled);
+    event DatabasePointsCollectionRewardEntitled(
+        uint256 indexed collectionBookID,
+        address indexed user,
+        uint256 amount
+    );
     event SeriesUnlockedFor(uint256 indexed seriesID, address indexed user, uint256 expires);
 
     /// @custom:oz-upgrades-unsafe-allow constructor
@@ -74,11 +82,17 @@ contract DoudoCollectionRewardModuleUpgradeable is
         doudoPoints = IDoudoPoints(doudoPointsAddress);
         _grantRole(UPGRADER_ROLE, msg.sender);
         _grantRole(OPERATION_ROLE, msg.sender);
+        _grantRole(POINTS_CONFIG_ROLE, msg.sender);
     }
 
     function setCollectionBook(address collectionBook_) external onlyRole(OPERATION_ROLE) {
         collectionBook = collectionBook_;
         emit CollectionBookUpdated(collectionBook_);
+    }
+
+    function setDatabasePointsMode(bool enabled) external onlyRole(POINTS_CONFIG_ROLE) {
+        databasePointsModeEnabled = enabled;
+        emit DatabasePointsCollectionRewardModeConfigured(enabled);
     }
 
     function setCollectionRewardConfig(
@@ -106,7 +120,15 @@ contract DoudoCollectionRewardModuleUpgradeable is
         if (!config.active) revert RewardInactive();
 
         if (config.rewardKind == uint8(RewardKind.Points)) {
-            doudoPoints.mintWithReason(to, config.pointsAmount, COLLECTION_BOOK_REWARD);
+            if (databasePointsModeEnabled) {
+                emit DatabasePointsCollectionRewardEntitled(
+                    rewardData,
+                    to,
+                    config.pointsAmount
+                );
+            } else {
+                doudoPoints.mintWithReason(to, config.pointsAmount, COLLECTION_BOOK_REWARD);
+            }
             emit CollectionRewardMinted(rewardData, to, config.rewardKind, config.pointsAmount, 0);
             return 0;
         }
@@ -136,7 +158,7 @@ contract DoudoCollectionRewardModuleUpgradeable is
         if (config.rewardKind > uint8(RewardKind.UnlockSeries)) revert InvalidConfig();
         if (config.rewardKind == uint8(RewardKind.Points)) return;
 
-        (uint256 priceInPoints, ) = core.seriesMintConfig(config.seriesID);
+        (uint256 priceInPoints, , , ) = core.seriesMintConfig(config.seriesID);
         if (priceInPoints == 0) revert InvalidConfig();
         if (config.rewardKind == uint8(RewardKind.UnlockSeries) && config.pointsAmount == 0) {
             revert InvalidConfig();
@@ -145,5 +167,5 @@ contract DoudoCollectionRewardModuleUpgradeable is
 
     function _authorizeUpgrade(address) internal override onlyRole(UPGRADER_ROLE) {}
 
-    uint256[46] private __gap;
+    uint256[45] private __gap;
 }

@@ -1,6 +1,6 @@
 # Merchant Attribution Backend ABI Integration
 
-Last updated: 2026-06-17
+Last updated: 2026-08-25
 
 本文給後端串接 DOUDOCHAIN V2 merchant attribution ABI 使用。merchant attribution 不在 Core 儲存；後端發布系列時應呼叫 `MerchantSeriesPublisher`，由 Publisher 在同一筆交易中呼叫 Core 建立系列，再寫入 `MerchantSeriesRegistry`。
 
@@ -58,7 +58,9 @@ publishSeriesWithMerchant(
     string seriesMetaDataURI,
     bool isPreOrder,
     bool useLuckyNumber,
-    uint256 maxPerWallet
+    uint256 maxPerWallet,
+    uint8 packingType,
+    uint8 sourceType
   ) input,
   (
     uint256 subPrizeID,
@@ -66,21 +68,26 @@ publishSeriesWithMerchant(
     string subPrizeName,
     uint256 subPrizeRemainingQuantity
   )[] subPrizes,
-  bool markGoodsArrived,
-  bytes32 merchantRef
+  bool revealEnabled,
+  bytes32 merchantRef,
+  uint256 exchangeExpireTime
 ) returns (uint256 seriesID)
 ```
+
+`exchangeExpireTime` is the absolute Unix deadline snapshot calculated from the
+merchant setting. If it is not later than `estimateDeliverTime`, Publisher uses
+`estimateDeliverTime + 14 days`. Existing series deadlines can only be extended.
 
 Canonical viem signature:
 
 ```ts
-'publishSeriesWithMerchant(address,(string,uint256,uint256,uint256,uint256,string,string,string,string,bool,bool,uint256),(uint256,string,string,uint256)[],bool,bytes32)'
+'publishSeriesWithMerchant(address,(string,uint256,uint256,uint256,uint256,string,string,string,string,bool,bool,uint256,uint8,uint8),(uint256,string,string,uint256)[],bool,bytes32,uint256)'
 ```
 
 Function selector:
 
 ```text
-0x3c4116fb
+0x6fe6e103
 ```
 
 Backend `ContractCalldataBuilder` allowlist entry should use:
@@ -92,20 +99,22 @@ typedAction({
   contractKey: 'DOUDO_MERCHANT_PUBLISHER',
   functionName: 'publishSeriesWithMerchant',
   signature:
-    'publishSeriesWithMerchant(address,(string,uint256,uint256,uint256,uint256,string,string,string,string,bool,bool,uint256),(uint256,string,string,uint256)[],bool,bytes32)',
+    'publishSeriesWithMerchant(address,(string,uint256,uint256,uint256,uint256,string,string,string,string,bool,bool,uint256,uint8,uint8),(uint256,string,string,uint256)[],bool,bytes32,uint256)',
   inputs: [
     { name: 'core', type: 'address' },
     { name: 'input', type: 'tuple', components: seriesInputComponents },
     { name: 'subPrizes', type: 'tuple[]', components: subPrizeComponents },
-    { name: 'markGoodsArrived', type: 'bool' },
+    { name: 'revealEnabled', type: 'bool' },
     { name: 'merchantRef', type: 'bytes32' },
+    { name: 'exchangeExpireTime', type: 'uint256' },
   ],
   mapArgs: (args) => [
     normalizeAddress(String(args.core)),
     mapSeriesInput(asRecord(args.seriesInput ?? args.input)),
     asArray(args.subPrizes).map(mapSubPrize),
-    Boolean(args.markGoodsArrived),
+    Boolean(args.revealEnabled),
     normalizeBytes32(args.merchantRef),
+    toUint256(args.exchangeExpireTime),
   ],
 })
 ```
@@ -143,7 +152,9 @@ function normalizeBytes32(value: unknown): `0x${string}` {
     "seriesMetaDataURI": "ipfs://series",
     "isPreOrder": false,
     "useLuckyNumber": false,
-    "maxPerWallet": "0"
+    "maxPerWallet": "0",
+    "packingType": 1,
+    "sourceType": 1
   },
   "subPrizes": [
     {
@@ -159,7 +170,8 @@ function normalizeBytes32(value: unknown): `0x${string}` {
       "subPrizeRemainingQuantity": "90"
     }
   ],
-  "markGoodsArrived": true
+  "revealEnabled": true,
+  "exchangeExpireTime": "1781209600"
 }
 ```
 
@@ -170,6 +182,7 @@ Successful publish emits at least:
 ```solidity
 NewSeries(uint256 indexed seriesID, ...)
 NewSubPrize(uint256 indexed seriesID, ...)
+UpdateSeriesInformation(uint256 indexed seriesID, ...)
 SeriesMerchantLinked(address indexed seriesContract, uint256 indexed seriesID, bytes32 indexed merchantRef, address operator)
 SeriesPublished(address indexed core, uint256 indexed seriesID, bytes32 indexed merchantRef, address operator)
 ```
