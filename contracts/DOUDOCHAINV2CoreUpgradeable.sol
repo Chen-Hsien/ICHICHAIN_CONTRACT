@@ -450,6 +450,14 @@ contract DOUDOCHAINV2CoreUpgradeable is
         emit UpdateTicketStatus(tokenID, seriesID, status.tokenRevealedPrize, status.tokenExchange, status.tokenRevealed);
     }
 
+    /// @notice Read-only precondition for the dedicated buyback module.
+    /// The module must then call moduleBurnForRedraw in the same transaction.
+    function requireBuybackDeadlineOpen(uint256 tokenID) external view {
+        TicketStatus storage status = ticketStatusDetail[tokenID];
+        if (seriesData[status.seriesID].exchangeExpireTime == 0) revert InvalidSeriesInput();
+        _requireExchangeDeadlineOpen(status.tokenRevealTimestamp, status.seriesID);
+    }
+
     function moduleSetSeriesRefund(
         uint256 seriesID,
         bool isRefund
