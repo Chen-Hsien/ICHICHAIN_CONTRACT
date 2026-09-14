@@ -1,0 +1,18 @@
+[
+  {
+    "key": "DOUDO_CORE",
+    "status": "verified"
+  },
+  {
+    "key": "DOUDO_BUNDLE_MODULE",
+    "status": "verified"
+  },
+  {
+    "key": "DOUDO_REDRAW_MODULE",
+    "status": "verified"
+  },
+  {
+    "key": "DOUDO_PRIZE_BUYBACK_MODULE",
+    "status": "verified"
+  }
+]
