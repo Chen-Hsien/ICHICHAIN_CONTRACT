@@ -1334,6 +1334,27 @@ describe("DOUDOCHAIN V2 split module suite", function () {
     );
   });
 
+  it("starts a free-order window from inventory at configuration, including ordinary purchases", async function () {
+    const { user, points, core, bundle } = await deploySplitSuite();
+    await createSeries(core);
+    await issuePoints(points, user.address, ethers.parseEther("2000"));
+    await core.connect(user).mint(0, zeroLuckyNumbers(20));
+    await expect(bundle.setSeriesFreeOrderChallenge(0, 41, [1]))
+      .to.be.revertedWithCustomError(bundle, "InvalidFreeOrderChallenge");
+    await expect(bundle.setSeriesFreeOrderChallenge(0, 10, [1, 2, 3, 4]))
+      .to.emit(bundle, "FreeOrderChallengeConfigured").withArgs(0, 1, 30, [1, 2, 3, 4])
+      .and.to.emit(bundle, "FreeOrderChallengeWindowConfigured").withArgs(0, 1, 10, 40, 30);
+    expect((await bundle.freeOrderChallengeConfigs(0)).eligibleFirstTicketCount).to.equal(30);
+    await core.connect(user).mint(0, zeroLuckyNumbers(5));
+    await expect(bundle.connect(user).mintFreeOrderChallenge(0, zeroLuckyNumbers(6), ethers.parseEther("60")))
+      .to.be.revertedWithCustomError(bundle, "FreeOrderChallengeNotEligible");
+    await bundle.connect(user).mintFreeOrderChallenge(0, zeroLuckyNumbers(5), ethers.parseEther("50"));
+    await expect(bundle.connect(user).mintFreeOrderChallenge(0, zeroLuckyNumbers(1), ethers.parseEther("10")))
+      .to.be.revertedWithCustomError(bundle, "FreeOrderChallengeNotEligible");
+    await expect(bundle.setSeriesFreeOrderChallenge(0, 5, [1]))
+      .to.emit(bundle, "FreeOrderChallengeWindowConfigured").withArgs(0, 2, 5, 30, 35);
+  });
+
   it("runs a first-N free-order challenge and refunds the round net of its quantity rebate", async function () {
     const { user, other, points, vrf, router, core, bundle } =
       await deploySplitSuite();

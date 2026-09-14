@@ -186,6 +186,15 @@ contract DoudoBundleModuleUpgradeable is
         uint256 eligibleFirstTicketCount,
         uint256[] triggerPrizeIDs
     );
+    /// @notice Relative window captured when configuration is executed.
+    /// @dev Legacy Configured event/getter retain the absolute sold-ticket cutoff.
+    event FreeOrderChallengeWindowConfigured(
+        uint256 indexed seriesID,
+        uint256 indexed version,
+        uint256 challengeTicketCount,
+        uint256 startRemainingTicketCount,
+        uint256 endSoldTicketCount
+    );
     event FreeOrderChallengeCleared(uint256 indexed seriesID, uint256 indexed version);
     event FreeOrderChallengeEnded(uint256 indexed seriesID, uint256 indexed version);
     event FreeOrderChallengeResult(
@@ -400,17 +409,19 @@ contract DoudoBundleModuleUpgradeable is
         return seriesRebateTiers[seriesID].length;
     }
 
+    /// @notice Opens the next challengeTicketCount tickets from execution-time inventory.
+    /// @dev Updates start a new version. Pending rounds retain their original trigger set.
     function setSeriesFreeOrderChallenge(
         uint256 seriesID,
-        uint256 eligibleFirstTicketCount,
+        uint256 challengeTicketCount,
         uint256[] calldata triggerPrizeIDs
     ) external onlyRole(OPERATION_ROLE) {
-        (uint256 priceInPoints, , , uint256 totalTicketNumbers) = core
+        (uint256 priceInPoints, , uint256 remainingTicketNumbers, uint256 totalTicketNumbers) = core
             .seriesMintConfig(seriesID);
         if (
             priceInPoints == 0 ||
-            eligibleFirstTicketCount == 0 ||
-            eligibleFirstTicketCount > totalTicketNumbers ||
+            challengeTicketCount == 0 ||
+            challengeTicketCount > remainingTicketNumbers ||
             triggerPrizeIDs.length == 0
         ) {
             revert InvalidFreeOrderChallenge();
@@ -439,16 +450,21 @@ contract DoudoBundleModuleUpgradeable is
         }
         if (!hasRemainingTriggerPrize) revert InvalidFreeOrderChallenge();
 
+        // Keep the historical absolute cutoff storage layout and getter semantics.
+        uint256 endSoldTicketCount = totalTicketNumbers - remainingTicketNumbers + challengeTicketCount;
         _freeOrderChallengeConfigs[seriesID] = FreeOrderChallengeConfig({
-            eligibleLastTicketCount: eligibleFirstTicketCount,
+            eligibleLastTicketCount: endSoldTicketCount,
             version: version,
             active: true
         });
         emit FreeOrderChallengeConfigured(
             seriesID,
             version,
-            eligibleFirstTicketCount,
+            endSoldTicketCount,
             triggerPrizeIDs
+        );
+        emit FreeOrderChallengeWindowConfigured(
+            seriesID, version, challengeTicketCount, remainingTicketNumbers, endSoldTicketCount
         );
     }
 
