@@ -1,0 +1,28 @@
+{
+  "chainId": 421614,
+  "address": "0x745Cb4540696Cf67a453aA3cE301CA50e1239fc5",
+  "startBlock": 313999040,
+  "transactionHash": "0x8abff1838fac92e2d8e10c70581dc66075f6401ec90b1ba71e5f0c2f4211e8b0",
+  "blockHash": "0x85e99518d37b39c6a7d81e3217983ef9941a377898eda2c2f315c98d297487d8",
+  "runtimeHash": "0x82961dac68ec55ffa2daf7ba35053a6e84a8bf024528c8722426f60725e9451c",
+  "sourceHash": "0x6a0445623cb7ba110306598d4321857745f37a4b4d46dfd96acd269500102fe8",
+  "routerAddress": "0x48A1205c9b6BF1Da1a3D1bE651A9e237AC349Eb5",
+  "membershipAddress": "0x2aBAd03eA3399e03a6c768405F0647f2aAe32B99",
+  "authorizationSigner": "0x56535d9904D7F3F1B462ED97997C8E9CDFB52227",
+  "operator": "0x25f7F9577A93d9708234245A50a860eA5845ff0b",
+  "routerRequesterTransactionHash": "0xc107bf85caf6b2c073ddc3bf481321cd7eb801f00410d86308d0e304c79ef405",
+  "membershipRoleTransactionHash": "0x028671a3f4bdfc369842ae8591de2db9f07eb32118e8881d57cab4fc8419561d",
+  "protocolVersion": "3",
+  "sourcePath": "contracts/FixedProbabilityLotteryV3.sol:FixedProbabilityLotteryV3",
+  "compiler": "0.8.20",
+  "compilerSettings": {
+    "optimizer": {
+      "enabled": true,
+      "runs": 0
+    },
+    "viaIR": true,
+    "metadata": {
+      "bytecodeHash": "none"
+    }
+  }
+}
