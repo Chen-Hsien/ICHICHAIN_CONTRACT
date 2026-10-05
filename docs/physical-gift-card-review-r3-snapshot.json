@@ -1,0 +1,199 @@
+{
+  "round": 3,
+  "mode": "fix",
+  "risk": "L2",
+  "frozenAt": "2026-10-05T13:44:11.618839+00:00",
+  "spec": "/Users/angustsai/ICHICHAIN_CONTRACT-physical-gifts/docs/physical-gift-card-spec.md",
+  "handoff": "/Users/angustsai/ICHICHAIN_CONTRACT-physical-gifts/docs/physical-gift-card-handoff.md",
+  "findingLog": "/Users/angustsai/ICHICHAIN_CONTRACT-physical-gifts/docs/physical-gift-card-review.md",
+  "repos": [
+    {
+      "repo": "backend",
+      "path": "/Users/angustsai/doudochain-backend-physical-gifts",
+      "base": "origin/develop",
+      "baseSha": "df220e708e99835757297bce6da4eeb395289a3e",
+      "headSha": "df220e708e99835757297bce6da4eeb395289a3e",
+      "mergeBase": "df220e708e99835757297bce6da4eeb395289a3e",
+      "trackedDiff": "/tmp/physical-gift-review-r3-backend.patch",
+      "files": [
+        {
+          "path": "apps/api/src/index.ts",
+          "sha256": "112d8c5a7eede94525847e39f7b057845e11e16aaff61fa59ea11b3915421914",
+          "untracked": false
+        },
+        {
+          "path": "apps/api/src/logistics/module.ts",
+          "sha256": "adf9389603799dd8658ce01f35de433d0625a731c81fa92a22f2fabe91dadc9f",
+          "untracked": false
+        },
+        {
+          "path": "apps/api/src/logistics/services/ecpay-logistics.service.ts",
+          "sha256": "7e7d6a068e8ee72ed6cc8962bbb0a2549a4f2a470d6ddc9803134653ebda7bfc",
+          "untracked": false
+        },
+        {
+          "path": "apps/api/src/logistics/services/logistics.service.ts",
+          "sha256": "171ebdf21afd0adba378f0edd793f322937e19414b68f691ea5ccf3bf3729a6f",
+          "untracked": false
+        },
+        {
+          "path": "apps/api/src/physical-gifts/admin-module.ts",
+          "sha256": "e35b59041e68424921ae196cded2a59c2d5abec94d65e27b25c44afc690fdbbe",
+          "untracked": true
+        },
+        {
+          "path": "apps/api/src/physical-gifts/controllers.ts",
+          "sha256": "b8c63d3a08004d9f87927e5da1c9b3e2e35c1cb7a8621f0fac28e1b15b081506",
+          "untracked": true
+        },
+        {
+          "path": "apps/api/src/physical-gifts/domain.ts",
+          "sha256": "76797afba9c15cede4d7bd3da0ebf20bec65a2eb97499b82ec5d227c943009ea",
+          "untracked": true
+        },
+        {
+          "path": "apps/api/src/physical-gifts/module.ts",
+          "sha256": "4928dded29b94792257dd3a9de58593423ebc882b2726bd87050f13f7959b343",
+          "untracked": true
+        },
+        {
+          "path": "apps/api/src/physical-gifts/physical-gifts-postgres.spec.ts",
+          "sha256": "29f1ee88ca55aeb8a5e7ff1a21a1a8db32ea85ef106713eea58254f30cf4f595",
+          "untracked": true
+        },
+        {
+          "path": "apps/api/src/physical-gifts/service.ts",
+          "sha256": "1514eb9d5f28973a52d404a794e4234c1381d8f57f4d917d1411bf2e70de860f",
+          "untracked": true
+        },
+        {
+          "path": "apps/worker/src/main.ts",
+          "sha256": "94d73e804ad3da218958d60d9c50ef34110ee5c84997f4be337835a11950d76c",
+          "untracked": false
+        },
+        {
+          "path": "apps/worker/src/physical-gifts.ts",
+          "sha256": "9c2e2929702203cd4c556c3e7227e69c55502fe755654197c1b33585acfe1f89",
+          "untracked": true
+        },
+        {
+          "path": "packages/db/prisma/migrations/20261005120000_physical_gifts/migration.sql",
+          "sha256": "dbc96ebd3c027e0ffa545c6b2982fcd7437a1dec3749a13f1dbe943816036c4d",
+          "untracked": true
+        },
+        {
+          "path": "packages/db/prisma/schema.prisma",
+          "sha256": "9fadfb111694c17b1256dcaf0278ad94b5007cad59b83d7e783c641aff89d025",
+          "untracked": false
+        }
+      ]
+    },
+    {
+      "repo": "admin",
+      "path": "/Users/angustsai/doudo-admin-physical-gifts",
+      "base": "origin/develop",
+      "baseSha": "02ec72af29e4dcd791dcfdf5e17aafa244ebc414",
+      "headSha": "02ec72af29e4dcd791dcfdf5e17aafa244ebc414",
+      "mergeBase": "02ec72af29e4dcd791dcfdf5e17aafa244ebc414",
+      "trackedDiff": "/tmp/physical-gift-review-r3-admin.patch",
+      "files": [
+        {
+          "path": "src/app/admin/physical-gifts/page.tsx",
+          "sha256": "d833ba27e41bcb4c3a03b1059abd2928c70577615800ecd357d57508ab995d8d",
+          "untracked": true
+        },
+        {
+          "path": "src/features/admin-console/admin-console.tsx",
+          "sha256": "6773b6ad820d2bc05912ad8e73005db43299a28a77265bd387d140600837cc7d",
+          "untracked": false
+        },
+        {
+          "path": "src/features/admin-console/detail-router.tsx",
+          "sha256": "0b9be77f42b08a4c7941f47c33f61aea18df070fd34ea4f5a9838aa5d1cde831",
+          "untracked": false
+        },
+        {
+          "path": "src/features/admin-console/logistics.tsx",
+          "sha256": "4d39f31e51541ccd59f71fca1354003de00e9260f8bc7bdfb90d80dcb8e293f6",
+          "untracked": false
+        },
+        {
+          "path": "src/features/admin-console/physical-gifts.test.tsx",
+          "sha256": "af5c1eb1f20b936d44f2b7c18263b7fcf6237ff15fa8b48c91e8a5bd466a2738",
+          "untracked": true
+        },
+        {
+          "path": "src/features/admin-console/physical-gifts.tsx",
+          "sha256": "d278b236b054610cb708d0c13da7b0d08f1b7b3ce7d201534869620df9fc6568",
+          "untracked": true
+        },
+        {
+          "path": "src/lib/admin-navigation.ts",
+          "sha256": "dc5ce18727e61e38afdb30dc21373363296bc70113b9344fb26458f8458752e3",
+          "untracked": false
+        },
+        {
+          "path": "src/lib/doudo-admin-api-physical-gifts.test.ts",
+          "sha256": "0cb3471dc3ab8cd8f69f8a6cc60512dc62bacb17ea87b70779485b27a325d5d7",
+          "untracked": true
+        },
+        {
+          "path": "src/lib/doudo-admin-api.ts",
+          "sha256": "8bf97561934ed62369035db71dace062bbd77a79a585446c458966f7cffb3c7b",
+          "untracked": false
+        },
+        {
+          "path": "src/lib/physical-gifts.ts",
+          "sha256": "c811070795aa4be9556a20b8059888eec56e932084abf9c904efdef519ea8f56",
+          "untracked": true
+        }
+      ]
+    },
+    {
+      "repo": "frontend",
+      "path": "/Users/angustsai/ichichain-physical-gifts",
+      "base": "origin/dev",
+      "baseSha": "b0f6738f1a372773648cfceeb0c9a160e5c603cc",
+      "headSha": "b0f6738f1a372773648cfceeb0c9a160e5c603cc",
+      "mergeBase": "b0f6738f1a372773648cfceeb0c9a160e5c603cc",
+      "trackedDiff": "/tmp/physical-gift-review-r3-frontend.patch",
+      "files": [
+        {
+          "path": "app/[lang]/gift/page.tsx",
+          "sha256": "8ae120353f4a863fa211a1b648b4b8765dc5b53efa9e137345ff2d3913c38369",
+          "untracked": true
+        },
+        {
+          "path": "app/components/gifts/PhysicalGiftClient.test.tsx",
+          "sha256": "733f5550b6ed0ebf4255136b07cf3d3af05160e407d963267428a6ce753d677c",
+          "untracked": true
+        },
+        {
+          "path": "app/components/gifts/PhysicalGiftClient.tsx",
+          "sha256": "6a4d231776e33fb8cad2b7c2d1585ea63cb048037ce841860e0334b1c0cec0cd",
+          "untracked": true
+        },
+        {
+          "path": "app/components/tasks/TaskCenterClient.tsx",
+          "sha256": "f869046ad45679a24e7073e999116f9caed63950515d666de968b5ee9df9fb84",
+          "untracked": false
+        },
+        {
+          "path": "app/hooks/doudochainBackendClient.ts",
+          "sha256": "f4c200b2ae17c63a244f3a25a44fd9fa5a6a1dc220ae19820222c689437c84b7",
+          "untracked": false
+        },
+        {
+          "path": "app/hooks/physicalGiftContract.test.ts",
+          "sha256": "64b5a8690ea54d76128fa21b9c336463eaf4f1b40fcd591152fbc20d551133d7",
+          "untracked": true
+        },
+        {
+          "path": "app/hooks/physicalGiftTypes.ts",
+          "sha256": "e94f2a41c9f787e954606782246e64e1ed6b47ea1b7dab1dc253589573768345",
+          "untracked": true
+        }
+      ]
+    }
+  ]
+}
