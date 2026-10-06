@@ -1,0 +1,167 @@
+{
+  "scope": "private invitation for original parcel physical gift",
+  "mode": "fix/WIP",
+  "risk": "L2",
+  "round": 1,
+  "createdAt": "2026-10-06T02:52:30.925546+00:00",
+  "reviewBudget": {
+    "maxRounds": 3,
+    "maxFixBatches": 2,
+    "maxReviewerCalls": 6,
+    "usedCalls": 0
+  },
+  "repos": {
+    "backend": {
+      "root": "/Users/angustsai/doudochain-backend-physical-gifts",
+      "comparisonRef": "origin/develop",
+      "targetRef": "origin/develop",
+      "targetSha": "b2aa9e3207c70148f604be34fdc2f2ef81816b99",
+      "headSha": "b2aa9e3207c70148f604be34fdc2f2ef81816b99",
+      "mergeBaseSha": "b2aa9e3207c70148f604be34fdc2f2ef81816b99",
+      "staged": [],
+      "unstaged": [
+        "apps/api/src/physical-gifts/controllers.ts",
+        "apps/api/src/physical-gifts/domain.ts",
+        "apps/api/src/physical-gifts/physical-gifts-postgres.spec.ts",
+        "apps/api/src/physical-gifts/service.ts",
+        "packages/db/prisma/schema.prisma"
+      ],
+      "untracked": [
+        "packages/db/prisma/migrations/20261006090000_physical_gift_invitations/migration.sql"
+      ],
+      "patchPath": "/tmp/gift-invitation-review-r1-backend.patch",
+      "patchSha256": "6023e8c196ff1f47d929f56b5a2f9879c0da0ff2b5e551192e213ef58179a72c",
+      "files": {
+        "apps/api/src/physical-gifts/controllers.ts": "80ed67de97ca37a90c14df903e5670694cd6467abf63fc4c53135adc08bac07b",
+        "apps/api/src/physical-gifts/domain.ts": "047884288c1662f2628108aa66293e7b9c64362e9670e67ee6520e390a72c310",
+        "apps/api/src/physical-gifts/physical-gifts-postgres.spec.ts": "044b9dc6f437032e9c9e618f63872939df528eb7e9d4ec1e4292828b2c0db92f",
+        "apps/api/src/physical-gifts/service.ts": "b21dc725b8eb9643d76d57fd25e4cac0fdb777885996cbf27111deca5db52ecb",
+        "packages/db/prisma/migrations/20261006090000_physical_gift_invitations/migration.sql": "85cc894056f5a4c7c303097348bfeb557d29fb9d00a68bb4679ea31600376839",
+        "packages/db/prisma/schema.prisma": "745ecfe123631d3dd523de3d70dd7cb8bdfbf5fb0b27e3d5c49bbc17932f6280"
+      }
+    },
+    "frontend": {
+      "root": "/Users/angustsai/ichichain-physical-gifts",
+      "comparisonRef": "origin/dev",
+      "targetRef": "origin/dev",
+      "targetSha": "6b05e50a421a0b01c56a50482a3464fc53a5df13",
+      "headSha": "6b05e50a421a0b01c56a50482a3464fc53a5df13",
+      "mergeBaseSha": "6b05e50a421a0b01c56a50482a3464fc53a5df13",
+      "staged": [],
+      "unstaged": [
+        "app/[lang]/gift/page.tsx",
+        "app/api/_lib/backendProxy.test.ts",
+        "app/components/gifts/PhysicalGiftClient.test.tsx",
+        "app/components/gifts/PhysicalGiftClient.tsx",
+        "app/components/logistics/order/LogisticsOrder.test.tsx",
+        "app/components/logistics/order/LogisticsOrder.tsx",
+        "app/components/providers/AnalyticsProvider.test.tsx",
+        "app/components/providers/AnalyticsProvider.tsx",
+        "app/hooks/doudochainBackendClient.ts",
+        "app/hooks/physicalGiftContract.test.ts",
+        "app/hooks/physicalGiftTypes.ts"
+      ],
+      "untracked": [
+        "app/[lang]/gift/invitation/[invitationId]/page.tsx",
+        "app/components/gifts/PhysicalGiftSharing.tsx"
+      ],
+      "patchPath": "/tmp/gift-invitation-review-r1-frontend.patch",
+      "patchSha256": "032fe8cfd0623edca34d2e919548d0160e0300f32c7e3aab4b63f1eebe2d721c",
+      "files": {
+        "app/[lang]/gift/invitation/[invitationId]/page.tsx": "b742aee474e0f2a843382b1da0d1b47f53a38e5ffac0f5f3258bd239543354b3",
+        "app/[lang]/gift/page.tsx": "672aa2d7a739e56b50396b578ed3fad3f457ed13531359cc9026b02103a0aece",
+        "app/api/_lib/backendProxy.test.ts": "2d344948cad4753a8e815d0ada6b7a57946902cdb75d9e9e07f80ac37d011427",
+        "app/components/gifts/PhysicalGiftClient.test.tsx": "19ef573e364752afd697061765e2bf7d865b5d492bdfd0a178b383ca39a9c17e",
+        "app/components/gifts/PhysicalGiftClient.tsx": "dc68b648297e8827606b8cf0b68105a85e15b93168832e8a38de3ab84593c7cc",
+        "app/components/gifts/PhysicalGiftSharing.tsx": "a4023e042e7fcf76436492eb769e45e9d7b9ce39b7aec5c2ccb5db34a1efaf29",
+        "app/components/logistics/order/LogisticsOrder.test.tsx": "f2d945bd1e3de748e1151396c8dd0d3f09a869ac9e9303fac4901f72da0f66c6",
+        "app/components/logistics/order/LogisticsOrder.tsx": "cc64b43dcee3d8555d60e8c2a7838cf229fed6b9da373e89ffc3e31f978f9599",
+        "app/components/providers/AnalyticsProvider.test.tsx": "d043545db74ad8b04826dff5b606946747246b8657a3ac51f754b1471aa45db4",
+        "app/components/providers/AnalyticsProvider.tsx": "ae2fe884f7f2f6caeb8fd258e6dc9f77ebd8a19766def34af590e3ab3c353d00",
+        "app/hooks/doudochainBackendClient.ts": "47637f12503b8b2ea9c6918c9334de5a6c92ea43a719b5bcdb0c289a25ddca85",
+        "app/hooks/physicalGiftContract.test.ts": "9b65f7a1c99befcabda4daeba236a1c7fb75db1e036ea0181bc58956c729faf6",
+        "app/hooks/physicalGiftTypes.ts": "15d9a42e1e1c8779e93c28788e20c257bf82bcbbc40fd28d55d6d2106f2703ee"
+      }
+    },
+    "admin": {
+      "root": "/Users/angustsai/doudo-admin-physical-gifts",
+      "comparisonRef": "origin/develop",
+      "targetRef": "origin/develop",
+      "targetSha": "4fa38d56aefa746963b062ae404a2a729784eb67",
+      "headSha": "4fa38d56aefa746963b062ae404a2a729784eb67",
+      "mergeBaseSha": "4fa38d56aefa746963b062ae404a2a729784eb67",
+      "staged": [],
+      "unstaged": [],
+      "untracked": [],
+      "patchPath": "/tmp/gift-invitation-review-r1-admin.patch",
+      "patchSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "files": {}
+    },
+    "docs": {
+      "root": "/Users/angustsai/ICHICHAIN_CONTRACT-physical-gifts",
+      "comparisonRef": "origin/dev",
+      "targetRef": "origin/dev",
+      "targetSha": "34bf90efb36aacd954b921df7b3b053eec09ed19",
+      "headSha": "34bf90efb36aacd954b921df7b3b053eec09ed19",
+      "mergeBaseSha": "34bf90efb36aacd954b921df7b3b053eec09ed19",
+      "staged": [],
+      "unstaged": [],
+      "untracked": [
+        "docs/physical-gift-invitation-handoff.md",
+        "docs/physical-gift-invitation-spec.md"
+      ],
+      "patchPath": "/tmp/gift-invitation-review-r1-docs.patch",
+      "patchSha256": "e625be25309cc3b376f950c41597d02bb0d80ef133662575ecbcdca2f632bb52",
+      "files": {
+        "docs/physical-gift-invitation-handoff.md": "e48593d311bc67038af0e732b416340168a15f4b93a3e08003825a7c43752469",
+        "docs/physical-gift-invitation-spec.md": "f32ecf58c0ad6500f9265c580a688bc9388f7b2c74b19ea65faed7bdb8c7b0b6"
+      }
+    }
+  },
+  "checks": {
+    "postgres49": {
+      "success": true,
+      "passed": 49,
+      "failed": 0,
+      "skipped": 0,
+      "suites": 1,
+      "report": "/tmp/gift-invitation-backend-tests.json",
+      "sha256": "73b101e4fba8ec0241deb8156ed1becb0e054413508dfe959b5c7140f934ac30"
+    },
+    "backendNeighbors87": {
+      "success": true,
+      "passed": 87,
+      "failed": 0,
+      "skipped": 0,
+      "suites": 5,
+      "report": "/tmp/gift-invitation-backend-neighbors.json",
+      "sha256": "388e9e7442ebdd8e77136bff1314be859416bb7fbf8bf5bc30a1bfaa1ea31a99"
+    },
+    "frontend64": {
+      "success": true,
+      "passed": 64,
+      "failed": 0,
+      "skipped": 0,
+      "suites": 6,
+      "report": "/tmp/gift-invitation-frontend-tests.json",
+      "sha256": "6b7cd399bcc08de38f81d11e3abac9099f844d185716576ad581eaa32b13b05a"
+    },
+    "dailyChest58": {
+      "success": true,
+      "passed": 58,
+      "failed": 0,
+      "skipped": 0,
+      "suites": 1,
+      "report": "/tmp/gift-invitation-task-chest-tests.json",
+      "sha256": "42ea0cd080be25543902a77a4e79f183db4e210d88394c7f9761194b75a59a3e"
+    },
+    "typecheckLintDiff": {
+      "backend": "PASS",
+      "frontend": "PASS",
+      "docsDiff": "PASS",
+      "prLintGate": "not applicable; no PR",
+      "browserBuildRemoteCI": "not run",
+      "productionMigrationDeployment": "not run"
+    }
+  }
+}
