@@ -1,0 +1,131 @@
+{
+  "schemaVersion": "fixed-probability-uups-deployment-v1",
+  "chainId": 421614,
+  "proxyKind": "uups",
+  "protocolVersion": 1,
+  "legacyAddress": "0x745Cb4540696Cf67a453aA3cE301CA50e1239fc5",
+  "initializer": [
+    "0x48A1205c9b6BF1Da1a3D1bE651A9e237AC349Eb5",
+    "0x56535d9904D7F3F1B462ED97997C8E9CDFB52227",
+    "0x25f7F9577A93d9708234245A50a860eA5845ff0b",
+    "0x2aBAd03eA3399e03a6c768405F0647f2aAe32B99",
+    "0x226f0197D502e7AC87d1A76D6526945DFa9E4209",
+    "0x226f0197D502e7AC87d1A76D6526945DFa9E4209"
+  ],
+  "buybackAuthorizer": "0x56535d9904D7F3F1B462ED97997C8E9CDFB52227",
+  "abiSha256": "5edf72536bedbf79b8144111b170284d9b20fb04379866f6e0b0bdb96daf06e1",
+  "storageLayoutSha256": "40c7f97e98665be81c03c95816725e59b943260ca90bf9da152da369bd6c89de",
+  "sourceBundleSha256": "8f2ed06038991af85b0f3874fda8eb5af940c06482cd6bbd33b07bee2efb536e",
+  "sourcePath": "contracts/FixedProbabilityLotteryV3Upgradeable.sol:FixedProbabilityLotteryV3Upgradeable",
+  "sourceHash": "0xb8fb78ed7718fffb67e3160d5a6c91cf339a75dbb48f7cddf16526630f11012a",
+  "compiler": "0.8.20+commit.a1b79de6",
+  "compilerSettings": {
+    "metadata": {
+      "bytecodeHash": "none"
+    },
+    "optimizer": {
+      "enabled": true,
+      "runs": 0
+    },
+    "viaIR": true,
+    "evmVersion": "paris",
+    "outputSelection": {
+      "*": {
+        "*": [
+          "abi",
+          "evm.bytecode",
+          "evm.deployedBytecode",
+          "evm.methodIdentifiers",
+          "metadata",
+          "storageLayout"
+        ],
+        "": [
+          "ast"
+        ]
+      }
+    }
+  },
+  "libraries": [
+    {
+      "name": "FixedProbabilityConfigValidation",
+      "address": "0x6F32A51e6A0a9A1267A86A88C408A0dF4A51148A",
+      "transactionHash": "0x668db69e16b8a20c6ec16afb3f1e5abfb67fcee6800b4486e0997ecee0c6e0f7",
+      "startBlock": 319352626,
+      "blockHash": "0xa6ceecf359b48954d826be2a49c5a38a31f99ff7a6990094e8a8100d38555ce9",
+      "runtimeHash": "0xe398d56ecdd4e405bcfd016f3f31dca93503a8440f3b4d1f101a2a95e68ec6a2",
+      "runtimeBytes": 3240
+    },
+    {
+      "name": "FixedProbabilitySettlement",
+      "address": "0x383B816c0343510976e8dFE8861b9B20e1E9F5A3",
+      "transactionHash": "0x9b5e6e75ff504fba47ed26394d5340609da5b9689e0ea4022d944134b9fe431f",
+      "startBlock": 319353126,
+      "blockHash": "0x00b0eab7a04dba9a195e6a532c248651a69eea5d66236928104898679e8b777a",
+      "runtimeHash": "0x166a2c6518a1c8fb623b845a4f3605a68758562cd5dc2660a20fe6af01a30f75",
+      "runtimeBytes": 3494
+    },
+    {
+      "name": "FixedProbabilityBuybackValidation",
+      "address": "0x269E93CF4e7c9f371307b1Ff62BcC387ff381EF6",
+      "transactionHash": "0xefc0a0f14864473a87af1cf34f63fda3b27ac22420176b5a0e37dc6ededd52ff",
+      "startBlock": 319353137,
+      "blockHash": "0x996a06c3708ccf0bbbc9814b9243deb77f8430bb291a75a4853efd1be854ffe2",
+      "runtimeHash": "0xde43513708cd5b6d3bb7f1b332e98b4821ff10f7abb54817b784f18cbcc61ad2",
+      "runtimeBytes": 1852
+    }
+  ],
+  "transactions": {
+    "routerRequester": "0x8468251f9032a60cf4e8ff7ea4a9fa2330bbe7bb9a97de30b48d42b38059e9e8",
+    "membershipRecorder": "0x825647008d2e5878c4b6b0dfea49cd74d76ba03f3e00591c20ccb70ae13b6aa1",
+    "buybackAuthorizer": "0x40a3d9fe60211b88fa0fc6f52e5e0c6920ec9af0a2ea49a67051494d8f7e1b8c"
+  },
+  "pending": null,
+  "status": "verified",
+  "implementation": {
+    "address": "0x0213973159DC44e9AfDB04eeD6a9e4f8F42d8975",
+    "transactionHash": "0x60fb3c39372cc4130134a85305a8efa72253b920af68cf629514008a2fc6268a",
+    "startBlock": 319353153,
+    "blockHash": "0xfe36773308df59dab11d2c2bb3567a6dea9c3436488242a7b1d6df3161db78b6",
+    "runtimeHash": "0x599e5a3c4044d93b472593d78d276dd631adc8e6dfdcf1cc001e1e7961537be5",
+    "runtimeBytes": 24014
+  },
+  "address": "0x51a9f7f467498fee72eFBe37043897A3c225F235",
+  "transactionHash": "0x22ec35535f7e054ce484f5dfb17524e9974ce61d2b122eabce89cd6ebe629aea",
+  "startBlock": 319353178,
+  "blockHash": "0x6fa539480879d7cdc5a5c2f43e9601b106a0974caa122e68fe1069f78af636ca",
+  "runtimeHash": "0x5e4dcb0bb1910f6429e5fe91678990088a51c6d1cfe1b31d05fb9d948cc7867c",
+  "runtimeBytes": 708,
+  "verification": {
+    "blockNumber": 319353217,
+    "blockHash": "0xfdbf57ec35cb363821399a2247e1444155f0c47abd0309a6c05fdb651d80ff3a",
+    "checks": {
+      "proxyRuntime": true,
+      "implementationSlot": true,
+      "uuid": true,
+      "initializedAdmin": true,
+      "upgrader": true,
+      "operator": true,
+      "authorizationSigner": true,
+      "router": true,
+      "membership": true,
+      "requester": true,
+      "recorder": true,
+      "buybackAuthorizer": true,
+      "mintDomain": true,
+      "implementationSize": true
+    }
+  },
+  "sourceVerification": {
+    "implementation": "VERIFIED",
+    "proxy": "VERIFIED_AND_LINKED"
+  },
+  "protocolVerification": {
+    "checkedAt": "2026-10-15T07:58:52.658Z",
+    "checks": {
+      "domainDigest": true,
+      "protocolVersion": true,
+      "maxBatch": true,
+      "notConsumed": true
+    }
+  }
+}

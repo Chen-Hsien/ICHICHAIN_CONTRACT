@@ -21,7 +21,10 @@
     "check:free-order:arbitrum-sepolia": "hardhat run scripts/checkFreeOrderChallengeUpgradeArbSepolia.ts --network arbitrumSepolia",
     "deploy:arbitrum-one:fork": "FORK_DRY_RUN=1 hardhat run scripts/deployArbitrumOne.ts --network arbitrumOneFork",
     "migration:polygon-holders": "hardhat run --no-compile scripts/queryPolygonMigrationHolders.ts",
-    "test": "hardhat test"
+    "test": "hardhat test",
+    "prepare:fixed-probability:uups": "hardhat run scripts/prepareFixedProbabilityUups.ts --network hardhat",
+    "deploy:fixed-probability:uups:staging:preflight": "hardhat run scripts/deployFixedProbabilityUupsArbSepolia.ts --network arbitrumSepolia",
+    "deploy:fixed-probability:uups:staging": "EXECUTE_FIXED_PROBABILITY_UUPS_DEPLOY=1 hardhat run scripts/deployFixedProbabilityUupsArbSepolia.ts --network arbitrumSepolia"
   },
   "author": "",
   "license": "ISC",

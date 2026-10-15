@@ -1,0 +1,383 @@
+{
+  "schemaVersion": "fixed-probability-buyback-vectors-v1",
+  "status": "proposed-static-vectors-not-runtime-proof",
+  "date": "2026-10-15",
+  "addressesAreSynthetic": true,
+  "spec": "../specs/fixed-probability-buyback.md",
+  "authorizationTypes": {
+    "BuybackAuthorization": [
+      {
+        "name": "batchId",
+        "type": "bytes32"
+      },
+      {
+        "name": "buyer",
+        "type": "address"
+      },
+      {
+        "name": "coreAddress",
+        "type": "address"
+      },
+      {
+        "name": "itemsHash",
+        "type": "bytes32"
+      },
+      {
+        "name": "quoteHash",
+        "type": "bytes32"
+      },
+      {
+        "name": "totalPoints",
+        "type": "uint256"
+      },
+      {
+        "name": "deadline",
+        "type": "uint256"
+      }
+    ]
+  },
+  "assets": [
+    {
+      "source": "CORE",
+      "chainId": 421614,
+      "contractAddress": "0x5555555555555555555555555555555555555555",
+      "tokenId": "1"
+    },
+    {
+      "source": "FIXED_PROBABILITY",
+      "chainId": 421614,
+      "contractAddress": "0x2222222222222222222222222222222222222222",
+      "tokenId": "1"
+    },
+    {
+      "source": "FIXED_PROBABILITY",
+      "chainId": 421614,
+      "contractAddress": "0x2222222222222222222222222222222222222222",
+      "tokenId": "2"
+    }
+  ],
+  "expectedBatchAssetCounts": [
+    1,
+    2
+  ],
+  "allocations": [
+    {
+      "id": "ten-draw-net",
+      "quantity": "10",
+      "grossPointsRaw": "1000000000000000000000",
+      "rebatePointsRaw": "60000000000000000000",
+      "netPointsRaw": "940000000000000000000",
+      "expectedRaw": [
+        "94000000000000000000",
+        "94000000000000000000",
+        "94000000000000000000",
+        "94000000000000000000",
+        "94000000000000000000",
+        "94000000000000000000",
+        "94000000000000000000",
+        "94000000000000000000",
+        "94000000000000000000",
+        "94000000000000000000"
+      ]
+    },
+    {
+      "id": "raw-remainder",
+      "quantity": "3",
+      "grossPointsRaw": "11",
+      "rebatePointsRaw": "1",
+      "netPointsRaw": "10",
+      "expectedRaw": [
+        "4",
+        "3",
+        "3"
+      ]
+    },
+    {
+      "id": "zero-net-unresolved",
+      "quantity": "2",
+      "grossPointsRaw": "200000000000000000000",
+      "rebatePointsRaw": "200000000000000000000",
+      "netPointsRaw": "0",
+      "expectedRaw": [
+        "0",
+        "0"
+      ],
+      "authorizationAllowed": false,
+      "decision": "D-02"
+    }
+  ],
+  "deadlines": [
+    {
+      "id": "boundary--1",
+      "revealedAt": "1800000000",
+      "windowDays": 14,
+      "chainNow": "1801209599",
+      "expectedExchangeDeadline": "1801209600",
+      "expectedEligible": true,
+      "expectedAuthorizationDeadline": "1801209600"
+    },
+    {
+      "id": "boundary-0",
+      "revealedAt": "1800000000",
+      "windowDays": 14,
+      "chainNow": "1801209600",
+      "expectedExchangeDeadline": "1801209600",
+      "expectedEligible": true,
+      "expectedAuthorizationDeadline": "1801209600"
+    },
+    {
+      "id": "boundary-1",
+      "revealedAt": "1800000000",
+      "windowDays": 14,
+      "chainNow": "1801209601",
+      "expectedExchangeDeadline": "1801209600",
+      "expectedEligible": false
+    },
+    {
+      "id": "default-window-and-five-minute-quote",
+      "revealedAt": "1800000000",
+      "windowDays": null,
+      "chainNow": "1800000010",
+      "expectedExchangeDeadline": "1801209600",
+      "expectedEligible": true,
+      "expectedAuthorizationDeadline": "1800000310"
+    }
+  ],
+  "quoteHashes": [
+    {
+      "id": "canonical-quote",
+      "payload": {
+        "schemaVersion": "fixed-probability-buyback-quote-v1",
+        "orderId": "fixture-order-1",
+        "walletAddress": "0x1111111111111111111111111111111111111111",
+        "expiresAt": "1800000300",
+        "totalPointsRaw": "40000000000000000000",
+        "batches": [
+          {
+            "source": "FIXED_PROBABILITY",
+            "chainId": 421614,
+            "contractAddress": "0x2222222222222222222222222222222222222222",
+            "executionTarget": "0x2222222222222222222222222222222222222222",
+            "buybackProtocolVersion": "1",
+            "registryVersion": "fixture-only",
+            "items": [
+              {
+                "tokenId": "1",
+                "seriesId": "1",
+                "prizeId": "2",
+                "priceRaw": "30000000000000000000",
+                "policyVersion": 1,
+                "seriesDbId": "fixture-series",
+                "policyId": "fixture-policy-2",
+                "merchantId": "fixture-merchant",
+                "costBearerId": "fixture-merchant",
+                "rightsMerchantId": "fixture-merchant",
+                "fundingOriginHash": "0xb62ebc3a6641bc55153965ab26f10f0509a40bf11bd1b26b91b4c1395071e126",
+                "exchangeDeadline": "1801209600"
+              },
+              {
+                "tokenId": "2",
+                "seriesId": "1",
+                "prizeId": "3",
+                "priceRaw": "10000000000000000000",
+                "policyVersion": 1,
+                "seriesDbId": "fixture-series",
+                "policyId": "fixture-policy-3",
+                "merchantId": "fixture-merchant",
+                "costBearerId": "fixture-merchant",
+                "rightsMerchantId": "fixture-merchant",
+                "fundingOriginHash": "0xb62ebc3a6641bc55153965ab26f10f0509a40bf11bd1b26b91b4c1395071e126",
+                "exchangeDeadline": "1801209600"
+              }
+            ],
+            "valuationPlanHash": "0x3051c5e463cf82ca926d9330fbfea919c93b38f84b7643c74bb68e2ff44c4013",
+            "termsSnapshotHash": "0xa3084cac3b25700208537c9e462223f822b7c312eedb2e6d04c1d989bd200225",
+            "rightsSnapshotHash": "0x3789980a940f02586ea8362d0cf78dd982086274c2eada26c2d7d1ff954a87ab",
+            "batchId": "0x8888888888888888888888888888888888888888888888888888888888888888",
+            "totalPointsRaw": "40000000000000000000",
+            "expiresAt": "1800000300",
+            "itemsHash": "0x6cc2968b86a43d6762ee7ceac4bd2e3847fa63eedc9eef19c24b617de4edeb26",
+            "mintProtocolVersion": "3",
+            "runtimeHash": "0x9999999999999999999999999999999999999999999999999999999999999999"
+          }
+        ]
+      },
+      "expectedHash": "0x439dbb46693c5715e6aa8cbac9c2b87a3657879c994d3b9e4d70530e160b0c7e"
+    }
+  ],
+  "authorizations": [
+    {
+      "id": "native-fixed-probability",
+      "expectedAuthorizationAllowed": true,
+      "domain": {
+        "name": "DOUDO Prize Buyback",
+        "version": "1",
+        "chainId": 421614,
+        "verifyingContract": "0x2222222222222222222222222222222222222222"
+      },
+      "tokenIds": [
+        "1",
+        "2"
+      ],
+      "pointsRaw": [
+        "30000000000000000000",
+        "10000000000000000000"
+      ],
+      "message": {
+        "batchId": "0x8888888888888888888888888888888888888888888888888888888888888888",
+        "buyer": "0x1111111111111111111111111111111111111111",
+        "coreAddress": "0x2222222222222222222222222222222222222222",
+        "itemsHash": "0x6cc2968b86a43d6762ee7ceac4bd2e3847fa63eedc9eef19c24b617de4edeb26",
+        "quoteHash": "0x439dbb46693c5715e6aa8cbac9c2b87a3657879c994d3b9e4d70530e160b0c7e",
+        "totalPoints": "40000000000000000000",
+        "deadline": "1800000300"
+      },
+      "expectedDigest": "0xc22cc4691571d94a209ec538918912ace3d14b21a280559bbeab4d60b2ee986e"
+    },
+    {
+      "id": "wrong-execution-domain",
+      "expectedAuthorizationAllowed": false,
+      "domain": {
+        "name": "DOUDO Prize Buyback",
+        "version": "1",
+        "chainId": 421614,
+        "verifyingContract": "0x3333333333333333333333333333333333333333"
+      },
+      "tokenIds": [
+        "1",
+        "2"
+      ],
+      "pointsRaw": [
+        "30000000000000000000",
+        "10000000000000000000"
+      ],
+      "message": {
+        "batchId": "0x8888888888888888888888888888888888888888888888888888888888888888",
+        "buyer": "0x1111111111111111111111111111111111111111",
+        "coreAddress": "0x2222222222222222222222222222222222222222",
+        "itemsHash": "0x6cc2968b86a43d6762ee7ceac4bd2e3847fa63eedc9eef19c24b617de4edeb26",
+        "quoteHash": "0x439dbb46693c5715e6aa8cbac9c2b87a3657879c994d3b9e4d70530e160b0c7e",
+        "totalPoints": "40000000000000000000",
+        "deadline": "1800000300"
+      },
+      "expectedDigest": "0x9767de8bd5053e1f2bb104a83d6c8f352e11960ef780704cc468f8f1d52fa776"
+    }
+  ],
+  "valuationRegression": {
+    "id": "current-fixed-probability-spend-shape",
+    "chainId": 421614,
+    "nftAddress": "0x2222222222222222222222222222222222222222",
+    "tokenId": "1",
+    "purchasePointsRaw": "100000000000000000000",
+    "buybackPointsRaw": "30000000000000000000",
+    "existingSpendMetadata": {
+      "product": "fixed-probability-v3",
+      "chainId": 421614,
+      "contractAddress": "0x2222222222222222222222222222222222222222",
+      "orderId": "1"
+    },
+    "expectedCurrentError": "BUYBACK_VALUATION_SOURCE_PENDING",
+    "normalizedFundingMetadata": {
+      "product": "fixed-probability-v3",
+      "chainId": 421614,
+      "contractAddress": "0x2222222222222222222222222222222222222222",
+      "coreAddress": "0x2222222222222222222222222222222222222222",
+      "orderId": "1",
+      "fundingTokenPrices": {
+        "1": "100000000000000000000"
+      }
+    },
+    "syntheticLegacyOnlyExpectedCreditRaw": "30000000000000000000",
+    "warning": "legacyExempt is supplied only by this synthetic fixture; production origins require trusted evidence and D-02 decisions."
+  },
+  "negativeCases": [
+    {
+      "id": "duplicate-token",
+      "tokenIds": [
+        "1",
+        "1"
+      ],
+      "expected": "reject",
+      "test": "T-14"
+    },
+    {
+      "id": "wrong-nft-scope",
+      "source": "FIXED_PROBABILITY",
+      "contractAddress": "0x3333333333333333333333333333333333333333",
+      "tokenId": "1",
+      "expected": "reject-unregistered-deployment",
+      "test": "T-03"
+    },
+    {
+      "id": "source-missing-before-signature",
+      "expected": "reject-before-burn",
+      "test": "T-12"
+    },
+    {
+      "id": "zero-net-not-approved",
+      "expected": "reject-before-burn-until-D-02",
+      "test": "T-25"
+    }
+  ],
+  "snapshotHashes": [
+    {
+      "id": "origin",
+      "payload": {
+        "sourceType": "SYNTHETIC_LEGACY_ONLY",
+        "chainId": 421614,
+        "contractAddress": "0x2222222222222222222222222222222222222222",
+        "sourceLedgerId": "fixture-original-spend",
+        "originalBuyer": "0x1111111111111111111111111111111111111111",
+        "fundingTokenPrices": {
+          "1": "75000000000000000000",
+          "2": "25000000000000000000"
+        },
+        "version": 1,
+        "evidence": {
+          "kind": "LOCAL_FIXTURE_NOT_DEPLOYMENT"
+        }
+      },
+      "expectedHash": "0xb62ebc3a6641bc55153965ab26f10f0509a40bf11bd1b26b91b4c1395071e126"
+    },
+    {
+      "id": "plan",
+      "payload": {
+        "schemaVersion": "proposed-buyback-valuation-plan-v1",
+        "policyVersion": "LEGACY_FIRST_ROUND3_TWD_V2",
+        "sourceLedgerId": "fixture-original-spend",
+        "legacyRaw": "40000000000000000000",
+        "currentRaw": "0",
+        "basisTwdRaw": "0",
+        "tokenIds": [
+          "1",
+          "2"
+        ],
+        "buybackPointsRaw": "40000000000000000000",
+        "originVersion": 1
+      },
+      "expectedHash": "0x3051c5e463cf82ca926d9330fbfea919c93b38f84b7643c74bb68e2ff44c4013"
+    },
+    {
+      "id": "terms",
+      "payload": {
+        "merchantId": "fixture-merchant",
+        "revealedAt": "1800000000",
+        "windowDays": 14,
+        "exchangeDeadline": "1801209600",
+        "version": 1
+      },
+      "expectedHash": "0xa3084cac3b25700208537c9e462223f822b7c312eedb2e6d04c1d989bd200225"
+    },
+    {
+      "id": "rights",
+      "payload": {
+        "merchantId": "fixture-merchant",
+        "costBearerId": "fixture-merchant",
+        "rightsMerchantId": "fixture-merchant",
+        "rightsAgreement": null,
+        "accountingVersion": "fixture-v1"
+      },
+      "expectedHash": "0x3789980a940f02586ea8362d0cf78dd982086274c2eada26c2d7d1ff954a87ab"
+    }
+  ]
+}
