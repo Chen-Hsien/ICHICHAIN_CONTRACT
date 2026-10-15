@@ -1,0 +1,133 @@
+{
+  "chainId": "42161",
+  "sourceCommit": "80afcd0a952e811f2a14550872a5d588222aacaa",
+  "transactions": [
+    {
+      "label": "deployImplementation:DOUDO_CORE",
+      "hash": "0xdd8ff5022824880ce400fed0c2511315ee67b63aa14cf6d6a37f5a53683b7704",
+      "blockNumber": 505136347,
+      "status": 1,
+      "gasUsed": "5488139"
+    },
+    {
+      "label": "upgrade:DOUDO_CORE",
+      "hash": "0x5f8312573fff0672869f40af3c13c5403bccf3992da09317ea6020210929ea35",
+      "blockNumber": 505136363,
+      "status": 1,
+      "gasUsed": "40965"
+    },
+    {
+      "label": "deployImplementation:DOUDO_BUNDLE_MODULE",
+      "hash": "0xd47ef1e6591af94486affeb054f8cdee671a24a1d2266e8bb5752144d8a1be39",
+      "blockNumber": 505136387,
+      "status": 1,
+      "gasUsed": "5053804"
+    },
+    {
+      "label": "upgrade:DOUDO_BUNDLE_MODULE",
+      "hash": "0x5c77b29b77868af6e397be56890714609d85e9f716a4746b7dade0ba1ffed96e",
+      "blockNumber": 505136404,
+      "status": 1,
+      "gasUsed": "40587"
+    },
+    {
+      "label": "deployImplementation:DOUDO_REDRAW_MODULE",
+      "hash": "0xbd53282fd36dbca47949871ecba2d2187e3874c1366dce63194856714cfc020a",
+      "blockNumber": 505136431,
+      "status": 1,
+      "gasUsed": "2401787"
+    },
+    {
+      "label": "upgrade:DOUDO_REDRAW_MODULE",
+      "hash": "0xfd13c949ae3162a3852d805a92580565e3858cbd5771e2671d46b9ed53b8ddee",
+      "blockNumber": 505136445,
+      "status": 1,
+      "gasUsed": "40402"
+    },
+    {
+      "label": "deploy:BUYBACK",
+      "hash": "0x168468e02ca8c66a99b59bbc67d8e596a54ac5a1a8225400d490af4765b92ce5",
+      "blockNumber": 505136483,
+      "status": 1,
+      "gasUsed": "356362"
+    },
+    {
+      "label": "grant:BUYBACK:OPERATION_ROLE",
+      "hash": "0x6b1e0690a0453353a1d8637b41ad9fa53817937a1dda1627b30bf5e4724ecbde",
+      "blockNumber": 505136495,
+      "status": 1,
+      "gasUsed": "55081"
+    },
+    {
+      "label": "grant:CORE:BUYBACK:MODULE_ROLE",
+      "hash": "0xaf7c494450f7358b657ea7911792fa9285fcc8d48bca657b810d04fb6773dcd3",
+      "blockNumber": 505136506,
+      "status": 1,
+      "gasUsed": "55397"
+    },
+    {
+      "label": "deployImplementation:BUYBACK",
+      "hash": "0xf35096a2e8cab413aef976b639ea333cc904d90ea0d3c4992ea43354adca968d",
+      "blockNumber": 505136471,
+      "status": 1,
+      "gasUsed": "1947343"
+    }
+  ],
+  "implementations": {
+    "DOUDO_CORE": {
+      "old": "0xb18516D917F5eA1901c0e2b673518FE287881654",
+      "next": "0x3E4b971c57cA67f82BD828c8B0F3Da0534AF358E",
+      "proxy": "0x4749289F940F0C6B7cf68A19b0BDc611b80cdb0A"
+    },
+    "DOUDO_BUNDLE_MODULE": {
+      "old": "0x9161c335a59eA2C3Fc2F6B7C0dcf52e7EB8aC15e",
+      "next": "0x060994fB64964C1c178f851846dAE1Eb97434d3e",
+      "proxy": "0x0aDe18AD89B9971229d5E6588a76d4bEeAaE4b8f"
+    },
+    "DOUDO_REDRAW_MODULE": {
+      "old": "0x3246B28F6Cb04B6c37C74c3Aeadf744Be5c690ff",
+      "next": "0x78c03EB5334F85922431DbfaB5C1B218c38Ec7b2",
+      "proxy": "0xeDC87Ef2124ab0ee4B6fc1522A9b0F458A9B61ed"
+    }
+  },
+  "before": {
+    "points": "0x9f9D7D9A81e061a2F81C29588a8a98E43763C908",
+    "router": "0x13Ee37A43B012A772765089d8711b0Be42984010",
+    "paused": false,
+    "supply": "427",
+    "bundleCore": "0x4749289F940F0C6B7cf68A19b0BDc611b80cdb0A",
+    "bundlePoints": "0x9f9D7D9A81e061a2F81C29588a8a98E43763C908",
+    "redraw": "0xeDC87Ef2124ab0ee4B6fc1522A9b0F458A9B61ed",
+    "authorizer": "0x82025d74b565E3A26deFC9bf01AFd53c620121A5",
+    "membership": "0x3Fb8Df0381c96D95CEC8376FA1959E68EE1A0e94",
+    "databasePointsMode": true,
+    "refund": "0xD1d215c050aE51CFA6Eae0b236dEcD129cEddD3F",
+    "redrawCore": "0x4749289F940F0C6B7cf68A19b0BDc611b80cdb0A",
+    "redrawRouter": "0x13Ee37A43B012A772765089d8711b0Be42984010",
+    "redrawBundle": "0x0aDe18AD89B9971229d5E6588a76d4bEeAaE4b8f"
+  },
+  "after": {
+    "points": "0x9f9D7D9A81e061a2F81C29588a8a98E43763C908",
+    "router": "0x13Ee37A43B012A772765089d8711b0Be42984010",
+    "paused": false,
+    "supply": "427",
+    "bundleCore": "0x4749289F940F0C6B7cf68A19b0BDc611b80cdb0A",
+    "bundlePoints": "0x9f9D7D9A81e061a2F81C29588a8a98E43763C908",
+    "redraw": "0xeDC87Ef2124ab0ee4B6fc1522A9b0F458A9B61ed",
+    "authorizer": "0x82025d74b565E3A26deFC9bf01AFd53c620121A5",
+    "membership": "0x3Fb8Df0381c96D95CEC8376FA1959E68EE1A0e94",
+    "databasePointsMode": true,
+    "refund": "0xD1d215c050aE51CFA6Eae0b236dEcD129cEddD3F",
+    "redrawCore": "0x4749289F940F0C6B7cf68A19b0BDc611b80cdb0A",
+    "redrawRouter": "0x13Ee37A43B012A772765089d8711b0Be42984010",
+    "redrawBundle": "0x0aDe18AD89B9971229d5E6588a76d4bEeAaE4b8f"
+  },
+  "buyback": {
+    "proxy": "0x876668Ae85a7656434641F0CE51e55cf1b4F04aE",
+    "implementation": "0x1D9683E3A8475e5FAf8f3b53e6Acd3696B4edFEa",
+    "authorizer": "0x82025d74b565E3A26deFC9bf01AFd53c620121A5",
+    "moduleRoleBlock": 505136506
+  },
+  "verifiedAt": "2026-09-14T16:43:42.088Z",
+  "receiptsVerifiedAt": "2026-09-14T16:46:10.362Z"
+}
