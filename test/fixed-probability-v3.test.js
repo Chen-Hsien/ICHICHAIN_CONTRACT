@@ -1,8 +1,10 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
+const { deployFixedProbabilityProxy } = require("./helpers/fixed-probability-uups");
 const { time } = require("@nomicfoundation/hardhat-network-helpers");
 
-describe("FixedProbabilityLotteryV3", function () {
+for (const mode of ["legacy", "uups"])
+describe(`FixedProbabilityLotteryV3 ${mode}`, function () {
   async function fixture() {
     const [admin, signer, operator, buyer, other] = await ethers.getSigners();
     const Router = await ethers.getContractFactory(
@@ -13,15 +15,14 @@ describe("FixedProbabilityLotteryV3", function () {
       "FixedProbabilityV3MembershipMock"
     );
     const membership = await Membership.deploy();
-    const Lottery = await ethers.getContractFactory(
-      "FixedProbabilityLotteryV3"
-    );
-    const lottery = await Lottery.deploy(
-      await router.getAddress(),
-      signer.address,
-      operator.address,
-      await membership.getAddress()
-    );
+    const lottery = mode === "uups"
+      ? (await deployFixedProbabilityProxy([
+          await router.getAddress(), signer.address, operator.address,
+          await membership.getAddress(), admin.address, admin.address,
+        ])).lottery
+      : await (await ethers.getContractFactory("FixedProbabilityLotteryV3")).deploy(
+          await router.getAddress(), signer.address, operator.address, await membership.getAddress(),
+        );
     await Promise.all([
       router.waitForDeployment(),
       membership.waitForDeployment(),

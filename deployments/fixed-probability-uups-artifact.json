@@ -1,0 +1,66 @@
+{
+  "schemaVersion": "fixed-probability-uups-artifact-v1",
+  "contract": "contracts/FixedProbabilityLotteryV3Upgradeable.sol:FixedProbabilityLotteryV3Upgradeable",
+  "proxyKind": "uups",
+  "implementationSlot": "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
+  "implementationRuntimeBytes": 24014,
+  "abiSha256": "5edf72536bedbf79b8144111b170284d9b20fb04379866f6e0b0bdb96daf06e1",
+  "storageLayoutSha256": "40c7f97e98665be81c03c95816725e59b943260ca90bf9da152da369bd6c89de",
+  "initializer": {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "routerAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "signer",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "operatorAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "membershipAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "initialAdmin",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "upgrader",
+        "type": "address"
+      }
+    ],
+    "name": "initialize",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  "linkedLibraries": [
+    {
+      "source": "contracts/libraries/FixedProbabilityBuybackValidation.sol",
+      "name": "FixedProbabilityBuybackValidation"
+    },
+    {
+      "source": "contracts/libraries/FixedProbabilityConfigValidation.sol",
+      "name": "FixedProbabilityConfigValidation"
+    },
+    {
+      "source": "contracts/libraries/FixedProbabilitySettlement.sol",
+      "name": "FixedProbabilitySettlement"
+    }
+  ],
+  "requiresDeploymentEvidence": [
+    "proxy address/runtimeHash/receipt/startBlock",
+    "implementation address/runtimeHash/receipt/startBlock",
+    "all linked library addresses/runtimeHashes"
+  ]
+}

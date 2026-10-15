@@ -65,6 +65,10 @@
       "address": "0x2aBAd03eA3399e03a6c768405F0647f2aAe32B99",
       "txHash": "0x1bbeb6072609691ec6a0bf5f6e6c7f5ff72c4312a9bfdc5010bd495c30b18b72",
       "kind": "uups"
+    },
+    {
+      "address": "0x51a9f7f467498fee72eFBe37043897A3c225F235",
+      "kind": "uups"
     }
   ],
   "impls": {
@@ -27086,6 +27090,799 @@
         },
         "namespaces": {}
       }
+    },
+    "bf06f3c7a78334d5262c1d11cf30640b44139ccfdc83087d0d52c77d251957b5": {
+      "address": "0x0213973159DC44e9AfDB04eeD6a9e4f8F42d8975",
+      "txHash": "0x60fb3c39372cc4130134a85305a8efa72253b920af68cf629514008a2fc6268a",
+      "layout": {
+        "solcVersion": "0.8.20",
+        "storage": [
+          {
+            "label": "_initialized",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint8",
+            "contract": "Initializable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:63",
+            "retypedFrom": "bool"
+          },
+          {
+            "label": "_initializing",
+            "offset": 1,
+            "slot": "0",
+            "type": "t_bool",
+            "contract": "Initializable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:68"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "ContextUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:40"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "51",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "ERC165Upgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/utils/introspection/ERC165Upgradeable.sol:41"
+          },
+          {
+            "label": "_name",
+            "offset": 0,
+            "slot": "101",
+            "type": "t_string_storage",
+            "contract": "ERC721Upgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol:25"
+          },
+          {
+            "label": "_symbol",
+            "offset": 0,
+            "slot": "102",
+            "type": "t_string_storage",
+            "contract": "ERC721Upgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol:28"
+          },
+          {
+            "label": "_owners",
+            "offset": 0,
+            "slot": "103",
+            "type": "t_mapping(t_uint256,t_address)",
+            "contract": "ERC721Upgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol:31"
+          },
+          {
+            "label": "_balances",
+            "offset": 0,
+            "slot": "104",
+            "type": "t_mapping(t_address,t_uint256)",
+            "contract": "ERC721Upgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol:34"
+          },
+          {
+            "label": "_tokenApprovals",
+            "offset": 0,
+            "slot": "105",
+            "type": "t_mapping(t_uint256,t_address)",
+            "contract": "ERC721Upgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol:37"
+          },
+          {
+            "label": "_operatorApprovals",
+            "offset": 0,
+            "slot": "106",
+            "type": "t_mapping(t_address,t_mapping(t_address,t_bool))",
+            "contract": "ERC721Upgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol:40"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "107",
+            "type": "t_array(t_uint256)44_storage",
+            "contract": "ERC721Upgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol:477"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "151",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "ERC1967UpgradeUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/ERC1967/ERC1967UpgradeUpgradeable.sol:169"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "201",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "UUPSUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol:111"
+          },
+          {
+            "label": "_roles",
+            "offset": 0,
+            "slot": "251",
+            "type": "t_mapping(t_bytes32,t_mapping(t_address,t_bool))",
+            "contract": "MinimalAccessControlUpgradeable",
+            "src": "contracts/access/MinimalAccessControlUpgradeable.sol:9"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "252",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "MinimalAccessControlUpgradeable",
+            "src": "contracts/access/MinimalAccessControlUpgradeable.sol:68"
+          },
+          {
+            "label": "_paused",
+            "offset": 0,
+            "slot": "301",
+            "type": "t_bool",
+            "contract": "LightweightGuardsUpgradeable",
+            "src": "contracts/security/LightweightGuardsUpgradeable.sol:10"
+          },
+          {
+            "label": "_reentrancyStatus",
+            "offset": 0,
+            "slot": "302",
+            "type": "t_uint256",
+            "contract": "LightweightGuardsUpgradeable",
+            "src": "contracts/security/LightweightGuardsUpgradeable.sol:11"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "303",
+            "type": "t_array(t_uint256)48_storage",
+            "contract": "LightweightGuardsUpgradeable",
+            "src": "contracts/security/LightweightGuardsUpgradeable.sol:55"
+          },
+          {
+            "label": "router",
+            "offset": 0,
+            "slot": "351",
+            "type": "t_contract(IDoudoVRFRouter)7698",
+            "contract": "FixedProbabilityLotteryV3Upgradeable",
+            "src": "contracts/FixedProbabilityLotteryV3Upgradeable.sol:86"
+          },
+          {
+            "label": "membershipV2",
+            "offset": 0,
+            "slot": "352",
+            "type": "t_contract(IFixedProbabilityMembershipUpgradeableV3)5267",
+            "contract": "FixedProbabilityLotteryV3Upgradeable",
+            "src": "contracts/FixedProbabilityLotteryV3Upgradeable.sol:87"
+          },
+          {
+            "label": "authorizationSigner",
+            "offset": 0,
+            "slot": "353",
+            "type": "t_address",
+            "contract": "FixedProbabilityLotteryV3Upgradeable",
+            "src": "contracts/FixedProbabilityLotteryV3Upgradeable.sol:88"
+          },
+          {
+            "label": "operator",
+            "offset": 0,
+            "slot": "354",
+            "type": "t_address",
+            "contract": "FixedProbabilityLotteryV3Upgradeable",
+            "src": "contracts/FixedProbabilityLotteryV3Upgradeable.sol:89"
+          },
+          {
+            "label": "nextSeriesId",
+            "offset": 0,
+            "slot": "355",
+            "type": "t_uint256",
+            "contract": "FixedProbabilityLotteryV3Upgradeable",
+            "src": "contracts/FixedProbabilityLotteryV3Upgradeable.sol:91"
+          },
+          {
+            "label": "nextOrderId",
+            "offset": 0,
+            "slot": "356",
+            "type": "t_uint256",
+            "contract": "FixedProbabilityLotteryV3Upgradeable",
+            "src": "contracts/FixedProbabilityLotteryV3Upgradeable.sol:92"
+          },
+          {
+            "label": "nextDrawId",
+            "offset": 0,
+            "slot": "357",
+            "type": "t_uint256",
+            "contract": "FixedProbabilityLotteryV3Upgradeable",
+            "src": "contracts/FixedProbabilityLotteryV3Upgradeable.sol:93"
+          },
+          {
+            "label": "_series",
+            "offset": 0,
+            "slot": "358",
+            "type": "t_mapping(t_uint256,t_struct(Series)7557_storage)",
+            "contract": "FixedProbabilityLotteryV3Upgradeable",
+            "src": "contracts/FixedProbabilityLotteryV3Upgradeable.sol:94"
+          },
+          {
+            "label": "_orders",
+            "offset": 0,
+            "slot": "359",
+            "type": "t_mapping(t_uint256,t_struct(Order)7637_storage)",
+            "contract": "FixedProbabilityLotteryV3Upgradeable",
+            "src": "contracts/FixedProbabilityLotteryV3Upgradeable.sol:95"
+          },
+          {
+            "label": "_draws",
+            "offset": 0,
+            "slot": "360",
+            "type": "t_mapping(t_uint256,t_struct(Draw)7654_storage)",
+            "contract": "FixedProbabilityLotteryV3Upgradeable",
+            "src": "contracts/FixedProbabilityLotteryV3Upgradeable.sol:96"
+          },
+          {
+            "label": "requestToOrder",
+            "offset": 0,
+            "slot": "361",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "contract": "FixedProbabilityLotteryV3Upgradeable",
+            "src": "contracts/FixedProbabilityLotteryV3Upgradeable.sol:97"
+          },
+          {
+            "label": "authorizationUsed",
+            "offset": 0,
+            "slot": "362",
+            "type": "t_mapping(t_bytes32,t_bool)",
+            "contract": "FixedProbabilityLotteryV3Upgradeable",
+            "src": "contracts/FixedProbabilityLotteryV3Upgradeable.sol:98"
+          },
+          {
+            "label": "eligibleDrawsUsed",
+            "offset": 0,
+            "slot": "363",
+            "type": "t_mapping(t_bytes32,t_mapping(t_bytes32,t_uint256))",
+            "contract": "FixedProbabilityLotteryV3Upgradeable",
+            "src": "contracts/FixedProbabilityLotteryV3Upgradeable.sol:99"
+          },
+          {
+            "label": "eligibilityScopePolicy",
+            "offset": 0,
+            "slot": "364",
+            "type": "t_mapping(t_bytes32,t_bytes32)",
+            "contract": "FixedProbabilityLotteryV3Upgradeable",
+            "src": "contracts/FixedProbabilityLotteryV3Upgradeable.sol:100"
+          },
+          {
+            "label": "eligibilityScopeMaximum",
+            "offset": 0,
+            "slot": "365",
+            "type": "t_mapping(t_bytes32,t_uint256)",
+            "contract": "FixedProbabilityLotteryV3Upgradeable",
+            "src": "contracts/FixedProbabilityLotteryV3Upgradeable.sol:101"
+          },
+          {
+            "label": "consumed",
+            "offset": 0,
+            "slot": "366",
+            "type": "t_mapping(t_bytes32,t_bool)",
+            "contract": "FixedProbabilityLotteryV3Upgradeable",
+            "src": "contracts/FixedProbabilityLotteryV3Upgradeable.sol:103"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "367",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "FixedProbabilityLotteryV3Upgradeable",
+            "src": "contracts/FixedProbabilityLotteryV3Upgradeable.sol:104"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_uint16)dyn_storage": {
+            "label": "uint16[]",
+            "numberOfBytes": "32"
+          },
+          "t_array(t_uint256)44_storage": {
+            "label": "uint256[44]",
+            "numberOfBytes": "1408"
+          },
+          "t_array(t_uint256)48_storage": {
+            "label": "uint256[48]",
+            "numberOfBytes": "1536"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]",
+            "numberOfBytes": "1568"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]",
+            "numberOfBytes": "1600"
+          },
+          "t_array(t_uint256)dyn_storage": {
+            "label": "uint256[]",
+            "numberOfBytes": "32"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_bytes32": {
+            "label": "bytes32",
+            "numberOfBytes": "32"
+          },
+          "t_contract(IDoudoVRFRouter)7698": {
+            "label": "contract IDoudoVRFRouter",
+            "numberOfBytes": "20"
+          },
+          "t_contract(IFixedProbabilityMembershipUpgradeableV3)5267": {
+            "label": "contract IFixedProbabilityMembershipUpgradeableV3",
+            "numberOfBytes": "20"
+          },
+          "t_enum(OrderState)7506": {
+            "label": "enum FixedProbabilityTypes.OrderState",
+            "members": [
+              "NONE",
+              "PENDING",
+              "RANDOM_READY",
+              "SETTLED"
+            ],
+            "numberOfBytes": "1"
+          },
+          "t_enum(SeriesStatus)7501": {
+            "label": "enum FixedProbabilityTypes.SeriesStatus",
+            "members": [
+              "NONE",
+              "DRAFT",
+              "ACTIVE",
+              "PAUSED",
+              "CLOSED"
+            ],
+            "numberOfBytes": "1"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_mapping(t_address,t_bool))": {
+            "label": "mapping(address => mapping(address => bool))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_bool)": {
+            "label": "mapping(bytes32 => bool)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_bytes32)": {
+            "label": "mapping(bytes32 => bytes32)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_mapping(t_address,t_bool))": {
+            "label": "mapping(bytes32 => mapping(address => bool))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_mapping(t_bytes32,t_uint256))": {
+            "label": "mapping(bytes32 => mapping(bytes32 => uint256))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_uint256)": {
+            "label": "mapping(bytes32 => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_address)": {
+            "label": "mapping(uint256 => address)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(Draw)7654_storage)": {
+            "label": "mapping(uint256 => struct FixedProbabilityTypes.Draw)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(Order)7637_storage)": {
+            "label": "mapping(uint256 => struct FixedProbabilityTypes.Order)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(Series)7557_storage)": {
+            "label": "mapping(uint256 => struct FixedProbabilityTypes.Series)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "label": "mapping(uint256 => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_string_storage": {
+            "label": "string",
+            "numberOfBytes": "32"
+          },
+          "t_struct(Draw)7654_storage": {
+            "label": "struct FixedProbabilityTypes.Draw",
+            "members": [
+              {
+                "label": "drawId",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "orderId",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "drawIndex",
+                "type": "t_uint16",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "roll",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "prizeId",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "tokenId",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "5"
+              },
+              {
+                "label": "recipient",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "6"
+              },
+              {
+                "label": "exchanged",
+                "type": "t_bool",
+                "offset": 20,
+                "slot": "6"
+              }
+            ],
+            "numberOfBytes": "224"
+          },
+          "t_struct(Order)7637_storage": {
+            "label": "struct FixedProbabilityTypes.Order",
+            "members": [
+              {
+                "label": "orderId",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "buyer",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "seriesId",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "configHash",
+                "type": "t_bytes32",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "authorizationId",
+                "type": "t_bytes32",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "quantity",
+                "type": "t_uint16",
+                "offset": 0,
+                "slot": "5"
+              },
+              {
+                "label": "firstDrawId",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "6"
+              },
+              {
+                "label": "grossPoints",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "7"
+              },
+              {
+                "label": "rebatePoints",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "8"
+              },
+              {
+                "label": "netPoints",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "9"
+              },
+              {
+                "label": "freeOrderChallenge",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "10"
+              },
+              {
+                "label": "eligibilityKey",
+                "type": "t_bytes32",
+                "offset": 0,
+                "slot": "11"
+              },
+              {
+                "label": "levelAtRequest",
+                "type": "t_uint8",
+                "offset": 0,
+                "slot": "12"
+              },
+              {
+                "label": "acceptedDrawsBefore",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "13"
+              },
+              {
+                "label": "requestId",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "14"
+              },
+              {
+                "label": "state",
+                "type": "t_enum(OrderState)7506",
+                "offset": 0,
+                "slot": "15"
+              },
+              {
+                "label": "randomWords",
+                "type": "t_array(t_uint256)dyn_storage",
+                "offset": 0,
+                "slot": "16"
+              },
+              {
+                "label": "freeOrderWon",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "17"
+              },
+              {
+                "label": "firstTriggerIndex",
+                "type": "t_uint16",
+                "offset": 1,
+                "slot": "17"
+              },
+              {
+                "label": "refundPoints",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "18"
+              },
+              {
+                "label": "accountingFinalized",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "19"
+              },
+              {
+                "label": "membershipConsumptionId",
+                "type": "t_bytes32",
+                "offset": 0,
+                "slot": "20"
+              },
+              {
+                "label": "finalPointsConsumed",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "21"
+              },
+              {
+                "label": "membershipRewardPoints",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "22"
+              },
+              {
+                "label": "previousLevel",
+                "type": "t_uint8",
+                "offset": 0,
+                "slot": "23"
+              },
+              {
+                "label": "newLevel",
+                "type": "t_uint8",
+                "offset": 1,
+                "slot": "23"
+              },
+              {
+                "label": "expiresAt",
+                "type": "t_uint64",
+                "offset": 2,
+                "slot": "23"
+              }
+            ],
+            "numberOfBytes": "768"
+          },
+          "t_struct(Series)7557_storage": {
+            "label": "struct FixedProbabilityTypes.Series",
+            "members": [
+              {
+                "label": "config",
+                "type": "t_struct(SeriesConfig)7546_storage",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "configHash",
+                "type": "t_bytes32",
+                "offset": 0,
+                "slot": "16"
+              },
+              {
+                "label": "status",
+                "type": "t_enum(SeriesStatus)7501",
+                "offset": 0,
+                "slot": "17"
+              },
+              {
+                "label": "acceptedDraws",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "18"
+              }
+            ],
+            "numberOfBytes": "608"
+          },
+          "t_struct(SeriesConfig)7546_storage": {
+            "label": "struct FixedProbabilityTypes.SeriesConfig",
+            "members": [
+              {
+                "label": "pricePoints",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "drawCap",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "maxBatchSize",
+                "type": "t_uint16",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "prizeIds",
+                "type": "t_array(t_uint256)dyn_storage",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "weights",
+                "type": "t_array(t_uint16)dyn_storage",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "discountQuantities",
+                "type": "t_array(t_uint16)dyn_storage",
+                "offset": 0,
+                "slot": "5"
+              },
+              {
+                "label": "discountPoints",
+                "type": "t_array(t_uint256)dyn_storage",
+                "offset": 0,
+                "slot": "6"
+              },
+              {
+                "label": "freeOrderMode",
+                "type": "t_uint8",
+                "offset": 0,
+                "slot": "7"
+              },
+              {
+                "label": "freeOrderFirstDraws",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "8"
+              },
+              {
+                "label": "freeOrderPrizeIds",
+                "type": "t_array(t_uint256)dyn_storage",
+                "offset": 0,
+                "slot": "9"
+              },
+              {
+                "label": "gateMode",
+                "type": "t_uint8",
+                "offset": 0,
+                "slot": "10"
+              },
+              {
+                "label": "minMemberLevel",
+                "type": "t_uint8",
+                "offset": 1,
+                "slot": "10"
+              },
+              {
+                "label": "eligibilityPolicyId",
+                "type": "t_bytes32",
+                "offset": 0,
+                "slot": "11"
+              },
+              {
+                "label": "eligibilityScope",
+                "type": "t_bytes32",
+                "offset": 0,
+                "slot": "12"
+              },
+              {
+                "label": "maxEligibleDraws",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "13"
+              },
+              {
+                "label": "contentHash",
+                "type": "t_bytes32",
+                "offset": 0,
+                "slot": "14"
+              },
+              {
+                "label": "contentURI",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "15"
+              }
+            ],
+            "numberOfBytes": "512"
+          },
+          "t_uint16": {
+            "label": "uint16",
+            "numberOfBytes": "2"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint64": {
+            "label": "uint64",
+            "numberOfBytes": "8"
+          },
+          "t_uint8": {
+            "label": "uint8",
+            "numberOfBytes": "1"
+          }
+        },
+        "namespaces": {}
+      },
+      "allAddresses": [
+        "0x0213973159DC44e9AfDB04eeD6a9e4f8F42d8975"
+      ]
     }
   }
 }
