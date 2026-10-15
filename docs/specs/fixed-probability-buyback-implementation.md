@@ -159,3 +159,9 @@ npm run build:prod
 - Backend 公開 staging 設定在 `../backend/config/fixed-probability-uups-staging.env` 與 `../backend/config/fixed-probability-buyback-staging.json`，兩個 Render 服務 Blueprint 的 Proxy／startBlock 已同步，啟用旗標保留 false。
 - 尚未修改 Render 遠端環境、部署 API／worker／前後台網站或套用遠端 DB migrations；目前缺少 Render 管理憑證。新索引追上、API／worker 同版與 DB migrations、實際 KMS／Privy／Redis／錢包流程驗收後，才能啟用固定機率回收。
 - 本輪驗證：原合約 25 項＋部署等待恢復 4 項；Backend 227 項通過、82 項依整合環境條件略過；Frontend 63 項；Admin 55 項；Graph 68 項 Matchstick＋43 項部署＋8 項 parity，test/prod 建置及 GitHub CI。三個應用 TypeScript 檢查及部署腳本型別檢查通過。未執行前後台 production build／瀏覽器驗收。
+
+## 10 使用者確認的舊 V3 退場範圍（2026-10-15）
+
+使用者指示：「暫停舊系列甚至移除都可以，沒有兼容的必要」。本次採停用舊系列營運並切換 active address，不新增雙部署相容、舊歷史或舊 NFT 產品路由。舊鏈上 NFT、DB / ledger 稽核資料保留，切換前先停新 quote／簽章並驗證沒有 HELD 點數或未完成帳務；存在 pending 先排空，不能刪除來繞過。前述要求全面保留舊產品流程的驗收部分由這份使用者決策取代。
+
+Backend PR #139 已有 A1～A3 修正與局部複查；B1 依範圍變更記錄為 accepted scope change，須對最終完整 diff 做新上下文雙 reviewer 檢查及當前 head CI，才整合發布。Render 已可用登入的 Chrome，不需 API token；已建立公開 UUPS staging 群組，尚未連結服務。本輪 Mac 鎖定，等待手動解鎖後繼續 Dashboard；未完成步驟以 Backend runbook 的實際狀態為準。

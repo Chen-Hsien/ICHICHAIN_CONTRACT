@@ -6,6 +6,12 @@
 - 對照向量：[fixed-probability-buyback-v1.json](../fixtures/fixed-probability-buyback-v1.json)。向量的測試地址不是可用部署。
 - 延續既有 V3 的購買、VRF、實體兌換與開獎歷史，不另建回收頁、點數帳戶或逐筆人工審核產品。
 
+## 使用者最新範圍決策（2026-10-15，優先於下方舊相容規劃）
+
+使用者明確指示：「暫停舊系列甚至移除都可以，沒有兼容的必要」。本次停止舊 constructor V3 的系列營運與新購買入口，單一 active deployment 切換至新 UUPS Proxy。D-01 採「停用舊系列、不做產品相容」；BB-14、T-35 中要求保留舊 V3 系列／NFT／訂單畫面及雙部署恢復路由的部分，依使用者決策不納入本次驗收。這是需求範圍變更，不宣稱既有相容驗收通過。
+
+切換前先停止新 quote／簽章，確認舊 V3 沒有 HELD 點數或未完成 purchase／refund／membership／ledger 帳務，才停用 DB 系列並發布新 active address。若仍有 pending，先排空。保留原 chain NFT、Graph 既存歷史、DB 與 ledger 稽核資料；不刪除帳務、不搬移／burn 舊 NFT、不將舊 V3 誤認為支援新 buyback。此次不新增雙部署抽獎／歷史／兌換路由。
+
 ## 1 版本與證據基準
 
 以下是重新 fetch 的遠端分支快照，不代表線上 API、worker 或 subgraph 的版本。本規格只新增文件與資料向量；未合併分支、修改業務程式或操作鏈上狀態。後續實作必須在乾淨的工作目錄依各 repo AGENTS.md 同步指定基準，再重新檢查這些證據。
