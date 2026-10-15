@@ -1,16 +1,16 @@
 # 固定機率 NFT 回收換站內 Points 可驗證規格
 
 - 日期：2026-10-15，Asia/Taipei。
-- 狀態：待決策設計稿。需求、接口與驗收基準已定義；不是已實作或可部署證明。
+- 狀態：已實作並完成合約／Graph 的部分部署；應用程式切換與聯合驗收尚未完成，不能當作全量啟用證明。
 - 目標：固定機率 NFT 接回既有回收頁、逐獎報價、交易恢復、Points 入帳、商品權益與成本報表。
 - 對照向量：[fixed-probability-buyback-v1.json](../fixtures/fixed-probability-buyback-v1.json)。向量的測試地址不是可用部署。
-- 延續既有 V3 的購買、VRF、實體兌換與開獎歷史，不另建回收頁、點數帳戶或逐筆人工審核產品。
+- 新 UUPS 沿用固定機率購買、VRF、實體兌換與開獎流程，不另建回收頁、點數帳戶或逐筆人工審核產品。
 
 ## 使用者最新範圍決策（2026-10-15，優先於下方舊相容規劃）
 
 使用者明確指示：「暫停舊系列甚至移除都可以，沒有兼容的必要」。本次停止舊 constructor V3 的系列營運與新購買入口，單一 active deployment 切換至新 UUPS Proxy。D-01 採「停用舊系列、不做產品相容」；BB-14、T-35 中要求保留舊 V3 系列／NFT／訂單畫面及雙部署恢復路由的部分，依使用者決策不納入本次驗收。這是需求範圍變更，不宣稱既有相容驗收通過。
 
-切換前先停止新 quote／簽章，確認舊 V3 沒有 HELD 點數或未完成 purchase／refund／membership／ledger 帳務，才停用 DB 系列並發布新 active address。若仍有 pending，先排空。保留原 chain NFT、Graph 既存歷史、DB 與 ledger 稽核資料；不刪除帳務、不搬移／burn 舊 NFT、不將舊 V3 誤認為支援新 buyback。此次不新增雙部署抽獎／歷史／兌換路由。
+使用者後續明確指示：「直接把 v3 從 the graph 移除就好…資料庫內的資料可以直接清除就好，都是測試站」。這取代先前保留 staging 舊 V3 Graph／DB／ledger 的安排，僅適用 chainId=421614、舊地址 `0x745cb4540696cf67a453aa3ce301ca50e1239fc5`。移除該 datasource，發布完整重建的索引，不 graft 含舊 entities 的版本；先停舊背景恢復 queue、確認無 HELD／未完成帳務，備份後清理舊部署與關聯紀錄。刪除舊測試帳本時，必須同步回復相應 PointsAccount 的 Points／legacy／basis buckets，保留其他來源帳目與帳戶不變。此項測試資料清除不適用 production、一番賞或新 Proxy；不搬移或 burn 鏈上舊 NFT。
 
 ## 1 版本與證據基準
 

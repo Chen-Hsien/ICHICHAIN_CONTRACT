@@ -2,6 +2,8 @@
 
 本文件已依使用者最新要求改為 **UUPS 可升級版本**，取代先前一般合約的新部署方案。第 1～8 節保留部署前實作交接；最新部署結果以第 9 節為準。
 
+最新 staging 舊 V3 資料清除決策與執行結果以第 11 節為準，取代第 9～10 節較早的保留歷史安排。
+
 本文件對應 [回收規格](/Users/angustsai/.codex/worktrees/fixed-probability-buyback/ICHICHAIN_CONTRACT/docs/specs/fixed-probability-buyback.md)。程式已在五個隔離 worktree 實作；前端與 Admin 沿用現有回收介面。這是待部署的實作，尚未發送鏈上交易、部署 subgraph、修改遠端環境或啟用回收。
 
 ## 1 程式位置與基準
@@ -165,3 +167,13 @@ npm run build:prod
 使用者指示：「暫停舊系列甚至移除都可以，沒有兼容的必要」。本次採停用舊系列營運並切換 active address，不新增雙部署相容、舊歷史或舊 NFT 產品路由。舊鏈上 NFT、DB / ledger 稽核資料保留，切換前先停新 quote／簽章並驗證沒有 HELD 點數或未完成帳務；存在 pending 先排空，不能刪除來繞過。前述要求全面保留舊產品流程的驗收部分由這份使用者決策取代。
 
 Backend PR #139 已有 A1～A3 修正與局部複查；B1 依範圍變更記錄為 accepted scope change，須對最終完整 diff 做新上下文雙 reviewer 檢查及當前 head CI，才整合發布。Render 已可用登入的 Chrome，不需 API token；已建立公開 UUPS staging 群組，尚未連結服務。本輪 Mac 鎖定，等待手動解鎖後繼續 Dashboard；未完成步驟以 Backend runbook 的實際狀態為準。
+
+## 11 使用者要求清除 staging 舊 V3（2026-10-15）
+
+- 使用者確認舊 V3 可從 Graph 移除，測試 DB 資料亦可清除。範圍限 Sepolia 舊 `0x745cb4540696cf67a453aa3ce301ca50e1239fc5`；不刪除 production、一番賞或新 Proxy 資料。
+- Graph PR #13 已合併：https://github.com/Chen-Hsien/DOUDOCHAIN_SUBGRAPH/pull/13；實際發布 commit `b9e6e9e772b51a8bf509f373d429126ecd12a973`。移除舊 datasource／networks／active receipt evidence，部署 gate 拒絕重新加入 V3；Core 與 production manifest 維持原設定。42 項部署測試、68 項 Matchstick、staging codegen/build 通過。
+- 新版本 `3.0.1-uups-only.20261015`，Deployment ID `QmQp1u8PQLuXiaTVmafGUs4ofGneV6dUx8y16jrCGJPEzv`，endpoint：https://api.studio.thegraph.com/query/79631/doudochain-arb-v-2/3.0.1-uups-only.20261015。採完整重建，不 graft 舊 V3 entities；metadata healthy 已觀察，但索引仍在追趕，不能宣稱完整資料 parity 或已同步。
+- Render 實際 `fixed-probability-v2-recovery` queue 已 paused，active=0。清除後不可由舊 worker 重新建立舊 checkpoint；新 Proxy worker 上線驗證後才恢復這條 queue。
+- 已在已核對 DB fingerprint 的 staging 執行 Serializable transaction：清除 916 筆舊 V3／關聯測試資料，包含 5 shared Series、5 FixedProbabilitySeries、12 orders、61 draws、41 ledger rows、12 invoices、舊交易與工作紀錄，以及舊 checkpoint。兩個受影響測試 PointsAccount 依刪除的 AVAILABLE／RESERVED、legacy／basis delta 同步調整；驗證 unrelated row counts 與 category invariant。
+- 清理後重新掃描 191 張資料表，舊地址匹配為 0，legacy series／orders／checkpoints 均為 0。清理結果及核驗在 `../release-evidence/legacy-v3-purge-{result,verification}.json`；完整還原快照存於同目錄 private 子目錄，權限受限，未提交 Git。未發送鏈上交易。
+- 前端 dev Preview 的 Graph primary／fallback 已設定新 endpoint 並啟動重建。Render 設定頁當前載入異常，實際 API／worker Graph 切換、固定前台域名切換與新回收啟用尚未確認完成。不能把「新 Graph 發布／DB 已清理」當作既有 pinned endpoint 已自動切換。
