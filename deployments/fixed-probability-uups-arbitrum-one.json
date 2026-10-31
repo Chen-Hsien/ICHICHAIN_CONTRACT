@@ -1,0 +1,313 @@
+{
+  "schemaVersion": "fixed-probability-uups-deployment-v1",
+  "chainId": 42161,
+  "proxyKind": "uups",
+  "protocolVersion": 1,
+  "simulation": false,
+  "referenceDeployment": "deployments/arbitrum-one.json",
+  "initializer": [
+    "0x13Ee37A43B012A772765089d8711b0Be42984010",
+    "0x82025d74b565E3A26deFC9bf01AFd53c620121A5",
+    "0x75dbC2b4afbf720731EC02425fFa1D2b69D103B5",
+    "0x3Fb8Df0381c96D95CEC8376FA1959E68EE1A0e94",
+    "0xaf48208B55e4F21AEa32aa2E3ffa09284270E0f2",
+    "0xaf48208B55e4F21AEa32aa2E3ffa09284270E0f2"
+  ],
+  "buybackAuthorizer": "0x82025d74b565E3A26deFC9bf01AFd53c620121A5",
+  "abiSha256": "5edf72536bedbf79b8144111b170284d9b20fb04379866f6e0b0bdb96daf06e1",
+  "storageLayoutSha256": "847d1e58d5c0323e6d332da480b6b0c22df7cd7e7c799c4a83f1a0441f80334f",
+  "sourceBundleSha256": "085f4b9eaa13c53eb26975fee1e4a178db873560b6713dc7a88ddaff8d256fa1",
+  "sourcePath": "contracts/FixedProbabilityLotteryV3Upgradeable.sol:FixedProbabilityLotteryV3Upgradeable",
+  "sourceHash": "0xb8fb78ed7718fffb67e3160d5a6c91cf339a75dbb48f7cddf16526630f11012a",
+  "compiler": "0.8.20+commit.a1b79de6",
+  "compilerSettings": {
+    "metadata": {
+      "bytecodeHash": "none"
+    },
+    "optimizer": {
+      "enabled": true,
+      "runs": 0
+    },
+    "viaIR": true,
+    "evmVersion": "paris",
+    "outputSelection": {
+      "*": {
+        "*": [
+          "abi",
+          "evm.bytecode",
+          "evm.deployedBytecode",
+          "evm.methodIdentifiers",
+          "metadata",
+          "storageLayout"
+        ],
+        "": [
+          "ast"
+        ]
+      }
+    }
+  },
+  "libraries": [
+    {
+      "name": "FixedProbabilityConfigValidation",
+      "address": "0x45a5b6a99252756Ff2F586D0EE44dB18668E6F89",
+      "transactionHash": "0x25fdb30272e449a1b81f04b79ed2954929fd334ccda6bf97e33d9c948c3ac6c7",
+      "startBlock": 520016162,
+      "blockHash": "0x76bde5a63e6631d25eb7757207d6a4bbf2e3e136a6cc16eb500702ba1d0bdcbe",
+      "runtimeHash": "0xe398d56ecdd4e405bcfd016f3f31dca93503a8440f3b4d1f101a2a95e68ec6a2",
+      "runtimeBytes": 3240
+    },
+    {
+      "name": "FixedProbabilitySettlement",
+      "address": "0xe5d9D0a3b6Acc8a6B3324c00a50D0BE7B9a6648B",
+      "transactionHash": "0x1592ac816e180046649575b84187ed0c4764ba5be5ac99a6d74999b7ba262911",
+      "startBlock": 520016168,
+      "blockHash": "0x331d9bbb1e76f5a1fae0a7a58c7e448dcd132cceeab7be4bc130f074e74dc18a",
+      "runtimeHash": "0x758f3c7a39fe93c05fdd8a05147a7022a382d03b6fdd18472fb095b094327a7e",
+      "runtimeBytes": 3494
+    },
+    {
+      "name": "FixedProbabilityBuybackValidation",
+      "address": "0x372B821A4640B440FE5E6D697aAd1f381ed7deAf",
+      "transactionHash": "0xd4d7e6dcd12da6254d0394683e1586ecce58b288b3cdb946854b11703092fb89",
+      "startBlock": 520016174,
+      "blockHash": "0x7650a9dd8f96ed4f6e553b2127ff58a8358ed024ef1472571277fff2a3aab6ec",
+      "runtimeHash": "0xde43513708cd5b6d3bb7f1b332e98b4821ff10f7abb54817b784f18cbcc61ad2",
+      "runtimeBytes": 1852
+    }
+  ],
+  "transactions": {
+    "routerRequester": "0x11b43385a590a9a8dcdeea09f5477390e9b03f4d1724c2a1fa423645ba7435ae",
+    "membershipRecorder": "0xb669c3d430a85e12b18a740378738b4f36f052d76b316fd5e90b9c4e112a4f99",
+    "buybackAuthorizer": "0xcc0d815c2af8666d4e3d69bfd39123a4eeb6dd08acd8b326bd217be6dd3a6687"
+  },
+  "pending": null,
+  "status": "verified",
+  "implementation": {
+    "address": "0x9CAC1EeaeCE9e2C6674340Ce3171b0452A124ff3",
+    "transactionHash": "0x8bdb349b7ce5ed7ccbe3d70d8f8ca3b691bd370fdf832a38f073796737465be8",
+    "startBlock": 520016184,
+    "blockHash": "0x960775fc2c90223d38d43a2c43a1a6abd9cde65027ea30d63657ddef1753721b",
+    "runtimeHash": "0x5321836a1afcf741c4990d04faa08a9c5e9e5a7ffd64184efc15c27030d54b71",
+    "runtimeBytes": 24014
+  },
+  "address": "0x8Fc4977a5A999DB2Efaccd1EcEA090A542a61723",
+  "transactionHash": "0x3787935fd3d74a6ee051cc590108d9ac9f8f7c237502e630fc88d8d44fe8e4cf",
+  "startBlock": 520016196,
+  "blockHash": "0xec964ac4bdbdb954dd5b5cab29e97b3334cd2651434cce1838616802881c4c0c",
+  "runtimeHash": "0x5e4dcb0bb1910f6429e5fe91678990088a51c6d1cfe1b31d05fb9d948cc7867c",
+  "runtimeBytes": 708,
+  "verification": {
+    "blockNumber": 520016217,
+    "blockHash": "0x02d936c556fb7fc8b66d7f0153fd6708e93e7a1232a8dd68153ca5066693b7df",
+    "checks": {
+      "proxyRuntime": true,
+      "implementationSlot": true,
+      "uuid": true,
+      "initializedAdmin": true,
+      "operatorNotAdmin": true,
+      "authorizerNotAdmin": true,
+      "operatorNotUpgrader": true,
+      "authorizerNotUpgrader": true,
+      "upgrader": true,
+      "operator": true,
+      "authorizationSigner": true,
+      "router": true,
+      "membership": true,
+      "requester": true,
+      "recorder": true,
+      "buybackAuthorizer": true,
+      "mintDomain": true,
+      "implementationSize": true
+    }
+  },
+  "cost": {
+    "totalWei": "160716787404769",
+    "totalETH": "0.000160716787404769",
+    "transactionCount": 8
+  },
+  "receiptAudit": {
+    "checkedAt": "2026-10-31T14:40:34.936Z",
+    "allSuccessful": true,
+    "allCanonical": true,
+    "allFromAdmin": true,
+    "chainId": 42161,
+    "receipts": [
+      {
+        "hash": "0x25fdb30272e449a1b81f04b79ed2954929fd334ccda6bf97e33d9c948c3ac6c7",
+        "blockNumber": 520016162,
+        "gasUsed": "753441",
+        "gasPriceWei": "20000001",
+        "feeWei": "15068820753441",
+        "confirmations": 405
+      },
+      {
+        "hash": "0x1592ac816e180046649575b84187ed0c4764ba5be5ac99a6d74999b7ba262911",
+        "blockNumber": 520016168,
+        "gasUsed": "807834",
+        "gasPriceWei": "20032001",
+        "feeWei": "16182531495834",
+        "confirmations": 401
+      },
+      {
+        "hash": "0xd4d7e6dcd12da6254d0394683e1586ecce58b288b3cdb946854b11703092fb89",
+        "blockNumber": 520016174,
+        "gasUsed": "453675",
+        "gasPriceWei": "20026001",
+        "feeWei": "9085296003675",
+        "confirmations": 398
+      },
+      {
+        "hash": "0x8bdb349b7ce5ed7ccbe3d70d8f8ca3b691bd370fdf832a38f073796737465be8",
+        "blockNumber": 520016184,
+        "gasUsed": "5270655",
+        "gasPriceWei": "20052001",
+        "feeWei": "105687179330655",
+        "confirmations": 390
+      },
+      {
+        "hash": "0x3787935fd3d74a6ee051cc590108d9ac9f8f7c237502e630fc88d8d44fe8e4cf",
+        "blockNumber": 520016196,
+        "gasUsed": "577061",
+        "gasPriceWei": "20048001",
+        "feeWei": "11568919505061",
+        "confirmations": 381
+      },
+      {
+        "hash": "0x11b43385a590a9a8dcdeea09f5477390e9b03f4d1724c2a1fa423645ba7435ae",
+        "blockNumber": 520016203,
+        "gasUsed": "47995",
+        "gasPriceWei": "20030001",
+        "feeWei": "961339897995",
+        "confirmations": 375
+      },
+      {
+        "hash": "0xb669c3d430a85e12b18a740378738b4f36f052d76b316fd5e90b9c4e112a4f99",
+        "blockNumber": 520016209,
+        "gasUsed": "54031",
+        "gasPriceWei": "20010001",
+        "feeWei": "1081160364031",
+        "confirmations": 371
+      },
+      {
+        "hash": "0xcc0d815c2af8666d4e3d69bfd39123a4eeb6dd08acd8b326bd217be6dd3a6687",
+        "blockNumber": 520016216,
+        "gasUsed": "54077",
+        "gasPriceWei": "20000001",
+        "feeWei": "1081540054077",
+        "confirmations": 366
+      }
+    ]
+  },
+  "forkParity": {
+    "proxyRuntime": true,
+    "implementationRuntime": true,
+    "libraries": true
+  },
+  "sourceGitCommit": "a0e4776ffa2a0b68e9660e730dd198d237d9c801",
+  "sourceVerification": {
+    "implementation": "VERIFIED",
+    "proxy": "VERIFIED_AND_LINKED",
+    "libraries": [
+      {
+        "name": "FixedProbabilityConfigValidation",
+        "address": "0x45a5b6a99252756Ff2F586D0EE44dB18668E6F89",
+        "exitCode": 0,
+        "verified": true
+      },
+      {
+        "name": "FixedProbabilitySettlement",
+        "address": "0xe5d9D0a3b6Acc8a6B3324c00a50D0BE7B9a6648B",
+        "exitCode": 0,
+        "verified": true
+      },
+      {
+        "name": "FixedProbabilityBuybackValidation",
+        "address": "0x372B821A4640B440FE5E6D697aAd1f381ed7deAf",
+        "exitCode": 0,
+        "verified": true
+      }
+    ]
+  },
+  "walletPermissions": {
+    "chainId": 42161,
+    "blockNumber": 520016935,
+    "blockHash": "0x1213378710ff7f40a3de6f18dad43cc57174f590517817e9f0d4b0312ec66995",
+    "roles": [
+      {
+        "name": "DEFAULT_ADMIN_ROLE",
+        "account": "0xaf48208B55e4F21AEa32aa2E3ffa09284270E0f2",
+        "expected": true,
+        "actual": true
+      },
+      {
+        "name": "UPGRADER_ROLE",
+        "account": "0xaf48208B55e4F21AEa32aa2E3ffa09284270E0f2",
+        "expected": true,
+        "actual": true
+      },
+      {
+        "name": "OPERATOR_ROLE",
+        "account": "0x75dbC2b4afbf720731EC02425fFa1D2b69D103B5",
+        "expected": true,
+        "actual": true
+      },
+      {
+        "name": "BUYBACK_AUTHORIZER_ROLE",
+        "account": "0x82025d74b565E3A26deFC9bf01AFd53c620121A5",
+        "expected": true,
+        "actual": true
+      },
+      {
+        "name": "DEFAULT_ADMIN_ROLE",
+        "account": "0x75dbC2b4afbf720731EC02425fFa1D2b69D103B5",
+        "expected": false,
+        "actual": false
+      },
+      {
+        "name": "DEFAULT_ADMIN_ROLE",
+        "account": "0x82025d74b565E3A26deFC9bf01AFd53c620121A5",
+        "expected": false,
+        "actual": false
+      },
+      {
+        "name": "UPGRADER_ROLE",
+        "account": "0x75dbC2b4afbf720731EC02425fFa1D2b69D103B5",
+        "expected": false,
+        "actual": false
+      },
+      {
+        "name": "UPGRADER_ROLE",
+        "account": "0x82025d74b565E3A26deFC9bf01AFd53c620121A5",
+        "expected": false,
+        "actual": false
+      },
+      {
+        "name": "OPERATOR_ROLE",
+        "account": "0x82025d74b565E3A26deFC9bf01AFd53c620121A5",
+        "expected": false,
+        "actual": false
+      },
+      {
+        "name": "BUYBACK_AUTHORIZER_ROLE",
+        "account": "0x75dbC2b4afbf720731EC02425fFa1D2b69D103B5",
+        "expected": false,
+        "actual": false
+      }
+    ],
+    "checks": {
+      "routerRequester": true,
+      "membershipRecorder": true,
+      "routerAdminUnchanged": true,
+      "membershipAdminRetained": true,
+      "mintSigner": true
+    },
+    "allPassed": true
+  },
+  "deploymentSafety": {
+    "forkChecksPassed": 18,
+    "forkResumeNewTransactions": 0,
+    "stagingEquivalentUnlinkedRuntime": true,
+    "stagingCanonicalStorageEqual": true,
+    "canonicalStorageSha256": "ed458643bc38287a3e9682e304e69ba6914289dbee26c4fd4d94e51064b4b0c8"
+  }
+}
