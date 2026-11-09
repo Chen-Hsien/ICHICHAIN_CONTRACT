@@ -69,6 +69,27 @@ library FixedProbabilitySettlement {
         uint8 levelAtRequest,
         uint256 acceptedDrawsBefore
     );
+
+    event OrderRequestedV2(
+        uint256 indexed orderId,
+        uint256 indexed requestId,
+        address indexed buyer,
+        uint256 seriesId,
+        bytes32 configHash,
+        bytes32 authorizationId,
+        uint16 quantity,
+        uint256 firstDrawId,
+        uint256 grossPoints,
+        uint256 rebatePoints,
+        uint256 netPoints,
+        bool freeOrderChallenge,
+        bytes32 eligibilityKey,
+        uint8 levelAtRequest,
+        uint256 acceptedDrawsBefore,
+        uint256 couponDiscount,
+        bytes32 pricingSnapshotHash,
+        uint256 pricingVersion
+    );
     event TicketPurchaseMinted(
         uint256 indexed seriesID,
         address indexed buyer,
@@ -90,6 +111,24 @@ library FixedProbabilitySettlement {
         bool freeOrderChallenge,
         uint256 firstTokenID,
         uint256 challengeRequestId
+    );
+
+    event DatabasePointsPurchaseMintedV2(
+        bytes32 indexed authorizationId,
+        uint256 indexed seriesID,
+        address indexed buyer,
+        uint256 ticketQuantity,
+        uint256 grossPoints,
+        uint256 rebatePoints,
+        uint256 netPointsConsumed,
+        uint256 membershipRewardPoints,
+        bool revealImmediately,
+        bool freeOrderChallenge,
+        uint256 firstTokenID,
+        uint256 challengeRequestId,
+        uint256 couponDiscount,
+        bytes32 pricingSnapshotHash,
+        uint256 pricingVersion
     );
     event DatabasePointsRebateEntitled(
         bytes32 indexed authorizationId,
@@ -198,7 +237,7 @@ library FixedProbabilitySettlement {
         return false;
     }
 
-    function prepareOrder(FixedProbabilityTypes.Order storage order,FixedProbabilityTypes.DrawAuthorization calldata authorization,
+    function prepareOrder(FixedProbabilityTypes.Order storage order,FixedProbabilityTypes.DrawAuthorization memory authorization,
         uint256 orderId,uint256 firstDrawId,uint256 acceptedBefore,uint8 level,address membership) external {
         bytes32 membershipConsumptionId = keccak256(
             abi.encode(
@@ -238,15 +277,30 @@ library FixedProbabilitySettlement {
         }
 
     }
-    function emitRequested(FixedProbabilityTypes.Order storage order) external {
+    function emitRequested(FixedProbabilityTypes.Order storage order) public {
         emit OrderRequested(order.orderId,order.requestId,order.buyer,order.seriesId,order.configHash,order.authorizationId,
             order.quantity,order.firstDrawId,order.grossPoints,order.rebatePoints,order.netPoints,order.freeOrderChallenge,
             order.eligibilityKey,order.levelAtRequest,order.acceptedDrawsBefore);
     }
-    function emitPurchase(FixedProbabilityTypes.Order storage order) external {
+    function emitPurchase(FixedProbabilityTypes.Order storage order) public {
         emit TicketPurchaseMinted(order.seriesId,order.buyer,order.quantity,order.grossPoints,false,order.firstDrawId);
         emit DatabasePointsPurchaseMinted(order.authorizationId,order.seriesId,order.buyer,order.quantity,order.grossPoints,
             order.rebatePoints,order.netPoints,order.membershipRewardPoints,false,order.freeOrderChallenge,order.firstDrawId,order.requestId);
         if(order.rebatePoints!=0) emit DatabasePointsRebateEntitled(order.authorizationId,order.seriesId,order.buyer,order.rebatePoints);
     }
+    function emitRequestedWithCoupon(FixedProbabilityTypes.Order storage order, FixedProbabilityTypes.CouponPricing memory coupon) external {
+        if (coupon.pricingVersion == 0) { emitRequested(order); return; }
+        emit OrderRequestedV2(order.orderId,order.requestId,order.buyer,order.seriesId,order.configHash,order.authorizationId,
+            order.quantity,order.firstDrawId,order.grossPoints,order.rebatePoints,order.netPoints,order.freeOrderChallenge,
+            order.eligibilityKey,order.levelAtRequest,order.acceptedDrawsBefore,coupon.couponDiscount,coupon.pricingSnapshotHash,coupon.pricingVersion);
+    }
+    function emitPurchaseWithCoupon(FixedProbabilityTypes.Order storage order, FixedProbabilityTypes.CouponPricing memory coupon) external {
+        if (coupon.pricingVersion == 0) { emitPurchase(order); return; }
+        emit TicketPurchaseMinted(order.seriesId,order.buyer,order.quantity,order.grossPoints-coupon.couponDiscount,false,order.firstDrawId);
+        emit DatabasePointsPurchaseMintedV2(order.authorizationId,order.seriesId,order.buyer,order.quantity,order.grossPoints,
+            order.rebatePoints,order.netPoints,order.membershipRewardPoints,false,order.freeOrderChallenge,order.firstDrawId,order.requestId,
+            coupon.couponDiscount,coupon.pricingSnapshotHash,coupon.pricingVersion);
+        if(order.rebatePoints!=0) emit DatabasePointsRebateEntitled(order.authorizationId,order.seriesId,order.buyer,order.rebatePoints);
+    }
+
 }
