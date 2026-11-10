@@ -17,11 +17,6 @@
       "kind": "uups"
     },
     {
-      "address": "0x68cBA2b3c72Be39be748B06c1e6dDab2855E91b6",
-      "txHash": "0xec1afd8f1db70b6635d257beb6b433d3b3d6e07e9c50ff3290559dc329603f6f",
-      "kind": "uups"
-    },
-    {
       "address": "0x8ee19238DAa466B7792BE33569c6E4f6993CCf20",
       "txHash": "0x889abef847c9e06f63f2648d45cfe1045587b30bb02371d5ddc73ed8ef62fb99",
       "kind": "uups"
@@ -64,6 +59,10 @@
     {
       "address": "0x2aBAd03eA3399e03a6c768405F0647f2aAe32B99",
       "txHash": "0x1bbeb6072609691ec6a0bf5f6e6c7f5ff72c4312a9bfdc5010bd495c30b18b72",
+      "kind": "uups"
+    },
+    {
+      "address": "0x68cBA2b3c72Be39be748B06c1e6dDab2855E91b6",
       "kind": "uups"
     },
     {
@@ -27883,6 +27882,1873 @@
       "allAddresses": [
         "0x0213973159DC44e9AfDB04eeD6a9e4f8F42d8975"
       ]
+    },
+    "e90d5ae82e093e3e70d34e80a55c09356ed8761081ba2fcf1427868ae40f191d": {
+      "address": "0x713cB8b9fa581247f401F54761C2950BEf44A106",
+      "layout": {
+        "solcVersion": "0.8.20",
+        "storage": [
+          {
+            "label": "_initialized",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint8",
+            "contract": "Initializable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:63",
+            "retypedFrom": "bool"
+          },
+          {
+            "label": "_initializing",
+            "offset": 1,
+            "slot": "0",
+            "type": "t_bool",
+            "contract": "Initializable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:68"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "ERC1967UpgradeUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/ERC1967/ERC1967UpgradeUpgradeable.sol:169"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "51",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "UUPSUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol:111"
+          },
+          {
+            "label": "_roles",
+            "offset": 0,
+            "slot": "101",
+            "type": "t_mapping(t_bytes32,t_mapping(t_address,t_bool))",
+            "contract": "MinimalAccessControlUpgradeable",
+            "src": "contracts/access/MinimalAccessControlUpgradeable.sol:9"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "102",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "MinimalAccessControlUpgradeable",
+            "src": "contracts/access/MinimalAccessControlUpgradeable.sol:68"
+          },
+          {
+            "label": "_paused",
+            "offset": 0,
+            "slot": "151",
+            "type": "t_bool",
+            "contract": "LightweightGuardsUpgradeable",
+            "src": "contracts/security/LightweightGuardsUpgradeable.sol:10"
+          },
+          {
+            "label": "_reentrancyStatus",
+            "offset": 0,
+            "slot": "152",
+            "type": "t_uint256",
+            "contract": "LightweightGuardsUpgradeable",
+            "src": "contracts/security/LightweightGuardsUpgradeable.sol:11"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "153",
+            "type": "t_array(t_uint256)48_storage",
+            "contract": "LightweightGuardsUpgradeable",
+            "src": "contracts/security/LightweightGuardsUpgradeable.sol:55"
+          },
+          {
+            "label": "core",
+            "offset": 0,
+            "slot": "201",
+            "type": "t_contract(IDoudoCore)39883",
+            "contract": "DoudoBundleModuleUpgradeable",
+            "src": "contracts/modules/DoudoBundleModuleUpgradeable.sol:103"
+          },
+          {
+            "label": "doudoPoints",
+            "offset": 0,
+            "slot": "202",
+            "type": "t_contract(IDoudoPoints)39995",
+            "contract": "DoudoBundleModuleUpgradeable",
+            "src": "contracts/modules/DoudoBundleModuleUpgradeable.sol:104"
+          },
+          {
+            "label": "redrawModule",
+            "offset": 0,
+            "slot": "203",
+            "type": "t_address",
+            "contract": "DoudoBundleModuleUpgradeable",
+            "src": "contracts/modules/DoudoBundleModuleUpgradeable.sol:105"
+          },
+          {
+            "label": "seriesBundles",
+            "offset": 0,
+            "slot": "204",
+            "type": "t_mapping(t_uint256,t_mapping(t_uint256,t_struct(BundleConfig)42076_storage))",
+            "contract": "DoudoBundleModuleUpgradeable",
+            "src": "contracts/modules/DoudoBundleModuleUpgradeable.sol:107"
+          },
+          {
+            "label": "seriesRebateTiers",
+            "offset": 0,
+            "slot": "205",
+            "type": "t_mapping(t_uint256,t_array(t_struct(RebateTier)42086_storage)dyn_storage)",
+            "contract": "DoudoBundleModuleUpgradeable",
+            "src": "contracts/modules/DoudoBundleModuleUpgradeable.sol:108"
+          },
+          {
+            "label": "seriesOpeningDiscounts",
+            "offset": 0,
+            "slot": "206",
+            "type": "t_mapping(t_uint256,t_struct(OpeningDiscountConfig)42093_storage)",
+            "contract": "DoudoBundleModuleUpgradeable",
+            "src": "contracts/modules/DoudoBundleModuleUpgradeable.sol:109"
+          },
+          {
+            "label": "openingDiscountUsed",
+            "offset": 0,
+            "slot": "207",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "contract": "DoudoBundleModuleUpgradeable",
+            "src": "contracts/modules/DoudoBundleModuleUpgradeable.sol:110"
+          },
+          {
+            "label": "_freeOrderChallengeConfigs",
+            "offset": 0,
+            "slot": "208",
+            "type": "t_mapping(t_uint256,t_struct(FreeOrderChallengeConfig)42132_storage)",
+            "contract": "DoudoBundleModuleUpgradeable",
+            "src": "contracts/modules/DoudoBundleModuleUpgradeable.sol:1319",
+            "renamedFrom": "freeOrderChallengeConfigs"
+          },
+          {
+            "label": "freeOrderTriggerPrizeByVersion",
+            "offset": 0,
+            "slot": "209",
+            "type": "t_mapping(t_uint256,t_mapping(t_uint256,t_mapping(t_uint256,t_bool)))",
+            "contract": "DoudoBundleModuleUpgradeable",
+            "src": "contracts/modules/DoudoBundleModuleUpgradeable.sol:1320"
+          },
+          {
+            "label": "seriesFreeOrderTriggerPrizeIDs",
+            "offset": 0,
+            "slot": "210",
+            "type": "t_mapping(t_uint256,t_array(t_uint256)dyn_storage)",
+            "contract": "DoudoBundleModuleUpgradeable",
+            "src": "contracts/modules/DoudoBundleModuleUpgradeable.sol:1321"
+          },
+          {
+            "label": "freeOrderChallengeRounds",
+            "offset": 0,
+            "slot": "211",
+            "type": "t_mapping(t_uint256,t_struct(FreeOrderChallengeRound)42151_storage)",
+            "contract": "DoudoBundleModuleUpgradeable",
+            "src": "contracts/modules/DoudoBundleModuleUpgradeable.sol:1322"
+          },
+          {
+            "label": "pointsAuthorizationSigner",
+            "offset": 0,
+            "slot": "212",
+            "type": "t_address",
+            "contract": "DoudoBundleModuleUpgradeable",
+            "src": "contracts/modules/DoudoBundleModuleUpgradeable.sol:1324"
+          },
+          {
+            "label": "membershipV2",
+            "offset": 0,
+            "slot": "213",
+            "type": "t_contract(IDoudoMembershipV2)39956",
+            "contract": "DoudoBundleModuleUpgradeable",
+            "src": "contracts/modules/DoudoBundleModuleUpgradeable.sol:1325"
+          },
+          {
+            "label": "databasePointsModeEnabled",
+            "offset": 20,
+            "slot": "213",
+            "type": "t_bool",
+            "contract": "DoudoBundleModuleUpgradeable",
+            "src": "contracts/modules/DoudoBundleModuleUpgradeable.sol:1326"
+          },
+          {
+            "label": "pointsAuthorizationUsed",
+            "offset": 0,
+            "slot": "214",
+            "type": "t_mapping(t_bytes32,t_bool)",
+            "contract": "DoudoBundleModuleUpgradeable",
+            "src": "contracts/modules/DoudoBundleModuleUpgradeable.sol:1327"
+          },
+          {
+            "label": "databasePointsRefundModule",
+            "offset": 0,
+            "slot": "215",
+            "type": "t_address",
+            "contract": "DoudoBundleModuleUpgradeable",
+            "src": "contracts/modules/DoudoBundleModuleUpgradeable.sol:1329"
+          },
+          {
+            "label": "ticketMembershipRecorded",
+            "offset": 0,
+            "slot": "216",
+            "type": "t_mapping(t_uint256,t_bool)",
+            "contract": "DoudoBundleModuleUpgradeable",
+            "src": "contracts/modules/DoudoBundleModuleUpgradeable.sol:1330"
+          },
+          {
+            "label": "ticketMembershipRewardPoints",
+            "offset": 0,
+            "slot": "217",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "contract": "DoudoBundleModuleUpgradeable",
+            "src": "contracts/modules/DoudoBundleModuleUpgradeable.sol:1331"
+          },
+          {
+            "label": "ticketDatabaseRefundSettled",
+            "offset": 0,
+            "slot": "218",
+            "type": "t_mapping(t_uint256,t_bool)",
+            "contract": "DoudoBundleModuleUpgradeable",
+            "src": "contracts/modules/DoudoBundleModuleUpgradeable.sol:1332"
+          },
+          {
+            "label": "ticketMembershipWallet",
+            "offset": 0,
+            "slot": "219",
+            "type": "t_mapping(t_uint256,t_address)",
+            "contract": "DoudoBundleModuleUpgradeable",
+            "src": "contracts/modules/DoudoBundleModuleUpgradeable.sol:1333"
+          },
+          {
+            "label": "openingDiscountRoundId",
+            "offset": 0,
+            "slot": "220",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "contract": "DoudoBundleModuleUpgradeable",
+            "src": "contracts/modules/DoudoBundleModuleUpgradeable.sol:1337"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "221",
+            "type": "t_array(t_uint256)29_storage",
+            "contract": "DoudoBundleModuleUpgradeable",
+            "src": "contracts/modules/DoudoBundleModuleUpgradeable.sol:1339"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_struct(RebateTier)42086_storage)dyn_storage": {
+            "label": "struct DoudoBundleModuleUpgradeable.RebateTier[]",
+            "numberOfBytes": "32"
+          },
+          "t_array(t_uint256)29_storage": {
+            "label": "uint256[29]",
+            "numberOfBytes": "928"
+          },
+          "t_array(t_uint256)48_storage": {
+            "label": "uint256[48]",
+            "numberOfBytes": "1536"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]",
+            "numberOfBytes": "1568"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]",
+            "numberOfBytes": "1600"
+          },
+          "t_array(t_uint256)dyn_storage": {
+            "label": "uint256[]",
+            "numberOfBytes": "32"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_bytes32": {
+            "label": "bytes32",
+            "numberOfBytes": "32"
+          },
+          "t_contract(IDoudoCore)39883": {
+            "label": "contract IDoudoCore",
+            "numberOfBytes": "20"
+          },
+          "t_contract(IDoudoMembershipV2)39956": {
+            "label": "contract IDoudoMembershipV2",
+            "numberOfBytes": "20"
+          },
+          "t_contract(IDoudoPoints)39995": {
+            "label": "contract IDoudoPoints",
+            "numberOfBytes": "20"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_bool)": {
+            "label": "mapping(bytes32 => bool)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_mapping(t_address,t_bool))": {
+            "label": "mapping(bytes32 => mapping(address => bool))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_address)": {
+            "label": "mapping(uint256 => address)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_array(t_struct(RebateTier)42086_storage)dyn_storage)": {
+            "label": "mapping(uint256 => struct DoudoBundleModuleUpgradeable.RebateTier[])",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_array(t_uint256)dyn_storage)": {
+            "label": "mapping(uint256 => uint256[])",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_bool)": {
+            "label": "mapping(uint256 => bool)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_mapping(t_uint256,t_bool))": {
+            "label": "mapping(uint256 => mapping(uint256 => bool))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_mapping(t_uint256,t_mapping(t_uint256,t_bool)))": {
+            "label": "mapping(uint256 => mapping(uint256 => mapping(uint256 => bool)))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_mapping(t_uint256,t_struct(BundleConfig)42076_storage))": {
+            "label": "mapping(uint256 => mapping(uint256 => struct DoudoBundleModuleUpgradeable.BundleConfig))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(BundleConfig)42076_storage)": {
+            "label": "mapping(uint256 => struct DoudoBundleModuleUpgradeable.BundleConfig)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(FreeOrderChallengeConfig)42132_storage)": {
+            "label": "mapping(uint256 => struct DoudoBundleModuleUpgradeable.FreeOrderChallengeConfig)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(FreeOrderChallengeRound)42151_storage)": {
+            "label": "mapping(uint256 => struct DoudoBundleModuleUpgradeable.FreeOrderChallengeRound)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(OpeningDiscountConfig)42093_storage)": {
+            "label": "mapping(uint256 => struct DoudoBundleModuleUpgradeable.OpeningDiscountConfig)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "label": "mapping(uint256 => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_struct(BundleConfig)42076_storage": {
+            "label": "struct DoudoBundleModuleUpgradeable.BundleConfig",
+            "members": [
+              {
+                "label": "ticketQuantity",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "priceInPoints",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "rebatePoints",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "consolationDrawCredits",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "active",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "4"
+              }
+            ],
+            "numberOfBytes": "160"
+          },
+          "t_struct(FreeOrderChallengeConfig)42132_storage": {
+            "label": "struct DoudoBundleModuleUpgradeable.FreeOrderChallengeConfig",
+            "members": [
+              {
+                "label": "eligibleLastTicketCount",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "version",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "active",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "2"
+              }
+            ],
+            "numberOfBytes": "96"
+          },
+          "t_struct(FreeOrderChallengeRound)42151_storage": {
+            "label": "struct DoudoBundleModuleUpgradeable.FreeOrderChallengeRound",
+            "members": [
+              {
+                "label": "seriesID",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "buyer",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "configVersion",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "firstTokenID",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "ticketQuantity",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "refundPoints",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "5"
+              },
+              {
+                "label": "processed",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "6"
+              },
+              {
+                "label": "won",
+                "type": "t_bool",
+                "offset": 1,
+                "slot": "6"
+              },
+              {
+                "label": "claimed",
+                "type": "t_bool",
+                "offset": 2,
+                "slot": "6"
+              }
+            ],
+            "numberOfBytes": "224"
+          },
+          "t_struct(OpeningDiscountConfig)42093_storage": {
+            "label": "struct DoudoBundleModuleUpgradeable.OpeningDiscountConfig",
+            "members": [
+              {
+                "label": "ticketLimit",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "priceInPoints",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "active",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "2"
+              }
+            ],
+            "numberOfBytes": "96"
+          },
+          "t_struct(RebateTier)42086_storage": {
+            "label": "struct DoudoBundleModuleUpgradeable.RebateTier",
+            "members": [
+              {
+                "label": "minimumTicketQuantity",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "rebatePoints",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              }
+            ],
+            "numberOfBytes": "64"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint8": {
+            "label": "uint8",
+            "numberOfBytes": "1"
+          }
+        },
+        "namespaces": {}
+      }
+    },
+    "13d66039369fa92d647cbd1ac0fbe86b12fa2fce8ff9c614af85da78d91165d9": {
+      "address": "0x012bf347dCA264BfE6456D301a82615a274Ed864",
+      "layout": {
+        "solcVersion": "0.8.20",
+        "storage": [
+          {
+            "label": "_initialized",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint8",
+            "contract": "Initializable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:63",
+            "retypedFrom": "bool"
+          },
+          {
+            "label": "_initializing",
+            "offset": 1,
+            "slot": "0",
+            "type": "t_bool",
+            "contract": "Initializable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:68"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "ERC1967UpgradeUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/ERC1967/ERC1967UpgradeUpgradeable.sol:169"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "51",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "UUPSUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol:111"
+          },
+          {
+            "label": "_roles",
+            "offset": 0,
+            "slot": "101",
+            "type": "t_mapping(t_bytes32,t_mapping(t_address,t_bool))",
+            "contract": "MinimalAccessControlUpgradeable",
+            "src": "contracts/access/MinimalAccessControlUpgradeable.sol:9"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "102",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "MinimalAccessControlUpgradeable",
+            "src": "contracts/access/MinimalAccessControlUpgradeable.sol:68"
+          },
+          {
+            "label": "_paused",
+            "offset": 0,
+            "slot": "151",
+            "type": "t_bool",
+            "contract": "LightweightGuardsUpgradeable",
+            "src": "contracts/security/LightweightGuardsUpgradeable.sol:10"
+          },
+          {
+            "label": "_reentrancyStatus",
+            "offset": 0,
+            "slot": "152",
+            "type": "t_uint256",
+            "contract": "LightweightGuardsUpgradeable",
+            "src": "contracts/security/LightweightGuardsUpgradeable.sol:11"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "153",
+            "type": "t_array(t_uint256)48_storage",
+            "contract": "LightweightGuardsUpgradeable",
+            "src": "contracts/security/LightweightGuardsUpgradeable.sol:55"
+          },
+          {
+            "label": "core",
+            "offset": 0,
+            "slot": "201",
+            "type": "t_contract(IDoudoCore)7736",
+            "contract": "DoudoBundleModuleUpgradeable",
+            "src": "contracts/modules/DoudoBundleModuleUpgradeable.sol:125"
+          },
+          {
+            "label": "doudoPoints",
+            "offset": 0,
+            "slot": "202",
+            "type": "t_contract(IDoudoPoints)7848",
+            "contract": "DoudoBundleModuleUpgradeable",
+            "src": "contracts/modules/DoudoBundleModuleUpgradeable.sol:126"
+          },
+          {
+            "label": "redrawModule",
+            "offset": 0,
+            "slot": "203",
+            "type": "t_address",
+            "contract": "DoudoBundleModuleUpgradeable",
+            "src": "contracts/modules/DoudoBundleModuleUpgradeable.sol:127"
+          },
+          {
+            "label": "seriesBundles",
+            "offset": 0,
+            "slot": "204",
+            "type": "t_mapping(t_uint256,t_mapping(t_uint256,t_struct(BundleConfig)10376_storage))",
+            "contract": "DoudoBundleModuleUpgradeable",
+            "src": "contracts/modules/DoudoBundleModuleUpgradeable.sol:129"
+          },
+          {
+            "label": "seriesRebateTiers",
+            "offset": 0,
+            "slot": "205",
+            "type": "t_mapping(t_uint256,t_array(t_struct(RebateTier)10386_storage)dyn_storage)",
+            "contract": "DoudoBundleModuleUpgradeable",
+            "src": "contracts/modules/DoudoBundleModuleUpgradeable.sol:130"
+          },
+          {
+            "label": "seriesOpeningDiscounts",
+            "offset": 0,
+            "slot": "206",
+            "type": "t_mapping(t_uint256,t_struct(OpeningDiscountConfig)10393_storage)",
+            "contract": "DoudoBundleModuleUpgradeable",
+            "src": "contracts/modules/DoudoBundleModuleUpgradeable.sol:131"
+          },
+          {
+            "label": "openingDiscountUsed",
+            "offset": 0,
+            "slot": "207",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "contract": "DoudoBundleModuleUpgradeable",
+            "src": "contracts/modules/DoudoBundleModuleUpgradeable.sol:132"
+          },
+          {
+            "label": "_freeOrderChallengeConfigs",
+            "offset": 0,
+            "slot": "208",
+            "type": "t_mapping(t_uint256,t_struct(FreeOrderChallengeConfig)10466_storage)",
+            "contract": "DoudoBundleModuleUpgradeable",
+            "src": "contracts/modules/DoudoBundleModuleUpgradeable.sol:1424",
+            "renamedFrom": "freeOrderChallengeConfigs"
+          },
+          {
+            "label": "freeOrderTriggerPrizeByVersion",
+            "offset": 0,
+            "slot": "209",
+            "type": "t_mapping(t_uint256,t_mapping(t_uint256,t_mapping(t_uint256,t_bool)))",
+            "contract": "DoudoBundleModuleUpgradeable",
+            "src": "contracts/modules/DoudoBundleModuleUpgradeable.sol:1425"
+          },
+          {
+            "label": "seriesFreeOrderTriggerPrizeIDs",
+            "offset": 0,
+            "slot": "210",
+            "type": "t_mapping(t_uint256,t_array(t_uint256)dyn_storage)",
+            "contract": "DoudoBundleModuleUpgradeable",
+            "src": "contracts/modules/DoudoBundleModuleUpgradeable.sol:1426"
+          },
+          {
+            "label": "freeOrderChallengeRounds",
+            "offset": 0,
+            "slot": "211",
+            "type": "t_mapping(t_uint256,t_struct(FreeOrderChallengeRound)10485_storage)",
+            "contract": "DoudoBundleModuleUpgradeable",
+            "src": "contracts/modules/DoudoBundleModuleUpgradeable.sol:1427"
+          },
+          {
+            "label": "pointsAuthorizationSigner",
+            "offset": 0,
+            "slot": "212",
+            "type": "t_address",
+            "contract": "DoudoBundleModuleUpgradeable",
+            "src": "contracts/modules/DoudoBundleModuleUpgradeable.sol:1429"
+          },
+          {
+            "label": "membershipV2",
+            "offset": 0,
+            "slot": "213",
+            "type": "t_contract(IDoudoMembershipV2)7809",
+            "contract": "DoudoBundleModuleUpgradeable",
+            "src": "contracts/modules/DoudoBundleModuleUpgradeable.sol:1430"
+          },
+          {
+            "label": "databasePointsModeEnabled",
+            "offset": 20,
+            "slot": "213",
+            "type": "t_bool",
+            "contract": "DoudoBundleModuleUpgradeable",
+            "src": "contracts/modules/DoudoBundleModuleUpgradeable.sol:1431"
+          },
+          {
+            "label": "pointsAuthorizationUsed",
+            "offset": 0,
+            "slot": "214",
+            "type": "t_mapping(t_bytes32,t_bool)",
+            "contract": "DoudoBundleModuleUpgradeable",
+            "src": "contracts/modules/DoudoBundleModuleUpgradeable.sol:1432"
+          },
+          {
+            "label": "databasePointsRefundModule",
+            "offset": 0,
+            "slot": "215",
+            "type": "t_address",
+            "contract": "DoudoBundleModuleUpgradeable",
+            "src": "contracts/modules/DoudoBundleModuleUpgradeable.sol:1434"
+          },
+          {
+            "label": "ticketMembershipRecorded",
+            "offset": 0,
+            "slot": "216",
+            "type": "t_mapping(t_uint256,t_bool)",
+            "contract": "DoudoBundleModuleUpgradeable",
+            "src": "contracts/modules/DoudoBundleModuleUpgradeable.sol:1435"
+          },
+          {
+            "label": "ticketMembershipRewardPoints",
+            "offset": 0,
+            "slot": "217",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "contract": "DoudoBundleModuleUpgradeable",
+            "src": "contracts/modules/DoudoBundleModuleUpgradeable.sol:1436"
+          },
+          {
+            "label": "ticketDatabaseRefundSettled",
+            "offset": 0,
+            "slot": "218",
+            "type": "t_mapping(t_uint256,t_bool)",
+            "contract": "DoudoBundleModuleUpgradeable",
+            "src": "contracts/modules/DoudoBundleModuleUpgradeable.sol:1437"
+          },
+          {
+            "label": "ticketMembershipWallet",
+            "offset": 0,
+            "slot": "219",
+            "type": "t_mapping(t_uint256,t_address)",
+            "contract": "DoudoBundleModuleUpgradeable",
+            "src": "contracts/modules/DoudoBundleModuleUpgradeable.sol:1438"
+          },
+          {
+            "label": "openingDiscountRoundId",
+            "offset": 0,
+            "slot": "220",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "contract": "DoudoBundleModuleUpgradeable",
+            "src": "contracts/modules/DoudoBundleModuleUpgradeable.sol:1442"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "221",
+            "type": "t_array(t_uint256)29_storage",
+            "contract": "DoudoBundleModuleUpgradeable",
+            "src": "contracts/modules/DoudoBundleModuleUpgradeable.sol:1444"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_struct(RebateTier)10386_storage)dyn_storage": {
+            "label": "struct DoudoBundleModuleUpgradeable.RebateTier[]",
+            "numberOfBytes": "32"
+          },
+          "t_array(t_uint256)29_storage": {
+            "label": "uint256[29]",
+            "numberOfBytes": "928"
+          },
+          "t_array(t_uint256)48_storage": {
+            "label": "uint256[48]",
+            "numberOfBytes": "1536"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]",
+            "numberOfBytes": "1568"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]",
+            "numberOfBytes": "1600"
+          },
+          "t_array(t_uint256)dyn_storage": {
+            "label": "uint256[]",
+            "numberOfBytes": "32"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_bytes32": {
+            "label": "bytes32",
+            "numberOfBytes": "32"
+          },
+          "t_contract(IDoudoCore)7736": {
+            "label": "contract IDoudoCore",
+            "numberOfBytes": "20"
+          },
+          "t_contract(IDoudoMembershipV2)7809": {
+            "label": "contract IDoudoMembershipV2",
+            "numberOfBytes": "20"
+          },
+          "t_contract(IDoudoPoints)7848": {
+            "label": "contract IDoudoPoints",
+            "numberOfBytes": "20"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_bool)": {
+            "label": "mapping(bytes32 => bool)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_mapping(t_address,t_bool))": {
+            "label": "mapping(bytes32 => mapping(address => bool))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_address)": {
+            "label": "mapping(uint256 => address)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_array(t_struct(RebateTier)10386_storage)dyn_storage)": {
+            "label": "mapping(uint256 => struct DoudoBundleModuleUpgradeable.RebateTier[])",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_array(t_uint256)dyn_storage)": {
+            "label": "mapping(uint256 => uint256[])",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_bool)": {
+            "label": "mapping(uint256 => bool)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_mapping(t_uint256,t_bool))": {
+            "label": "mapping(uint256 => mapping(uint256 => bool))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_mapping(t_uint256,t_mapping(t_uint256,t_bool)))": {
+            "label": "mapping(uint256 => mapping(uint256 => mapping(uint256 => bool)))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_mapping(t_uint256,t_struct(BundleConfig)10376_storage))": {
+            "label": "mapping(uint256 => mapping(uint256 => struct DoudoBundleModuleUpgradeable.BundleConfig))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(BundleConfig)10376_storage)": {
+            "label": "mapping(uint256 => struct DoudoBundleModuleUpgradeable.BundleConfig)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(FreeOrderChallengeConfig)10466_storage)": {
+            "label": "mapping(uint256 => struct DoudoBundleModuleUpgradeable.FreeOrderChallengeConfig)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(FreeOrderChallengeRound)10485_storage)": {
+            "label": "mapping(uint256 => struct DoudoBundleModuleUpgradeable.FreeOrderChallengeRound)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(OpeningDiscountConfig)10393_storage)": {
+            "label": "mapping(uint256 => struct DoudoBundleModuleUpgradeable.OpeningDiscountConfig)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "label": "mapping(uint256 => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_struct(BundleConfig)10376_storage": {
+            "label": "struct DoudoBundleModuleUpgradeable.BundleConfig",
+            "members": [
+              {
+                "label": "ticketQuantity",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "priceInPoints",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "rebatePoints",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "consolationDrawCredits",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "active",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "4"
+              }
+            ],
+            "numberOfBytes": "160"
+          },
+          "t_struct(FreeOrderChallengeConfig)10466_storage": {
+            "label": "struct DoudoBundleModuleUpgradeable.FreeOrderChallengeConfig",
+            "members": [
+              {
+                "label": "eligibleLastTicketCount",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "version",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "active",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "2"
+              }
+            ],
+            "numberOfBytes": "96"
+          },
+          "t_struct(FreeOrderChallengeRound)10485_storage": {
+            "label": "struct DoudoBundleModuleUpgradeable.FreeOrderChallengeRound",
+            "members": [
+              {
+                "label": "seriesID",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "buyer",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "configVersion",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "firstTokenID",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "ticketQuantity",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "refundPoints",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "5"
+              },
+              {
+                "label": "processed",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "6"
+              },
+              {
+                "label": "won",
+                "type": "t_bool",
+                "offset": 1,
+                "slot": "6"
+              },
+              {
+                "label": "claimed",
+                "type": "t_bool",
+                "offset": 2,
+                "slot": "6"
+              }
+            ],
+            "numberOfBytes": "224"
+          },
+          "t_struct(OpeningDiscountConfig)10393_storage": {
+            "label": "struct DoudoBundleModuleUpgradeable.OpeningDiscountConfig",
+            "members": [
+              {
+                "label": "ticketLimit",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "priceInPoints",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "active",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "2"
+              }
+            ],
+            "numberOfBytes": "96"
+          },
+          "t_struct(RebateTier)10386_storage": {
+            "label": "struct DoudoBundleModuleUpgradeable.RebateTier",
+            "members": [
+              {
+                "label": "minimumTicketQuantity",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "rebatePoints",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              }
+            ],
+            "numberOfBytes": "64"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint8": {
+            "label": "uint8",
+            "numberOfBytes": "1"
+          }
+        },
+        "namespaces": {}
+      }
+    },
+    "47d234445bf1287b38eeae3d2fb21d1c845ef8b5c6cb45ec65d3430fef5c7992": {
+      "address": "0x02904B450DC737fFEFA940c1DEe3424b739FF65b",
+      "layout": {
+        "solcVersion": "0.8.20",
+        "storage": [
+          {
+            "label": "_initialized",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint8",
+            "contract": "Initializable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:63",
+            "retypedFrom": "bool"
+          },
+          {
+            "label": "_initializing",
+            "offset": 1,
+            "slot": "0",
+            "type": "t_bool",
+            "contract": "Initializable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:68"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "ContextUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:40"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "51",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "ERC165Upgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/utils/introspection/ERC165Upgradeable.sol:41"
+          },
+          {
+            "label": "_name",
+            "offset": 0,
+            "slot": "101",
+            "type": "t_string_storage",
+            "contract": "ERC721Upgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol:25"
+          },
+          {
+            "label": "_symbol",
+            "offset": 0,
+            "slot": "102",
+            "type": "t_string_storage",
+            "contract": "ERC721Upgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol:28"
+          },
+          {
+            "label": "_owners",
+            "offset": 0,
+            "slot": "103",
+            "type": "t_mapping(t_uint256,t_address)",
+            "contract": "ERC721Upgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol:31"
+          },
+          {
+            "label": "_balances",
+            "offset": 0,
+            "slot": "104",
+            "type": "t_mapping(t_address,t_uint256)",
+            "contract": "ERC721Upgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol:34"
+          },
+          {
+            "label": "_tokenApprovals",
+            "offset": 0,
+            "slot": "105",
+            "type": "t_mapping(t_uint256,t_address)",
+            "contract": "ERC721Upgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol:37"
+          },
+          {
+            "label": "_operatorApprovals",
+            "offset": 0,
+            "slot": "106",
+            "type": "t_mapping(t_address,t_mapping(t_address,t_bool))",
+            "contract": "ERC721Upgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol:40"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "107",
+            "type": "t_array(t_uint256)44_storage",
+            "contract": "ERC721Upgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol:477"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "151",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "ERC1967UpgradeUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/ERC1967/ERC1967UpgradeUpgradeable.sol:169"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "201",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "UUPSUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol:111"
+          },
+          {
+            "label": "_roles",
+            "offset": 0,
+            "slot": "251",
+            "type": "t_mapping(t_bytes32,t_mapping(t_address,t_bool))",
+            "contract": "MinimalAccessControlUpgradeable",
+            "src": "contracts/access/MinimalAccessControlUpgradeable.sol:9"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "252",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "MinimalAccessControlUpgradeable",
+            "src": "contracts/access/MinimalAccessControlUpgradeable.sol:68"
+          },
+          {
+            "label": "_paused",
+            "offset": 0,
+            "slot": "301",
+            "type": "t_bool",
+            "contract": "LightweightGuardsUpgradeable",
+            "src": "contracts/security/LightweightGuardsUpgradeable.sol:10"
+          },
+          {
+            "label": "_reentrancyStatus",
+            "offset": 0,
+            "slot": "302",
+            "type": "t_uint256",
+            "contract": "LightweightGuardsUpgradeable",
+            "src": "contracts/security/LightweightGuardsUpgradeable.sol:11"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "303",
+            "type": "t_array(t_uint256)48_storage",
+            "contract": "LightweightGuardsUpgradeable",
+            "src": "contracts/security/LightweightGuardsUpgradeable.sol:55"
+          },
+          {
+            "label": "router",
+            "offset": 0,
+            "slot": "351",
+            "type": "t_contract(IDoudoVRFRouter)7784",
+            "contract": "FixedProbabilityLotteryV3Upgradeable",
+            "src": "contracts/FixedProbabilityLotteryV3Upgradeable.sol:86"
+          },
+          {
+            "label": "membershipV2",
+            "offset": 0,
+            "slot": "352",
+            "type": "t_contract(IFixedProbabilityMembershipUpgradeableV3)5267",
+            "contract": "FixedProbabilityLotteryV3Upgradeable",
+            "src": "contracts/FixedProbabilityLotteryV3Upgradeable.sol:87"
+          },
+          {
+            "label": "authorizationSigner",
+            "offset": 0,
+            "slot": "353",
+            "type": "t_address",
+            "contract": "FixedProbabilityLotteryV3Upgradeable",
+            "src": "contracts/FixedProbabilityLotteryV3Upgradeable.sol:88"
+          },
+          {
+            "label": "operator",
+            "offset": 0,
+            "slot": "354",
+            "type": "t_address",
+            "contract": "FixedProbabilityLotteryV3Upgradeable",
+            "src": "contracts/FixedProbabilityLotteryV3Upgradeable.sol:89"
+          },
+          {
+            "label": "nextSeriesId",
+            "offset": 0,
+            "slot": "355",
+            "type": "t_uint256",
+            "contract": "FixedProbabilityLotteryV3Upgradeable",
+            "src": "contracts/FixedProbabilityLotteryV3Upgradeable.sol:91"
+          },
+          {
+            "label": "nextOrderId",
+            "offset": 0,
+            "slot": "356",
+            "type": "t_uint256",
+            "contract": "FixedProbabilityLotteryV3Upgradeable",
+            "src": "contracts/FixedProbabilityLotteryV3Upgradeable.sol:92"
+          },
+          {
+            "label": "nextDrawId",
+            "offset": 0,
+            "slot": "357",
+            "type": "t_uint256",
+            "contract": "FixedProbabilityLotteryV3Upgradeable",
+            "src": "contracts/FixedProbabilityLotteryV3Upgradeable.sol:93"
+          },
+          {
+            "label": "_series",
+            "offset": 0,
+            "slot": "358",
+            "type": "t_mapping(t_uint256,t_struct(Series)7607_storage)",
+            "contract": "FixedProbabilityLotteryV3Upgradeable",
+            "src": "contracts/FixedProbabilityLotteryV3Upgradeable.sol:94"
+          },
+          {
+            "label": "_orders",
+            "offset": 0,
+            "slot": "359",
+            "type": "t_mapping(t_uint256,t_struct(Order)7723_storage)",
+            "contract": "FixedProbabilityLotteryV3Upgradeable",
+            "src": "contracts/FixedProbabilityLotteryV3Upgradeable.sol:95"
+          },
+          {
+            "label": "_draws",
+            "offset": 0,
+            "slot": "360",
+            "type": "t_mapping(t_uint256,t_struct(Draw)7740_storage)",
+            "contract": "FixedProbabilityLotteryV3Upgradeable",
+            "src": "contracts/FixedProbabilityLotteryV3Upgradeable.sol:96"
+          },
+          {
+            "label": "requestToOrder",
+            "offset": 0,
+            "slot": "361",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "contract": "FixedProbabilityLotteryV3Upgradeable",
+            "src": "contracts/FixedProbabilityLotteryV3Upgradeable.sol:97"
+          },
+          {
+            "label": "authorizationUsed",
+            "offset": 0,
+            "slot": "362",
+            "type": "t_mapping(t_bytes32,t_bool)",
+            "contract": "FixedProbabilityLotteryV3Upgradeable",
+            "src": "contracts/FixedProbabilityLotteryV3Upgradeable.sol:98"
+          },
+          {
+            "label": "eligibleDrawsUsed",
+            "offset": 0,
+            "slot": "363",
+            "type": "t_mapping(t_bytes32,t_mapping(t_bytes32,t_uint256))",
+            "contract": "FixedProbabilityLotteryV3Upgradeable",
+            "src": "contracts/FixedProbabilityLotteryV3Upgradeable.sol:99"
+          },
+          {
+            "label": "eligibilityScopePolicy",
+            "offset": 0,
+            "slot": "364",
+            "type": "t_mapping(t_bytes32,t_bytes32)",
+            "contract": "FixedProbabilityLotteryV3Upgradeable",
+            "src": "contracts/FixedProbabilityLotteryV3Upgradeable.sol:100"
+          },
+          {
+            "label": "eligibilityScopeMaximum",
+            "offset": 0,
+            "slot": "365",
+            "type": "t_mapping(t_bytes32,t_uint256)",
+            "contract": "FixedProbabilityLotteryV3Upgradeable",
+            "src": "contracts/FixedProbabilityLotteryV3Upgradeable.sol:101"
+          },
+          {
+            "label": "consumed",
+            "offset": 0,
+            "slot": "366",
+            "type": "t_mapping(t_bytes32,t_bool)",
+            "contract": "FixedProbabilityLotteryV3Upgradeable",
+            "src": "contracts/FixedProbabilityLotteryV3Upgradeable.sol:103"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "367",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "FixedProbabilityLotteryV3Upgradeable",
+            "src": "contracts/FixedProbabilityLotteryV3Upgradeable.sol:104"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_uint16)dyn_storage": {
+            "label": "uint16[]",
+            "numberOfBytes": "32"
+          },
+          "t_array(t_uint256)44_storage": {
+            "label": "uint256[44]",
+            "numberOfBytes": "1408"
+          },
+          "t_array(t_uint256)48_storage": {
+            "label": "uint256[48]",
+            "numberOfBytes": "1536"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]",
+            "numberOfBytes": "1568"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]",
+            "numberOfBytes": "1600"
+          },
+          "t_array(t_uint256)dyn_storage": {
+            "label": "uint256[]",
+            "numberOfBytes": "32"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_bytes32": {
+            "label": "bytes32",
+            "numberOfBytes": "32"
+          },
+          "t_contract(IDoudoVRFRouter)7784": {
+            "label": "contract IDoudoVRFRouter",
+            "numberOfBytes": "20"
+          },
+          "t_contract(IFixedProbabilityMembershipUpgradeableV3)5267": {
+            "label": "contract IFixedProbabilityMembershipUpgradeableV3",
+            "numberOfBytes": "20"
+          },
+          "t_enum(OrderState)7556": {
+            "label": "enum FixedProbabilityTypes.OrderState",
+            "members": [
+              "NONE",
+              "PENDING",
+              "RANDOM_READY",
+              "SETTLED"
+            ],
+            "numberOfBytes": "1"
+          },
+          "t_enum(SeriesStatus)7551": {
+            "label": "enum FixedProbabilityTypes.SeriesStatus",
+            "members": [
+              "NONE",
+              "DRAFT",
+              "ACTIVE",
+              "PAUSED",
+              "CLOSED"
+            ],
+            "numberOfBytes": "1"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_mapping(t_address,t_bool))": {
+            "label": "mapping(address => mapping(address => bool))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_bool)": {
+            "label": "mapping(bytes32 => bool)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_bytes32)": {
+            "label": "mapping(bytes32 => bytes32)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_mapping(t_address,t_bool))": {
+            "label": "mapping(bytes32 => mapping(address => bool))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_mapping(t_bytes32,t_uint256))": {
+            "label": "mapping(bytes32 => mapping(bytes32 => uint256))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_uint256)": {
+            "label": "mapping(bytes32 => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_address)": {
+            "label": "mapping(uint256 => address)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(Draw)7740_storage)": {
+            "label": "mapping(uint256 => struct FixedProbabilityTypes.Draw)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(Order)7723_storage)": {
+            "label": "mapping(uint256 => struct FixedProbabilityTypes.Order)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(Series)7607_storage)": {
+            "label": "mapping(uint256 => struct FixedProbabilityTypes.Series)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "label": "mapping(uint256 => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_string_storage": {
+            "label": "string",
+            "numberOfBytes": "32"
+          },
+          "t_struct(Draw)7740_storage": {
+            "label": "struct FixedProbabilityTypes.Draw",
+            "members": [
+              {
+                "label": "drawId",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "orderId",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "drawIndex",
+                "type": "t_uint16",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "roll",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "prizeId",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "tokenId",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "5"
+              },
+              {
+                "label": "recipient",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "6"
+              },
+              {
+                "label": "exchanged",
+                "type": "t_bool",
+                "offset": 20,
+                "slot": "6"
+              }
+            ],
+            "numberOfBytes": "224"
+          },
+          "t_struct(Order)7723_storage": {
+            "label": "struct FixedProbabilityTypes.Order",
+            "members": [
+              {
+                "label": "orderId",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "buyer",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "seriesId",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "configHash",
+                "type": "t_bytes32",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "authorizationId",
+                "type": "t_bytes32",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "quantity",
+                "type": "t_uint16",
+                "offset": 0,
+                "slot": "5"
+              },
+              {
+                "label": "firstDrawId",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "6"
+              },
+              {
+                "label": "grossPoints",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "7"
+              },
+              {
+                "label": "rebatePoints",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "8"
+              },
+              {
+                "label": "netPoints",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "9"
+              },
+              {
+                "label": "freeOrderChallenge",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "10"
+              },
+              {
+                "label": "eligibilityKey",
+                "type": "t_bytes32",
+                "offset": 0,
+                "slot": "11"
+              },
+              {
+                "label": "levelAtRequest",
+                "type": "t_uint8",
+                "offset": 0,
+                "slot": "12"
+              },
+              {
+                "label": "acceptedDrawsBefore",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "13"
+              },
+              {
+                "label": "requestId",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "14"
+              },
+              {
+                "label": "state",
+                "type": "t_enum(OrderState)7556",
+                "offset": 0,
+                "slot": "15"
+              },
+              {
+                "label": "randomWords",
+                "type": "t_array(t_uint256)dyn_storage",
+                "offset": 0,
+                "slot": "16"
+              },
+              {
+                "label": "freeOrderWon",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "17"
+              },
+              {
+                "label": "firstTriggerIndex",
+                "type": "t_uint16",
+                "offset": 1,
+                "slot": "17"
+              },
+              {
+                "label": "refundPoints",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "18"
+              },
+              {
+                "label": "accountingFinalized",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "19"
+              },
+              {
+                "label": "membershipConsumptionId",
+                "type": "t_bytes32",
+                "offset": 0,
+                "slot": "20"
+              },
+              {
+                "label": "finalPointsConsumed",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "21"
+              },
+              {
+                "label": "membershipRewardPoints",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "22"
+              },
+              {
+                "label": "previousLevel",
+                "type": "t_uint8",
+                "offset": 0,
+                "slot": "23"
+              },
+              {
+                "label": "newLevel",
+                "type": "t_uint8",
+                "offset": 1,
+                "slot": "23"
+              },
+              {
+                "label": "expiresAt",
+                "type": "t_uint64",
+                "offset": 2,
+                "slot": "23"
+              }
+            ],
+            "numberOfBytes": "768"
+          },
+          "t_struct(Series)7607_storage": {
+            "label": "struct FixedProbabilityTypes.Series",
+            "members": [
+              {
+                "label": "config",
+                "type": "t_struct(SeriesConfig)7596_storage",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "configHash",
+                "type": "t_bytes32",
+                "offset": 0,
+                "slot": "16"
+              },
+              {
+                "label": "status",
+                "type": "t_enum(SeriesStatus)7551",
+                "offset": 0,
+                "slot": "17"
+              },
+              {
+                "label": "acceptedDraws",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "18"
+              }
+            ],
+            "numberOfBytes": "608"
+          },
+          "t_struct(SeriesConfig)7596_storage": {
+            "label": "struct FixedProbabilityTypes.SeriesConfig",
+            "members": [
+              {
+                "label": "pricePoints",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "drawCap",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "maxBatchSize",
+                "type": "t_uint16",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "prizeIds",
+                "type": "t_array(t_uint256)dyn_storage",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "weights",
+                "type": "t_array(t_uint16)dyn_storage",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "discountQuantities",
+                "type": "t_array(t_uint16)dyn_storage",
+                "offset": 0,
+                "slot": "5"
+              },
+              {
+                "label": "discountPoints",
+                "type": "t_array(t_uint256)dyn_storage",
+                "offset": 0,
+                "slot": "6"
+              },
+              {
+                "label": "freeOrderMode",
+                "type": "t_uint8",
+                "offset": 0,
+                "slot": "7"
+              },
+              {
+                "label": "freeOrderFirstDraws",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "8"
+              },
+              {
+                "label": "freeOrderPrizeIds",
+                "type": "t_array(t_uint256)dyn_storage",
+                "offset": 0,
+                "slot": "9"
+              },
+              {
+                "label": "gateMode",
+                "type": "t_uint8",
+                "offset": 0,
+                "slot": "10"
+              },
+              {
+                "label": "minMemberLevel",
+                "type": "t_uint8",
+                "offset": 1,
+                "slot": "10"
+              },
+              {
+                "label": "eligibilityPolicyId",
+                "type": "t_bytes32",
+                "offset": 0,
+                "slot": "11"
+              },
+              {
+                "label": "eligibilityScope",
+                "type": "t_bytes32",
+                "offset": 0,
+                "slot": "12"
+              },
+              {
+                "label": "maxEligibleDraws",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "13"
+              },
+              {
+                "label": "contentHash",
+                "type": "t_bytes32",
+                "offset": 0,
+                "slot": "14"
+              },
+              {
+                "label": "contentURI",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "15"
+              }
+            ],
+            "numberOfBytes": "512"
+          },
+          "t_uint16": {
+            "label": "uint16",
+            "numberOfBytes": "2"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint64": {
+            "label": "uint64",
+            "numberOfBytes": "8"
+          },
+          "t_uint8": {
+            "label": "uint8",
+            "numberOfBytes": "1"
+          }
+        },
+        "namespaces": {}
+      }
     }
   }
 }
