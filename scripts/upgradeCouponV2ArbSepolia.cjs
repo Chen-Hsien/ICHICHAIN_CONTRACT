@@ -1,5 +1,6 @@
 const { ethers, upgrades, artifacts } = require('hardhat');
 const fs = require('node:fs');
+const { deploymentReceipt } = require('./lib/deploymentReceipt');
 const { createHash } = require('node:crypto');
 const { execFileSync } = require('node:child_process');
 const OUTPUT = 'deployments/coupon-v2-arbitrum-sepolia.json';
@@ -52,7 +53,7 @@ async function main() {
   if (!execute) return;
   save();
   const receipt = async hash => {
-    const r = await ethers.provider.waitForTransaction(hash, 2, 180000);
+    const r = await deploymentReceipt(ethers.provider, hash);
     if (!r || r.status !== 1) throw Error('Transaction unconfirmed or failed; inspect journal');
     const block = await ethers.provider.getBlock(r.blockNumber);
     if (!block || block.hash !== r.blockHash) throw Error('Non-canonical transaction receipt');
