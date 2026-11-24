@@ -1,0 +1,30 @@
+name: Validate feature ticket
+on:
+  pull_request_target:
+    types: [opened, edited, reopened, synchronize, labeled, unlabeled, ready_for_review]
+  issues:
+    types: [closed, reopened, deleted, transferred]
+  workflow_dispatch:
+permissions:
+  contents: read
+  issues: read
+  pull-requests: read
+  statuses: write
+jobs:
+  validate:
+    concurrency:
+      group: feature-ticket-${{ github.event.pull_request.number || github.event.issue.number || github.run_id }}
+      cancel-in-progress: false
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Load validator from the trusted base
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+          sparse-checkout: .github/scripts
+      - name: Publish ticket status
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 -I .github/scripts/feature_ticket.py
