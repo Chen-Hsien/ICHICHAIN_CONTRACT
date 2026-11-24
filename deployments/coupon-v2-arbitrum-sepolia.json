@@ -1,0 +1,121 @@
+{
+  "schemaVersion": "coupon-v2-sepolia-upgrade-v1",
+  "chainId": 421614,
+  "sourceCommit": "df7cd0df077c22dfbe000378acb3e82b6da6146b",
+  "signer": "0x226f0197D502e7AC87d1A76D6526945DFa9E4209",
+  "releaseHash": "68063475f265bc72e705a63be2e946d44e8eb4fa0ce41730e1beb35c945e2994",
+  "inventory": {
+    "Bundle": {
+      "abiSha256": "1c93308fa5d461a109f27b561e6832134abfc24b18e113ed1a236946fc13374d",
+      "sourceBundleSha256": "0dd93f0ece0e6e27cfefbc0c83fdabc18fb75f0f32a42225deeee8ab204e166d",
+      "runtimeBytes": 24393
+    },
+    "Fixed": {
+      "abiSha256": "5834d489a12a4d6e4d2590d38132f2bfa36dd5b26b37d5c9081b2f94406e1b3f",
+      "sourceBundleSha256": "3cfc38cd2197c3251ea3c1c7682da240b14f06bf6df51788371a2f29bb69c497",
+      "runtimeBytes": 22603
+    }
+  },
+  "libraries": {
+    "FixedProbabilityConfigValidation": {
+      "address": "0x4e122Ad035d037499131a29054034eCa4C15a688",
+      "transactionHash": "0xda230df5634d8b498bc53735cd793dd0799355dc14857f459c23f9bb2e253e63",
+      "blockNumber": 327750057,
+      "blockHash": "0xd738e2fa603afb4941c54d35022f65e2946e8aab3b83ca8f7320133c5656a86b",
+      "runtimeHash": "0xe2e61da2d4ee47ed244f682cec4605c5d4a350db8dc070db42549181d407e4bd",
+      "runtimeBytes": 6712
+    },
+    "FixedProbabilitySettlement": {
+      "address": "0xF050c943e8132B9A1d6f5F4db604215633D201c7",
+      "transactionHash": "0xea4b95892a94174b2a792fef6ab9c829745cb4b97a37d38af53763134b8317e5",
+      "blockNumber": 327750288,
+      "blockHash": "0x8a36ce2d8b610ff214d9ee8bffe0d55c5e14d6c2dd6d25cec6dae3ee11b4a945",
+      "runtimeHash": "0x5a2e93fa829664b5fb76a5725167f0b6692a0f586045034c65f7de72a311625d",
+      "runtimeBytes": 4421
+    },
+    "FixedProbabilityBuybackValidation": {
+      "address": "0x07F0e709f6772e4f2BB6Dbd2cf489F3ea886a632",
+      "transactionHash": "0xbd64826fcae37692dd251624abcfa60f9c9eb522618274dc78f1c10b5e13f236",
+      "blockNumber": 327750305,
+      "blockHash": "0xa15229ac9d363c9eb03214bd241a746f6c966367f383a9f6cea4a7aef6840005",
+      "runtimeHash": "0xde43513708cd5b6d3bb7f1b332e98b4821ff10f7abb54817b784f18cbcc61ad2",
+      "runtimeBytes": 1852
+    }
+  },
+  "components": {
+    "Bundle": {
+      "proxy": "0x68cBA2b3c72Be39be748B06c1e6dDab2855E91b6",
+      "previousImplementation": "0x713cB8b9fa581247f401F54761C2950BEf44A106",
+      "before": {
+        "core": "0xf75395A8cd753f47135cfcaE00D2706252c3E0F5",
+        "doudoPoints": "0xFFCD533609e0e9E810C4C5D8Cb7a69D7a537C17E",
+        "redrawModule": "0xE75461828f41C890fbc811e7cABFe2143B3F4afE",
+        "membershipV2": "0x2aBAd03eA3399e03a6c768405F0647f2aAe32B99",
+        "pointsAuthorizationSigner": "0x56535d9904D7F3F1B462ED97997C8E9CDFB52227",
+        "databasePointsRefundModule": "0x8ee19238DAa466B7792BE33569c6E4f6993CCf20",
+        "databasePointsModeEnabled": true,
+        "paused": false
+      },
+      "implementation": {
+        "address": "0x012bf347dCA264BfE6456D301a82615a274Ed864",
+        "transactionHash": "0x70700d07299cca4e9f0c0975369cfaf30143c38abe5511a59a1d94532ce44aa1",
+        "blockNumber": 327750330,
+        "blockHash": "0x9a4e18079efe1d19ca817eb4dfc220f39135c164275935a16d786ba53f35cd4d",
+        "runtimeHash": "0x84777def7ae4c7379decab24c6feba2251eb2b9c2caeb1175f1e111dc663fb1b",
+        "runtimeBytes": 24393
+      },
+      "upgradeTransactionHash": "0x731b6f3b8544d76b169b3577c01f47784141babe251efab4c7bed6b741bc53e6",
+      "upgradeBlock": 327750353,
+      "upgradeBlockHash": "0x02894fecd992a6b61d4364fc2a7e88036293518417780ae42f02be658a102e26",
+      "after": {
+        "core": "0xf75395A8cd753f47135cfcaE00D2706252c3E0F5",
+        "doudoPoints": "0xFFCD533609e0e9E810C4C5D8Cb7a69D7a537C17E",
+        "redrawModule": "0xE75461828f41C890fbc811e7cABFe2143B3F4afE",
+        "membershipV2": "0x2aBAd03eA3399e03a6c768405F0647f2aAe32B99",
+        "pointsAuthorizationSigner": "0x56535d9904D7F3F1B462ED97997C8E9CDFB52227",
+        "databasePointsRefundModule": "0x8ee19238DAa466B7792BE33569c6E4f6993CCf20",
+        "databasePointsModeEnabled": true,
+        "paused": false
+      },
+      "verified": true
+    },
+    "Fixed": {
+      "proxy": "0x51a9f7f467498fee72eFBe37043897A3c225F235",
+      "previousImplementation": "0x0213973159DC44e9AfDB04eeD6a9e4f8F42d8975",
+      "before": {
+        "router": "0x48A1205c9b6BF1Da1a3D1bE651A9e237AC349Eb5",
+        "membershipV2": "0x2aBAd03eA3399e03a6c768405F0647f2aAe32B99",
+        "authorizationSigner": "0x56535d9904D7F3F1B462ED97997C8E9CDFB52227",
+        "operator": "0x25f7F9577A93d9708234245A50a860eA5845ff0b",
+        "paused": false,
+        "nextSeriesId": "5",
+        "nextOrderId": "28",
+        "nextDrawId": "124"
+      },
+      "implementation": {
+        "address": "0x02904B450DC737fFEFA940c1DEe3424b739FF65b",
+        "transactionHash": "0xc01107eaae5a823bfd5641d15c048c2ab0b21bcfa681ea47de7654e1542c8cb6",
+        "blockNumber": 327750400,
+        "blockHash": "0xfa7830bff31c8847c4453728f61de94c2a088fc81801e50229d06e26736dfc10",
+        "runtimeHash": "0x4d9d3bf555f3ab5c6a7d6a62eed1ed94160aba22aee01fb207df3c04917d7468",
+        "runtimeBytes": 22603
+      },
+      "upgradeTransactionHash": "0xd430971a274653bdae58d7f66ff9643541157aa00b54474c01fbcea09510e53b",
+      "upgradeBlock": 327750427,
+      "upgradeBlockHash": "0xc71b4b48495672b31e33a4122f4a926490610eb3d6efdb687d60a3a8e216416b",
+      "after": {
+        "router": "0x48A1205c9b6BF1Da1a3D1bE651A9e237AC349Eb5",
+        "membershipV2": "0x2aBAd03eA3399e03a6c768405F0647f2aAe32B99",
+        "authorizationSigner": "0x56535d9904D7F3F1B462ED97997C8E9CDFB52227",
+        "operator": "0x25f7F9577A93d9708234245A50a860eA5845ff0b",
+        "paused": false,
+        "nextSeriesId": "5",
+        "nextOrderId": "28",
+        "nextDrawId": "124"
+      },
+      "verified": true
+    }
+  },
+  "pending": null,
+  "status": "verified"
+}
