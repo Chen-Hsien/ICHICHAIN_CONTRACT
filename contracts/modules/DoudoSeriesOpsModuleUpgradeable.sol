@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
+import "../helpers/SeriesSaleSchedule.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "../access/MinimalAccessControlUpgradeable.sol";
@@ -10,7 +11,8 @@ contract DoudoSeriesOpsModuleUpgradeable is
     Initializable,
     UUPSUpgradeable,
     MinimalAccessControlUpgradeable,
-    IDoudoSeriesOps
+    IDoudoSeriesOps,
+    SeriesSaleSchedule
 {
     bytes32 public constant OPERATION_ROLE = keccak256("OPERATION_ROLE");
     bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
@@ -135,6 +137,7 @@ contract DoudoSeriesOpsModuleUpgradeable is
         uint256 quantity
     ) external override onlyCore {
         _requireInitialized(seriesID);
+        _requireOpenSale(seriesID);
         _refreshMintLock(seriesID, user, _lockDurationFor(seriesID));
         _checkWalletCap(seriesID, user, quantity);
     }
@@ -212,6 +215,13 @@ contract DoudoSeriesOpsModuleUpgradeable is
     }
 
     function _authorizeUpgrade(address) internal override onlyRole(UPGRADER_ROLE) {}
+
+    function setSeriesSaleSchedule(
+        uint256 seriesId, uint64 expectedRevision, uint64 expectedDelistAt, bool inactive
+    ) external onlyRole(OPERATION_ROLE) {
+        _requireInitialized(seriesId);
+        _setSaleSchedule(seriesId, expectedRevision, expectedDelistAt, inactive);
+    }
 
     uint256[41] private __gap;
 }

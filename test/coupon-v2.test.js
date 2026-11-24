@@ -1,6 +1,6 @@
 const { expect } = require('chai');
 const { ethers, upgrades, artifacts } = require('hardhat');
-const { time, loadFixture } = require('@nomicfoundation/hardhat-network-helpers');
+const { time, loadFixture, takeSnapshot } = require('@nomicfoundation/hardhat-network-helpers');
 const { createHash } = require('crypto');
 const baseline = require('./fixtures/coupon-v1/pre-coupon-contracts.json');
 const { deployFixedProbabilityProxy } = require('./helpers/fixed-probability-uups');
@@ -52,7 +52,7 @@ async function bundleFixture() {
     seriesMetaDataURI:'ipfs://series',isPreOrder:false,useLuckyNumber:true,maxPerWallet:0,packingType:1,sourceType:1},
     [{subPrizeID:1,prizeGroup:'A',subPrizeName:'Prize',subPrizeRemainingQuantity:60}],true);
   await bundle.setSeriesRebateTiers(0,[{minimumTicketQuantity:1,rebatePoints:40n*U}]);
-  return {admin,buyer,other,points,vrf,router,core,bundle,membership,refund};
+  return {admin,buyer,other,points,vrf,router,core,ops,bundle,membership,refund};
 }
 async function bundleAuthorization(f, overrides={}) {
   const numbers=overrides.numbers??[1,2,3,4];
@@ -232,4 +232,37 @@ describe('Coupon V2 compatibility and accounting',function(){
     expect((await observer.replayResult()).slice(0,10)).to.equal(fixed.lottery.interface.getError('ReentrantCall').selector);
   });
 
+});
+
+describe('on-chain series sale schedules', function () {
+  for (const fixed of [false, true]) {
+    it(`blocks ${fixed ? 'fixed' : 'Core and Bundle'} sales at the deadline and resumes only on a new revision`, async function () {
+      const f = await loadFixture(fixed ? fixedFixture : bundleFixture);
+      const target = fixed ? f.lottery.connect(f.operator) : f.ops;
+      const id = fixed ? 1 : 0;
+      const cutoff = await time.latest() + 100;
+      const signed = fixed ? await fixedAuthorization(f) : await bundleAuthorization(f);
+      const buy = () => fixed
+        ? f.lottery.connect(f.buyer).requestDrawsV2(signed.auth, signed.signature)
+        : f.bundle.connect(f.buyer).mintTicketsWithPointsAuthorizationV2(signed.auth, signed.numbers, signed.signature);
+      expect((await target.saleSchedules(id)).revision).to.equal(0);
+      await expect(target.connect(f.buyer).setSeriesSaleSchedule(id, 0, cutoff, false)).to.be.reverted;
+      await expect(target.setSeriesSaleSchedule(999, 0, cutoff, false)).to.be.reverted;
+      await expect(target.setSeriesSaleSchedule(id, 0, cutoff, false))
+        .to.emit(target, 'SeriesSaleScheduleChanged').withArgs(id, 1, cutoff, false);
+      const beforePurchase = await takeSnapshot();
+      await time.setNextBlockTimestamp(cutoff - 1);
+      await expect(buy()).not.to.be.reverted;
+      await beforePurchase.restore();
+      await time.setNextBlockTimestamp(cutoff);
+      await expect(buy()).to.be.revertedWithCustomError(target, 'SeriesSaleEnded');
+      if (!fixed) await expect(f.core.connect(f.buyer).mint(0,[5])).to.be.revertedWithCustomError(target, 'SeriesSaleEnded');
+      await expect(target.setSeriesSaleSchedule(id, 0, 0, false)).to.be.revertedWithCustomError(target, 'StaleSaleSchedule');
+      await target.setSeriesSaleSchedule(id, 1, cutoff + 259200, false);
+      await target.setSeriesSaleSchedule(id, 2, 0, true);
+      await expect(buy()).to.be.revertedWithCustomError(target, 'SeriesSaleEnded');
+      await target.setSeriesSaleSchedule(id, 3, cutoff + 259200, false);
+      await expect(buy()).not.to.be.reverted;
+    });
+  }
 });
