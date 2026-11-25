@@ -1,0 +1,45 @@
+{
+  "chainId": 421614,
+  "signer": "0x226f0197D502e7AC87d1A76D6526945DFa9E4209",
+  "components": {
+    "DoudoSeriesOpsModuleUpgradeable": {
+      "proxy": "0x2FF7521dEF3903fc5c6f2877252cdf5019380070",
+      "previousImplementation": "0x5409aa1Fbdd2e28fb47457F7ee50af1f73dD966D",
+      "bytecodeHash": "0xf1d15e4ad3950fc9053f06f014c143e47d1436d9e94bc41a5a433ff1e252c133",
+      "runtimeBytes": 7298,
+      "before": {
+        "core": "0xf75395A8cd753f47135cfcaE00D2706252c3E0F5",
+        "defaultLockDuration": "300"
+      },
+      "deploymentTx": "0xee22acfb8d339c6ba65b09f5bac52304fa123c7856811739978619a48fb47267",
+      "implementation": "0x53d0b0F4B816CD4b3fcff6D6ec033Bec8a0e9e89",
+      "deploymentBlock": 332295145,
+      "deploymentBlockHash": "0xcb210c1c585849114d80f486246f79ded453b2309c8debe4142b3bf8b81ca94a",
+      "runtimeHash": "0xd854865e2362127d62bae3d93a2ecc89b7269896b949880ca9c4ae389888542a",
+      "upgradeTx": "0xfd983c8dc8d131af14fb61b63075d67097ffadcede6402a4fe361a73c6963c34",
+      "upgradeBlock": 332295162,
+      "upgradeBlockHash": "0xb6ac09383b40db8880812c543b13ae3244ec531435dafa8be9d88f4a918af707"
+    },
+    "FixedProbabilityLotteryV3Upgradeable": {
+      "proxy": "0x51a9f7f467498fee72eFBe37043897A3c225F235",
+      "previousImplementation": "0x02904B450DC737fFEFA940c1DEe3424b739FF65b",
+      "bytecodeHash": "0x7e96399ce0e79fc0b53966fb929c301b1d41377150314c5156f3bbd96388242e",
+      "runtimeBytes": 23269,
+      "before": {
+        "router": "0x48A1205c9b6BF1Da1a3D1bE651A9e237AC349Eb5",
+        "membershipV2": "0x2aBAd03eA3399e03a6c768405F0647f2aAe32B99",
+        "authorizationSigner": "0x56535d9904D7F3F1B462ED97997C8E9CDFB52227",
+        "operator": "0x25f7F9577A93d9708234245A50a860eA5845ff0b",
+        "paused": "false"
+      },
+      "deploymentTx": "0x7a34717f420bdd0cceee9355415f508a9f065df875c1c66b914a73a39958d685",
+      "implementation": "0xf05C81D8545BF524f599f97f23259500f3B61d5D",
+      "deploymentBlock": 332295193,
+      "deploymentBlockHash": "0x2fcc4e84ff872b9bec80a55a499fe9c2a8cf6893875fe1aa3508be146342f38d",
+      "runtimeHash": "0x94595bc5e0b8a1a115d1aafa68983a7ed63fa08ac6f6bc235dd0d538ba5cad20",
+      "upgradeTx": "0x4a50426de8d2bcd1b254065dfac316a3637746ea701fd82e04a0108183e80d8c",
+      "upgradeBlock": 332295233,
+      "upgradeBlockHash": "0x989fd0ef01bcdc1aea5c49a2bd8a3ad131f4370b93fe10b68fa5b01424daee15"
+    }
+  }
+}

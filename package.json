@@ -24,7 +24,10 @@
     "test": "hardhat test",
     "prepare:fixed-probability:uups": "hardhat run scripts/prepareFixedProbabilityUups.ts --network hardhat",
     "deploy:fixed-probability:uups:staging:preflight": "hardhat run scripts/deployFixedProbabilityUupsArbSepolia.ts --network arbitrumSepolia",
-    "deploy:fixed-probability:uups:staging": "EXECUTE_FIXED_PROBABILITY_UUPS_DEPLOY=1 hardhat run scripts/deployFixedProbabilityUupsArbSepolia.ts --network arbitrumSepolia"
+    "deploy:fixed-probability:uups:staging": "EXECUTE_FIXED_PROBABILITY_UUPS_DEPLOY=1 hardhat run scripts/deployFixedProbabilityUupsArbSepolia.ts --network arbitrumSepolia",
+    "deploy:fixed-probability:uups:arbitrum-one:preflight": "hardhat run scripts/deployFixedProbabilityUupsArbitrumOne.ts --network arbitrumOne",
+    "deploy:fixed-probability:uups:arbitrum-one": "EXECUTE_FIXED_PROBABILITY_MAINNET_DEPLOY=1 hardhat run scripts/deployFixedProbabilityUupsArbitrumOne.ts --network arbitrumOne",
+    "deploy:fixed-probability:uups:arbitrum-one:fork": "MAINNET_FORK_REHEARSAL=1 hardhat run --config hardhat.fixed-probability-mainnet-fork.config.ts scripts/deployFixedProbabilityUupsArbitrumOne.ts --network arbitrumOneFork"
   },
   "author": "",
   "license": "ISC",

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
+import "./helpers/SeriesSaleSchedule.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "./access/MinimalAccessControlUpgradeable.sol";
 import "./security/LightweightGuardsUpgradeable.sol";
@@ -53,7 +54,8 @@ contract FixedProbabilityLotteryV3Upgradeable is
     MinimalAccessControlUpgradeable,
     LightweightGuardsUpgradeable,
     FixedProbabilityTypes,
-    IDoudoVRFCallback
+    IDoudoVRFCallback,
+    SeriesSaleSchedule
 {
     bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
     bytes32 public constant BUYBACK_AUTHORIZER_ROLE = keccak256("BUYBACK_AUTHORIZER_ROLE");
@@ -101,6 +103,13 @@ contract FixedProbabilityLotteryV3Upgradeable is
     mapping(bytes32 => uint256) public eligibilityScopeMaximum;
 
     mapping(bytes32 => bool) public consumed;
+    function setSeriesSaleSchedule(
+        uint256 seriesId, uint64 expectedRevision, uint64 expectedDelistAt, bool inactive
+    ) external onlyRole(OPERATOR_ROLE) {
+        if (_series[seriesId].status == SeriesStatus.NONE) revert InvalidSeriesStatus();
+        _setSaleSchedule(seriesId, expectedRevision, expectedDelistAt, inactive);
+    }
+
     uint256[49] private __gap;
 
     error AccountingAlreadyFinalized();
@@ -159,6 +168,27 @@ contract FixedProbabilityLotteryV3Upgradeable is
         uint8 levelAtRequest,
         uint256 acceptedDrawsBefore
     );
+
+    event OrderRequestedV2(
+        uint256 indexed orderId,
+        uint256 indexed requestId,
+        address indexed buyer,
+        uint256 seriesId,
+        bytes32 configHash,
+        bytes32 authorizationId,
+        uint16 quantity,
+        uint256 firstDrawId,
+        uint256 grossPoints,
+        uint256 rebatePoints,
+        uint256 netPoints,
+        bool freeOrderChallenge,
+        bytes32 eligibilityKey,
+        uint8 levelAtRequest,
+        uint256 acceptedDrawsBefore,
+        uint256 couponDiscount,
+        bytes32 pricingSnapshotHash,
+        uint256 pricingVersion
+    );
     event RandomnessStored(uint256 indexed orderId, uint256 indexed requestId, uint256[] randomWords);
     event DrawSettled(
         uint256 indexed orderId,
@@ -207,6 +237,24 @@ contract FixedProbabilityLotteryV3Upgradeable is
         bool freeOrderChallenge,
         uint256 firstTokenID,
         uint256 challengeRequestId
+    );
+
+    event DatabasePointsPurchaseMintedV2(
+        bytes32 indexed authorizationId,
+        uint256 indexed seriesID,
+        address indexed buyer,
+        uint256 ticketQuantity,
+        uint256 grossPoints,
+        uint256 rebatePoints,
+        uint256 netPointsConsumed,
+        uint256 membershipRewardPoints,
+        bool revealImmediately,
+        bool freeOrderChallenge,
+        uint256 firstTokenID,
+        uint256 challengeRequestId,
+        uint256 couponDiscount,
+        bytes32 pricingSnapshotHash,
+        uint256 pricingVersion
     );
     event DatabasePointsRebateEntitled(
         bytes32 indexed authorizationId,
@@ -263,30 +311,7 @@ contract FixedProbabilityLotteryV3Upgradeable is
 
     function createSeries(SeriesConfig calldata config) external onlyRole(OPERATOR_ROLE) {
         uint256 seriesId = nextSeriesId++;
-        bytes32 configHash=FixedProbabilityConfigValidation.validateAndHash(seriesId,config);
-        if (config.gateMode == 2 || config.gateMode == 3) {
-            bytes32 registered = eligibilityScopePolicy[config.eligibilityScope];
-            if (
-                registered != bytes32(0) &&
-                (registered != config.eligibilityPolicyId ||
-                    eligibilityScopeMaximum[config.eligibilityScope] != config.maxEligibleDraws)
-            ) revert EligibilityScopeConflict();
-            if (registered == bytes32(0)) {
-                eligibilityScopePolicy[config.eligibilityScope] = config.eligibilityPolicyId;
-                eligibilityScopeMaximum[config.eligibilityScope] = config.maxEligibleDraws;
-                emit EligibilityScopeRegistered(
-                    config.eligibilityScope,
-                    config.eligibilityPolicyId,
-                    config.maxEligibleDraws
-                );
-            }
-        }
-        Series storage series = _series[seriesId];
-        series.config = config;
-        series.configHash = configHash;
-        series.status = SeriesStatus.DRAFT;
-        emit SeriesCreated(seriesId, series.configHash, abi.encode(config));
-        emit SeriesStatusChanged(seriesId, SeriesStatus.NONE, SeriesStatus.DRAFT);
+        FixedProbabilityConfigValidation.createSeries(_series, eligibilityScopePolicy, eligibilityScopeMaximum, seriesId, config);
     }
 
     function setSeriesStatus(
@@ -309,17 +334,41 @@ contract FixedProbabilityLotteryV3Upgradeable is
         DrawAuthorization calldata authorization,
         bytes calldata signature
     ) external nonReentrant whenNotPaused returns (uint256 orderId) {
+        return _requestDraws(authorization, signature, authorizationDigest(authorization), CouponPricing(0, bytes32(0), 0));
+    }
+
+    function requestDrawsV2(
+        DrawAuthorizationV2 calldata authorization,
+        bytes calldata signature
+    ) external nonReentrant whenNotPaused returns (uint256 orderId) {
+        (DrawAuthorization memory legacy, CouponPricing memory coupon) = FixedProbabilityConfigValidation.couponAuthorization(authorization);
+        return _requestDraws(legacy, signature, authorizationDigestV2(authorization), coupon);
+    }
+
+    function couponAuthorizationVersion() external pure returns (uint256) { return 2; }
+
+    function authorizationDigestV2(DrawAuthorizationV2 calldata authorization) public view returns (bytes32) {
+        return FixedProbabilityConfigValidation.authorizationDigestV2(authorization);
+    }
+
+    function _requestDraws(
+        DrawAuthorization memory authorization,
+        bytes calldata signature,
+        bytes32 digest,
+        CouponPricing memory coupon
+    ) private returns (uint256 orderId) {
         if (msg.sender != authorization.buyer) revert OnlyBuyer();
         if (block.timestamp > authorization.deadline) revert AuthorizationExpired();
         if (authorizationUsed[authorization.authorizationId]) revert AuthorizationAlreadyUsed();
         Series storage series = _series[authorization.seriesId];
         if (series.status != SeriesStatus.ACTIVE) revert InvalidSeriesStatus();
+        _requireOpenSale(authorization.seriesId);
         if (
             authorization.authorizationId == bytes32(0) ||
             authorization.configHash != series.configHash ||
             !SignatureChecker.isValidSignatureNow(
                 authorizationSigner,
-                authorizationDigest(authorization),
+                digest,
                 signature
             )
         ) revert InvalidAuthorization();
@@ -331,7 +380,8 @@ contract FixedProbabilityLotteryV3Upgradeable is
         if (
             grossPoints != authorization.grossPoints ||
             rebatePoints != authorization.rebatePoints ||
-            netPoints != authorization.netPoints
+            coupon.couponDiscount > netPoints ||
+            netPoints - coupon.couponDiscount != authorization.netPoints
         ) revert InvalidAuthorization();
 
         uint256 acceptedBefore = series.acceptedDraws;
@@ -359,7 +409,7 @@ contract FixedProbabilityLotteryV3Upgradeable is
         uint256 requestId = router.requestRandomWords(address(this), uint32(authorization.quantity));
         order.requestId = requestId;
         requestToOrder[requestId] = orderId;
-        FixedProbabilitySettlement.emitRequested(order);
+        FixedProbabilitySettlement.emitRequestedWithCoupon(order, coupon);
         for (uint16 i = 0; i < authorization.quantity; i++) {
             uint256 tokenId = firstDrawId + i;
             _draws[tokenId] = Draw({
@@ -375,7 +425,7 @@ contract FixedProbabilityLotteryV3Upgradeable is
             _safeMint(msg.sender, tokenId);
             emit NewTicketStatus(tokenId, authorization.seriesId, 0, false, false, msg.sender, 0);
         }
-        FixedProbabilitySettlement.emitPurchase(order);
+        FixedProbabilitySettlement.emitPurchaseWithCoupon(order, coupon);
     }
 
     function fulfillRandomWordsFromRouter(
@@ -537,7 +587,7 @@ contract FixedProbabilityLotteryV3Upgradeable is
 
     function _checkEligibility(
         SeriesConfig storage config,
-        DrawAuthorization calldata authorization,
+        DrawAuthorization memory authorization,
         uint256 orderId
     ) internal returns (uint8 level) {
         level = membershipV2.effectiveLevelOf(authorization.buyer);
