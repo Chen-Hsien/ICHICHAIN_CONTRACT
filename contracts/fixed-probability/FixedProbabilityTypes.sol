@@ -59,6 +59,29 @@ abstract contract FixedProbabilityTypes {
         uint256 deadline;
     }
 
+    struct DrawAuthorizationV2 {
+        bytes32 authorizationId;
+        address buyer;
+        uint256 seriesId;
+        bytes32 configHash;
+        uint16 quantity;
+        uint256 grossPoints;
+        uint256 rebatePoints;
+        uint256 netPoints;
+        bool freeOrderChallenge;
+        bytes32 eligibilityKey;
+        uint256 deadline;
+        uint256 couponDiscount;
+        bytes32 pricingSnapshotHash;
+        uint256 pricingVersion;
+    }
+
+    struct CouponPricing {
+        uint256 couponDiscount;
+        bytes32 pricingSnapshotHash;
+        uint256 pricingVersion;
+    }
+
     struct Order {
         uint256 orderId;
         address buyer;

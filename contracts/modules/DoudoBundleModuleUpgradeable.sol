@@ -4,6 +4,7 @@ pragma solidity ^0.8.20;
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts/utils/cryptography/SignatureChecker.sol";
+import "@openzeppelin/contracts/utils/math/Math.sol";
 import "../access/MinimalAccessControlUpgradeable.sol";
 import "../interfaces/IDoudoCore.sol";
 import "../interfaces/IDoudoMembershipV2.sol";
@@ -79,6 +80,27 @@ contract DoudoBundleModuleUpgradeable is
         bool freeOrderChallenge;
         uint256 deadline;
     }
+
+    struct PointsMintAuthorizationV2 {
+        bytes32 authorizationId;
+        address buyer;
+        uint256 seriesID;
+        bytes32 luckyNumbersHash;
+        uint256 ticketQuantity;
+        uint256 grossPoints;
+        bool revealImmediately;
+        bool freeOrderChallenge;
+        uint256 deadline;
+        uint256 couponDiscount;
+        uint256 rebatePoints;
+        uint256 netPoints;
+        bytes32 pricingSnapshotHash;
+        uint256 pricingVersion;
+    }
+
+    bytes32 private constant POINTS_MINT_AUTHORIZATION_V2_TYPEHASH = keccak256(
+        "PointsMintAuthorizationV2(bytes32 authorizationId,address buyer,uint256 seriesID,bytes32 luckyNumbersHash,uint256 ticketQuantity,uint256 grossPoints,bool revealImmediately,bool freeOrderChallenge,uint256 deadline,uint256 couponDiscount,uint256 rebatePoints,uint256 netPoints,bytes32 pricingSnapshotHash,uint256 pricingVersion)"
+    );
 
     struct FreeOrderChallengeConfig {
         // Keep the original storage member name so upgrades preserve the
@@ -242,6 +264,23 @@ contract DoudoBundleModuleUpgradeable is
         bool freeOrderChallenge,
         uint256 firstTokenID,
         uint256 challengeRequestId
+    );
+    event DatabasePointsPurchaseMintedV2(
+        bytes32 indexed authorizationId,
+        uint256 indexed seriesID,
+        address indexed buyer,
+        uint256 ticketQuantity,
+        uint256 grossPoints,
+        uint256 rebatePoints,
+        uint256 netPointsConsumed,
+        uint256 membershipRewardPoints,
+        bool revealImmediately,
+        bool freeOrderChallenge,
+        uint256 firstTokenID,
+        uint256 challengeRequestId,
+        uint256 couponDiscount,
+        bytes32 pricingSnapshotHash,
+        uint256 pricingVersion
     );
     event DatabasePointsRebateEntitled(
         bytes32 indexed authorizationId,
@@ -674,11 +713,48 @@ contract DoudoBundleModuleUpgradeable is
         PointsMintAuthorization calldata authorization,
         uint16[] calldata luckyNumbers,
         bytes calldata signature
-    )
-        external
-        nonReentrant
-        returns (uint256 firstTokenID, uint256 challengeRequestId)
-    {
+    ) external nonReentrant returns (uint256 firstTokenID, uint256 challengeRequestId) {
+        PointsMintAuthorizationV2 memory extended = PointsMintAuthorizationV2({
+            authorizationId: authorization.authorizationId,
+            buyer: authorization.buyer,
+            seriesID: authorization.seriesID,
+            luckyNumbersHash: authorization.luckyNumbersHash,
+            ticketQuantity: authorization.ticketQuantity,
+            grossPoints: authorization.grossPoints,
+            revealImmediately: authorization.revealImmediately,
+            freeOrderChallenge: authorization.freeOrderChallenge,
+            deadline: authorization.deadline,
+            couponDiscount: 0,
+            rebatePoints: 0,
+            netPoints: 0,
+            pricingSnapshotHash: bytes32(0),
+            pricingVersion: 0
+        });
+        return _mintWithPointsAuthorization(extended, luckyNumbers, signature, pointsAuthorizationDigest(authorization));
+    }
+
+    function mintTicketsWithPointsAuthorizationV2(
+        PointsMintAuthorizationV2 calldata authorization,
+        uint16[] calldata luckyNumbers,
+        bytes calldata signature
+    ) external nonReentrant returns (uint256 firstTokenID, uint256 challengeRequestId) {
+        if (authorization.pricingVersion != 2) revert InvalidPointsAuthorization();
+        return _mintWithPointsAuthorization(authorization, luckyNumbers, signature, pointsAuthorizationDigestV2(authorization));
+    }
+
+    function couponAuthorizationVersion() external pure returns (uint256) { return 2; }
+
+    function pointsAuthorizationDigestV2(PointsMintAuthorizationV2 calldata authorization) public view returns (bytes32) {
+        bytes32 structHash = keccak256(abi.encode(POINTS_MINT_AUTHORIZATION_V2_TYPEHASH, authorization));
+        return keccak256(abi.encodePacked("\x19\x01", pointsAuthorizationDomainSeparator(), structHash));
+    }
+
+    function _mintWithPointsAuthorization(
+        PointsMintAuthorizationV2 memory authorization,
+        uint16[] calldata luckyNumbers,
+        bytes calldata signature,
+        bytes32 digest
+    ) private returns (uint256 firstTokenID, uint256 challengeRequestId) {
         if (!databasePointsModeEnabled) revert DatabasePointsModeDisabled();
         if (
             authorization.authorizationId == bytes32(0) ||
@@ -696,7 +772,7 @@ contract DoudoBundleModuleUpgradeable is
         if (
             !SignatureChecker.isValidSignatureNow(
                 pointsAuthorizationSigner,
-                pointsAuthorizationDigest(authorization),
+                digest,
                 signature
             )
         ) revert InvalidPointsAuthorization();
@@ -719,17 +795,32 @@ contract DoudoBundleModuleUpgradeable is
             revert InvalidPointsAuthorization();
         }
 
+        uint256 rebatePoints = quote.rebatePoints > quote.grossPriceInPoints
+            ? quote.grossPriceInPoints
+            : quote.rebatePoints;
+        uint256 couponDiscount = authorization.couponDiscount;
+        if (authorization.pricingVersion != 0) {
+            if (
+                authorization.pricingSnapshotHash == bytes32(0) ||
+                couponDiscount == 0 || couponDiscount % 1 ether != 0 ||
+                rebatePoints > quote.regularQuantity * quote.basePriceInPoints ||
+                rebatePoints != authorization.rebatePoints ||
+                couponDiscount > quote.grossPriceInPoints - rebatePoints ||
+                quote.grossPriceInPoints - rebatePoints - couponDiscount < 1 ether ||
+                authorization.netPoints != quote.grossPriceInPoints - rebatePoints - couponDiscount
+            ) revert InvalidPointsAuthorization();
+        }
+        uint256 netPointsConsumed = quote.grossPriceInPoints - rebatePoints - couponDiscount;
+
         // Effects precede Core, VRF and Membership V2 external calls.
         pointsAuthorizationUsed[authorization.authorizationId] = true;
         if (quote.openingQuantity != 0) {
             openingDiscountUsed[authorization.seriesID] += quote.openingQuantity;
         }
 
-        firstTokenID = _mintPricedSegments(
-            authorization.seriesID,
-            luckyNumbers,
-            quote
-        );
+        firstTokenID = authorization.pricingVersion == 0
+            ? _mintPricedSegments(authorization.seriesID, luckyNumbers, quote)
+            : _mintCouponPricedSegments(authorization.seriesID, luckyNumbers, quote, couponDiscount);
         if (authorization.revealImmediately) {
             uint256[] memory tokenIDs = new uint256[](ticketQuantity);
             unchecked {
@@ -740,10 +831,6 @@ contract DoudoBundleModuleUpgradeable is
             challengeRequestId = core.reveal(authorization.seriesID, tokenIDs);
         }
 
-        uint256 rebatePoints = quote.rebatePoints > quote.grossPriceInPoints
-            ? quote.grossPriceInPoints
-            : quote.rebatePoints;
-        uint256 netPointsConsumed = quote.grossPriceInPoints - rebatePoints;
         uint256 membershipRewardPoints;
         if (netPointsConsumed != 0) {
             (membershipRewardPoints, , , ) = membershipV2.recordConsumption(
@@ -779,7 +866,7 @@ contract DoudoBundleModuleUpgradeable is
                 authorization.seriesID,
                 msg.sender,
                 ticketQuantity,
-                quote.grossPriceInPoints,
+                quote.grossPriceInPoints - couponDiscount,
                 rebatePoints,
                 netPointsConsumed,
                 firstTokenID
@@ -801,7 +888,7 @@ contract DoudoBundleModuleUpgradeable is
                 quote.openingQuantity,
                 quote.regularQuantity,
                 quote.openingPriceInPoints,
-                quote.grossPriceInPoints,
+                quote.grossPriceInPoints - couponDiscount,
                 rebatePoints
             );
         }
@@ -809,24 +896,34 @@ contract DoudoBundleModuleUpgradeable is
             authorization.seriesID,
             msg.sender,
             ticketQuantity,
-            quote.grossPriceInPoints,
+            quote.grossPriceInPoints - couponDiscount,
             authorization.revealImmediately,
             firstTokenID
         );
-        emit DatabasePointsPurchaseMinted(
-            authorization.authorizationId,
-            authorization.seriesID,
-            msg.sender,
-            ticketQuantity,
-            quote.grossPriceInPoints,
-            rebatePoints,
-            netPointsConsumed,
-            membershipRewardPoints,
-            authorization.revealImmediately,
-            authorization.freeOrderChallenge,
-            firstTokenID,
-            challengeRequestId
-        );
+        if (authorization.pricingVersion == 0) {
+            emit DatabasePointsPurchaseMinted(
+                authorization.authorizationId,
+                authorization.seriesID,
+                msg.sender,
+                ticketQuantity,
+                quote.grossPriceInPoints,
+                rebatePoints,
+                netPointsConsumed,
+                membershipRewardPoints,
+                authorization.revealImmediately,
+                authorization.freeOrderChallenge,
+                firstTokenID,
+                challengeRequestId
+            );
+        } else {
+            emit DatabasePointsPurchaseMintedV2(
+                authorization.authorizationId, authorization.seriesID, msg.sender,
+                ticketQuantity, quote.grossPriceInPoints, rebatePoints,
+                netPointsConsumed, membershipRewardPoints, authorization.revealImmediately,
+                authorization.freeOrderChallenge, firstTokenID, challengeRequestId,
+                couponDiscount, authorization.pricingSnapshotHash, authorization.pricingVersion
+            );
+        }
     }
 
     function pointsAuthorizationDomainSeparator() public view returns (bytes32) {
@@ -844,20 +941,7 @@ contract DoudoBundleModuleUpgradeable is
     function pointsAuthorizationDigest(
         PointsMintAuthorization calldata authorization
     ) public view returns (bytes32) {
-        bytes32 structHash = keccak256(
-            abi.encode(
-                POINTS_MINT_AUTHORIZATION_TYPEHASH,
-                authorization.authorizationId,
-                authorization.buyer,
-                authorization.seriesID,
-                authorization.luckyNumbersHash,
-                authorization.ticketQuantity,
-                authorization.grossPoints,
-                authorization.revealImmediately,
-                authorization.freeOrderChallenge,
-                authorization.deadline
-            )
-        );
+        bytes32 structHash = keccak256(abi.encode(POINTS_MINT_AUTHORIZATION_TYPEHASH, authorization));
         return keccak256(
             abi.encodePacked("\x19\x01", pointsAuthorizationDomainSeparator(), structHash)
         );
@@ -1240,13 +1324,7 @@ contract DoudoBundleModuleUpgradeable is
     ) internal returns (uint256 firstTokenID) {
         uint256 cursor;
         if (quote.openingQuantity != 0) {
-            firstTokenID = core.moduleMintUnrevealed(
-                msg.sender,
-                seriesID,
-                _sliceLuckyNumbers(luckyNumbers, 0, quote.openingQuantity),
-                quote.openingPriceInPoints,
-                true
-            );
+            firstTokenID = _mintSegment(seriesID, luckyNumbers, 0, quote.openingQuantity, quote.openingPriceInPoints);
             cursor = quote.openingQuantity;
         }
 
@@ -1261,29 +1339,56 @@ contract DoudoBundleModuleUpgradeable is
             uint256 paidPerRegularTicket = quote.basePriceInPoints - discountPerRegularTicket;
 
             if (discountRemainder != 0) {
-                uint256 tokenID = core.moduleMintUnrevealed(
-                    msg.sender,
-                    seriesID,
-                    _sliceLuckyNumbers(luckyNumbers, cursor, discountRemainder),
-                    paidPerRegularTicket - 1,
-                    true
-                );
+                uint256 tokenID = _mintSegment(seriesID, luckyNumbers, cursor, discountRemainder, paidPerRegularTicket - 1);
                 if (cursor == 0) firstTokenID = tokenID;
                 cursor += discountRemainder;
             }
 
             uint256 regularRemainder = quote.regularQuantity - discountRemainder;
             if (regularRemainder != 0) {
-                uint256 tokenID = core.moduleMintUnrevealed(
-                    msg.sender,
-                    seriesID,
-                    _sliceLuckyNumbers(luckyNumbers, cursor, regularRemainder),
-                    paidPerRegularTicket,
-                    true
-                );
+                uint256 tokenID = _mintSegment(seriesID, luckyNumbers, cursor, regularRemainder, paidPerRegularTicket);
                 if (cursor == 0) firstTokenID = tokenID;
             }
         }
+    }
+
+    function _mintCouponPricedSegments(
+        uint256 seriesID,
+        uint16[] calldata luckyNumbers,
+        TicketPurchaseQuote memory quote,
+        uint256 couponDiscount
+    ) private returns (uint256 firstTokenID) {
+        uint256 remainingCapacity = quote.grossPriceInPoints - quote.rebatePoints;
+        uint256 remainingCoupon = couponDiscount;
+        uint256 rebatePerTicket = quote.regularQuantity == 0 ? 0 : quote.rebatePoints / quote.regularQuantity;
+        uint256 rebateRemainder = quote.regularQuantity == 0 ? 0 : quote.rebatePoints % quote.regularQuantity;
+        uint256 segmentStart;
+        uint256 segmentPaid;
+        uint256 quantity = luckyNumbers.length;
+        for (uint256 i; i <= quantity; ++i) {
+            uint256 paid;
+            if (i < quantity) {
+                uint256 capacity = i < quote.openingQuantity
+                    ? quote.openingPriceInPoints
+                    : quote.basePriceInPoints - rebatePerTicket - (i - quote.openingQuantity < rebateRemainder ? 1 : 0);
+                uint256 discount = remainingCapacity == 0 ? 0 : Math.mulDiv(remainingCoupon, capacity, remainingCapacity);
+                paid = capacity - discount;
+                remainingCapacity -= capacity;
+                remainingCoupon -= discount;
+            }
+            if (i != 0 && (i == quantity || paid != segmentPaid)) {
+                uint256 tokenID = _mintSegment(seriesID, luckyNumbers, segmentStart, i - segmentStart, segmentPaid);
+                if (segmentStart == 0) firstTokenID = tokenID;
+                segmentStart = i;
+            }
+            segmentPaid = paid;
+        }
+    }
+
+    function _mintSegment(uint256 seriesID, uint16[] calldata luckyNumbers, uint256 start, uint256 length, uint256 paid)
+        private returns (uint256)
+    {
+        return core.moduleMintUnrevealed(msg.sender, seriesID, _sliceLuckyNumbers(luckyNumbers, start, length), paid, true);
     }
 
     function _sliceLuckyNumbers(
